@@ -2,7 +2,6 @@
     background: #afafaf;
     width: 100%;
     padding: 30px 30px;
-    overflow: hidden;
 }
 
 .footer-content {
@@ -13,10 +12,10 @@
 }
 
 .list-inline {
-    width: 1000px;
     display: flex;
     justify-content: space-between;
     list-style: none;
+    flex-wrap: wrap;
 }
 
 .list-inline li {
