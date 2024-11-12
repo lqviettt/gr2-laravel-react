@@ -32,7 +32,6 @@ class ProductController extends Controller
             ->select('id', 'name', 'code', 'category_id', 'image', 'description', 'price', 'status',)
             ->paginate($perPage);
 
-
         return response()->json($product->makeHidden(['created_at', 'updated_at']));
     }
 

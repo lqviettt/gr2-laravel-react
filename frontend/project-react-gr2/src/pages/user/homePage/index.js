@@ -4,29 +4,6 @@ const HomePage = () => {
   return (
     <content className="hd">
       <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
-      <h1>homePage</h1>
     </content>
   );
 };

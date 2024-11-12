@@ -19,5 +19,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/category', [CategoryController::class, 'index']);
+Route::get('/product', [ProductController::class, 'index']);
+
 
 

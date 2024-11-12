@@ -23,7 +23,8 @@ class CategoryController extends Controller
             ->select('id', 'name', 'status')
             ->paginate(10);
 
-        return response()->json($category->makeHidden(['created_at', 'updated_at']));
+        // return response()->json($category->makeHidden(['created_at', 'updated_at']));
+        return view('category.index')->with('category', $category);
     }
 
     public function store(CategoryRequest $request)
