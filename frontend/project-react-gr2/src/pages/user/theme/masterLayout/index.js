@@ -1,7 +1,6 @@
 import { memo } from "react";
 import Header from "../header";
 import Footer from "../footer";
-import {StickyNavbar} from "../header/StickyNavbar";
 
 
 const MasterLayout = ({ children, ...props }) => {
@@ -9,7 +8,7 @@ const MasterLayout = ({ children, ...props }) => {
     <div >
       <Header />
       {children}
-      {/* <Footer /> */}
+      <Footer />
     </div>
   );
 };
