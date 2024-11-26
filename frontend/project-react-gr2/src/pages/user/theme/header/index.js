@@ -148,8 +148,8 @@ const Header = () => {
   return (
     <header>
       <div className="container">
-        <div className="row">
-          <div className="col-xl-3 col-lg-3">
+        <div className="h_top">
+          <div className="row col-xl-3 col-lg-3">
             <div className="h_logo">
               <Link to="">
                 <h1>React Shop</h1>
@@ -157,7 +157,7 @@ const Header = () => {
             </div>
           </div>
 
-          <div className="col-xl-6 col-lg-6">
+          <div className="row col-xl-6 col-lg-6">
             <div className="h_items">
               <div className="menu_search">
                 <form action="" method="GET">
@@ -219,7 +219,7 @@ const Header = () => {
             </div>
           </div>
 
-          <div className="col-xl-3 col-lg-3">
+          <div className="row col-xl-3 col-lg-3">
             <div className="h_account">
               <ul>
                 <li className="menu_items">

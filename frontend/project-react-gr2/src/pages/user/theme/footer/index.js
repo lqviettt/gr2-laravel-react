@@ -21,8 +21,8 @@ const Footer = () => {
             <p>Cơ sở gần nhất</p>
           </li>
           <li>
-            <p>hom nay</p>
-            <p>mai</p>
+            <p>FaceBook</p>
+            <p>Zalo</p>
           </li>
         </ul>
       </div>

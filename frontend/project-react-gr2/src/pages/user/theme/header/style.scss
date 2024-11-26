@@ -1,5 +1,5 @@
 .h_logo {
-    padding: 35px 0;
+    padding: 45px 0;
     text-align: center;
     margin: 5px 0 0 50px;
 
@@ -10,7 +10,7 @@
 }
 
 .h_items {
-    padding: 30px 0;
+    padding: 13px 0;
     margin-top: 5px;
     display: flex;
 
@@ -19,6 +19,8 @@
     }
 
     .menu_search {
+        padding: 23px 0;
+
         form {
             position: relative;
             display: flex;
@@ -107,7 +109,7 @@
 .h_account {
     margin-left: 35px;
     display: flex;
-    padding: 27px 0;
+    padding: 33px 0;
 
     ul {
         li {
@@ -227,14 +229,11 @@
         position: relative;
     }
 
-    /* Dropdown columns */
     .dropdown_columns {
         display: flex;
         gap: 10px;
-        /* Khoảng cách giữa các cột */
     }
 
-    /* Individual column */
     .dropdown_column {
         min-width: 200px;
     }
@@ -251,53 +250,30 @@
         list-style: none;
         margin: 0;
         padding: 0;
+        gap: 10px;
+
+        li {
+            a {
+                font-size: 16px;
+            }
+        }
     }
 
     /* Dropdown */
     .header_menu_dropdown {
         display: none;
-        /* Ẩn dropdown mặc định */
-        position: fixed;
-        /* Fix dropdown ở giữa màn hình */
-        top: 45.8%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        /* Căn giữa */
-        width: 1000px;
-        height: 300px;
-        /* Điều chỉnh độ rộng dropdown */
-        background: #fff;
+        position: absolute;
+        top: 100%;
+        left: 0%;
+        background-color: #fff;
         border: 1px solid #ddd;
+        border-radius: 4px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        padding: 20px;
         z-index: 9999;
+        padding: 15px;
         flex-direction: row;
-
-        ul {
-            display: flex;
-            padding: 0;
-            margin: 0;
-            list-style: none;
-
-            li {
-                padding: 10px 0;
-                text-align: left;
-
-                a {
-                    color: #555;
-                    text-decoration: none;
-                    font-size: 17px;
-
-                    &:hover {
-                        color: #007bff;
-                    }
-                }
-            }
-        }
     }
 
-    /* Hiệu ứng hover giữ dropdown */
     .menu_itemss.has-children:hover .header_menu_dropdown,
     .header_menu_dropdown:hover {
         display: block;
