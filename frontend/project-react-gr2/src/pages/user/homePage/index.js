@@ -1,16 +1,20 @@
 import { memo, useEffect, useState } from "react";
 import slider1 from "../../../assets/images/slider1.webp";
+import product14 from "../../../assets/images/14promax256.webp";
+import phukien from "../../../assets/images/phukien.webp";
+import pindlchuan from "../../../assets/images/pineudlchuan.webp";
+import pindlcao from "../../../assets/images/pineudlcao.webp";
 import "./style.scss";
 
 const HomePage = () => {
-  const [categories, setCategories] = useState([]);
+  const [products, setCategories] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchCategories = async (page = 1) => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:9000/api/category?page=${page}`
+          `http://127.0.0.1:9000/api/product?search=pro%20max&perPage=4`
         );
         const data = await response.json();
         if (data && Array.isArray(data.data)) {
@@ -44,58 +48,57 @@ const HomePage = () => {
         <div className="featured-categories">
           <h2>Danh mục nổi bật</h2>
           <div className="categories-list">
-            {Array.isArray(categories) && categories.length > 0 ? (
-              categories.map((category) => (
-                <div>
-                  <a
-                    href={`/product?category_id=${category.id}`}
-                    className="category-item"
-                    key={category.id}
-                  >
-                    <p>{category.name}</p>
-                    <img src="" alt="Dien Thoai"></img>
-                  </a>
-                </div>
-              ))
-            ) : (
-              <p>Không có danh mục nào.</p>
-            )}
+            <div>
+              <a
+                href={`/product?search=iphone&perPage=15`}
+                className="category-item"
+              >
+                <img src={product14} alt="Dien Thoai"></img>
+                <p>iPhone</p>
+              </a>
+            </div>
+            <div>
+              <a
+                href={`/product?search=cap%20sac&search=tai%20nghe&perPage=15`}
+                className="category-item"
+              >
+                <img src={phukien} alt="Dien Thoai"></img>
+                <p>Phụ kiện</p>
+              </a>
+            </div>
+            <div>
+              <a href={`/product-detail/26`} className="category-item">
+                <img src={pindlchuan} alt="Dien Thoai"></img>
+                <p>Pin EU dung lượng chuẩn</p>
+              </a>
+            </div>
+            <div>
+              <a
+                href={`/category?search=iphone&perPage=15`}
+                className="category-item"
+              >
+                <img src={pindlcao} alt="Dien Thoai"></img>
+                <p>Pin EU dung lượng cao</p>
+              </a>
+            </div>
           </div>
         </div>
+      </div>
+      <div className="content">
         <div className="featured-categories">
-          <h2>Danh mục nổi bật</h2>
+          <h2>iPhone</h2>
           <div className="categories-list">
-            {Array.isArray(categories) && categories.length > 0 ? (
-              categories.map((category) => (
+            {Array.isArray(products) && products.length > 0 ? (
+              products.map((product) => (
                 <div>
                   <a
-                    href={`/product?category_id=${category.id}`}
+                    href={`/product-detail/${product.id}`}
                     className="category-item"
-                    key={category.id}
+                    key={product.id}
                   >
-                    <p>{category.name}</p>
-                    <img src="" alt="Dien Thoai"></img>
-                  </a>
-                </div>
-              ))
-            ) : (
-              <p>Không có danh mục nào.</p>
-            )}
-          </div>
-        </div>
-        <div className="featured-categories">
-          <h2>Danh mục nổi bật</h2>
-          <div className="categories-list">
-            {Array.isArray(categories) && categories.length > 0 ? (
-              categories.map((category) => (
-                <div>
-                  <a
-                    href={`/product?category_id=${category.id}`}
-                    className="category-item"
-                    key={category.id}
-                  >
-                    <p>{category.name}</p>
-                    <img src="" alt="Dien Thoai"></img>
+                    <img src={product14} alt="Dien Thoai"></img>
+                    <p>{product.name}</p>
+                    <p>Price: {product.price}.000đ</p>
                   </a>
                 </div>
               ))
@@ -105,22 +108,6 @@ const HomePage = () => {
           </div>
         </div>
       </div>
-
-      {/* <div className="pagination">
-        <button
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          &laquo; Previous
-        </button>
-        <span>Page {currentPage}</span>
-        <button
-          onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={currentPage === 21}
-        >
-          Next &raquo;
-        </button>
-      </div> */}
     </content>
   );
 };

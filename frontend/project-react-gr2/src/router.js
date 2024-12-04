@@ -4,7 +4,7 @@ import { ROUTERS } from "./utils/router";
 import MasterLayout from "./pages/user/theme/masterLayout";
 import ProfilePage from "./pages/user/profilePage";
 import ProductPage from "./pages/user/productPage";
-
+import ProductDetail from "./pages/user/productDetail";
 
 const renderUserRouter = () => {
   const userRouters = [
@@ -19,6 +19,10 @@ const renderUserRouter = () => {
     {
       path: ROUTERS.USER.PRODUCT,
       component: <ProductPage />,
+    },
+    {
+      path: ROUTERS.USER.PRODUCT_DETAIL,
+      component: <ProductDetail />,
     },
   ];
 

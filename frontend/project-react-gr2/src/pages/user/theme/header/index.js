@@ -38,41 +38,41 @@ const Header = () => {
         {
           name: "iPhone 16 Series",
           child: [
-            { name: "iPhone 16 Pro Max", path: ROUTERS.USER.PROFILE },
-            { name: "iPhone 16 Pro", path: "/iphone-16-pro" },
-            { name: "iPhone 16", path: "/iphone-16" },
+            { name: "iPhone 16 Pro Max", path: "/product?category_id=15" },
+            { name: "iPhone 16 Pro", path: "/product?category_id=10" },
+            { name: "iPhone 16", path: "/product?category_id=5" },
           ],
         },
         {
           name: "iPhone 15 Series",
           child: [
-            { name: "iPhone 15 Pro Max", path: "/iphone-15-pro-max" },
-            { name: "iPhone 15 Pro", path: "/iphone-15-pro" },
-            { name: "iPhone 15", path: "/iphone-15" },
+            { name: "iPhone 15 Pro Max", path: "/product?category_id=14" },
+            { name: "iPhone 15 Pro", path: "/product?category_id=19" },
+            { name: "iPhone 15", path: "/product?category_id=4" },
           ],
         },
         {
           name: "iPhone 14 Series",
           child: [
-            { name: "iPhone 14 Pro Max", path: "/iphone-15-pro-max" },
-            { name: "iPhone 14 Pro", path: "/iphone-15-pro" },
-            { name: "iPhone 14", path: "/iphone-15" },
+            { name: "iPhone 14 Pro Max", path: "/product?category_id=13" },
+            { name: "iPhone 14 Pro", path: "/product?category_id=8" },
+            { name: "iPhone 14", path: "/product?category_id=3" },
           ],
         },
         {
           name: "iPhone 13 Series",
           child: [
-            { name: "iPhone 13 Pro Max", path: "/iphone-15-pro-max" },
-            { name: "iPhone 13 Pro", path: "/iphone-15-pro" },
-            { name: "iPhone 13", path: "/iphone-15" },
+            { name: "iPhone 13 Pro Max", path: "/product?category_id=12" },
+            { name: "iPhone 13 Pro", path: "/product?category_id=7" },
+            { name: "iPhone 13", path: "/product?category_id=2" },
           ],
         },
         {
           name: "iPhone 12 Series",
           child: [
-            { name: "iPhone 12 Pro Max", path: "/iphone-15-pro-max" },
-            { name: "iPhone 12 Pro", path: "/iphone-15-pro" },
-            { name: "iPhone 12", path: "/iphone-15" },
+            { name: "iPhone 12 Pro Max", path: "/product?category_id=11" },
+            { name: "iPhone 12 Pro", path: "/product?category_id=6" },
+            { name: "iPhone 12", path: "/product?category_id=1" },
           ],
         },
       ],
@@ -152,7 +152,7 @@ const Header = () => {
           <div className="row col-xl-3 col-lg-3">
             <div className="h_logo">
               <Link to="">
-                <h1>React Shop</h1>
+                <h1>QuocViet</h1>
               </Link>
             </div>
           </div>

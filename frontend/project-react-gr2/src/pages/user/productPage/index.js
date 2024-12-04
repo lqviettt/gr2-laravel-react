@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import "./style.scss";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const location = useLocation();
-  const categoryId = new URLSearchParams(location.search).get("category_id");
+  const search = new URLSearchParams(location.search).get("search");
 
   useEffect(() => {
     const fetchProducts = async () => {
-      if (categoryId) {
+      if (search) {
         try {
           const response = await fetch(
-            `http://127.0.0.1:9000/api/product?category_id=${categoryId}`
+            `http://127.0.0.1:9000/api/product?search=${search}&perPage=15`
           );
           const data = await response.json();
           if (data && Array.isArray(data.data)) {
@@ -29,25 +29,22 @@ const ProductsPage = () => {
     };
 
     fetchProducts();
-  }, [categoryId]);
+  }, [search]);
 
   return (
     <div className="featured-products">
-      <h2>Sản phẩm thuộc danh mục {categoryId}</h2>
+      <h2>Sản phẩm thuộc danh mục {search}</h2>
       <div className="product-list">
         {Array.isArray(products) && products.length > 0 ? (
           products.map((product) => (
             <div>
               <a
-                href={`/product?category_id=${product.id}`}
+                href={`/product-detail/${product.id}`}
                 className="product-item"
                 key={product.id}
               >
                 <p>Name: {product.name}</p>
-                <p>Code: {product.code}</p>
-                <p>Mo ta: {product.description}</p>
                 <p>Gia: {product.price}</p>
-                <p>So Luong: {product.quantity}</p>
                 <p>category_id: {product.category_id}</p>
               </a>
             </div>
@@ -60,4 +57,4 @@ const ProductsPage = () => {
   );
 };
 
-export default ProductsPage;
+export default memo(ProductsPage);

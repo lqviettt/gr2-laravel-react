@@ -7,7 +7,7 @@
     background-color: #fff; // Màu nền sáng để nổi bật
 
     // Đặt toàn bộ nội dung vào giữa và giới hạn chiều rộng
-    max-width: 1200px; // Chiều rộng tối đa
+    max-width: 1600px; // Chiều rộng tối đa
     padding: 30px 20px; // Khoảng cách hai bên
 
     h2 {
@@ -19,7 +19,7 @@
 
     .product-list {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(5, 1fr);
         gap: 20px;
 
         .product-item {
