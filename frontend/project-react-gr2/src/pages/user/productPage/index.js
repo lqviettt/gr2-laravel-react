@@ -14,9 +14,9 @@ const ProductsPage = () => {
           const response = await fetch(
             `http://127.0.0.1:9000/api/product?search=${search}&perPage=15`
           );
-          const data = await response.json();
-          if (data && Array.isArray(data.data)) {
-            setProducts(data.data);
+          const result = await response.json();
+          if (result && Array.isArray(result.data.data)) {
+            setProducts(result.data.data);
           } else {
             console.log("No products found for this category.");
           }

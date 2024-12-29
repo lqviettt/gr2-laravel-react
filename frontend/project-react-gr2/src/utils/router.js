@@ -1,8 +1,26 @@
 export const ROUTERS = {
-    USER: {
-        HOME: "",
-        PROFILE: "profile",
-        PRODUCT: "product", 
-        PRODUCT_DETAIL: "product-detail/:id"
-    }
-}
+  USER: {
+    HOME: "/",
+    PROFILE: "profile",
+    PRODUCT: "product",
+    PRODUCT_LIST: "product-list",
+    PRODUCT_DETAIL: "product-detail/:id",
+    LOGIN: "login",
+    REGISTER: "register",
+    CART: "cart",
+    CHECKOUT: "checkout",
+    ORDER: "order",
+    RESETPASSWORD: "reset-password",
+  },
+  ADMIN: {
+    HOME: "admin",
+    CATEGORY_MANAGE_ADD: "/admin/category-add",
+    CATEGORY_MANAGE_LIST: "/admin/category-list",
+    PRODUCT_MANAGE_ADD: "/admin/product-add",
+    PRODUCT_MANAGE_LIST: "/admin/product-list",
+    EMPLOYEE_MANAGE_ADD: "/admin/employee-add",
+    EMPLOYEE_MANAGE_LIST: "/admin/employee-list",
+    ORDER_MANAGE_ADD: "/admin/order-add",
+    ORDER_MANAGE_LIST: "/admin/order-list",
+  },
+};

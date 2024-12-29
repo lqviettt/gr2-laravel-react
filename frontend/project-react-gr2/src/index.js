@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@material-tailwind/react";
 import RouterCustom from "./router";
 import "./style/style.scss";
+// import "./index.css";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

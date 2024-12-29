@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from "react";
 import slider1 from "../../../assets/images/slider1.webp";
+import slider2 from "../../../assets/images/banner.jpg";
 import product14 from "../../../assets/images/14promax256.webp";
 import phukien from "../../../assets/images/phukien.webp";
 import pindlchuan from "../../../assets/images/pineudlchuan.webp";
@@ -7,34 +8,38 @@ import pindlcao from "../../../assets/images/pineudlcao.webp";
 import "./style.scss";
 
 const HomePage = () => {
-  const [products, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchCategories = async (page = 1) => {
+    const fetchProducts = async (page = 1) => {
+      setLoading(true);
       try {
         const response = await fetch(
-          `http://127.0.0.1:9000/api/product?search=pro%20max&perPage=4`
+          `http://127.0.0.1:9000/api/product?page=${page}&perPage=4`
         );
-        const data = await response.json();
-        if (data && Array.isArray(data.data)) {
-          setCategories(data.data);
+        const result = await response.json();
+        if (result?.data?.data) {
+          setProducts(result.data.data);
         } else {
-          console.error("Dữ liệu không hợp lệ:", data);
+          console.error("Dữ liệu không hợp lệ:", result);
         }
       } catch (error) {
         console.error("Lỗi khi lấy dữ liệu:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchCategories(currentPage);
+    fetchProducts(currentPage);
   }, [currentPage]);
 
   return (
     <content className="hd">
       <div className="banner">
         <img
-          src={slider1}
+          src={slider2}
           alt="My React Image"
           style={{
             width: "100%",
@@ -105,6 +110,25 @@ const HomePage = () => {
             ) : (
               <p>Không có danh mục nào.</p>
             )}
+            <div className="pagination">
+              <div className="pagination">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                >
+                  &laquo; Trước
+                </button>
+                <span>Trang {currentPage}</span>
+                <button
+                  onClick={() => setCurrentPage((prev) => prev + 1)}
+                  disabled={products.length === 0}
+                >
+                  Sau &raquo;
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

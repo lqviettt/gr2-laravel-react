@@ -1,0 +1,91 @@
+.featured-products {
+    // text-align: center;
+    margin: 20px auto;
+    border: 2px solid #dfdada; // Đặt viền nổi bật
+    border-radius: 12px; // Bo tròn các góc
+    box-shadow: 1px 4px 10px rgba(0, 0, 0, 0.1); // Tạo hiệu ứng bóng mờ
+    background-color: #fff; // Màu nền sáng để nổi bật
+
+    // Đặt toàn bộ nội dung vào giữa và giới hạn chiều rộng
+    max-width: 1600px; // Chiều rộng tối đa
+    padding: 30px 20px; // Khoảng cách hai bên
+
+    h2 {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .product-list {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+
+        .product-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+
+            &:hover {
+                transform: scale(1.05);
+                box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            }
+
+            img {
+                width: 80%;
+                height: auto;
+                margin-bottom: 10px;
+            }
+
+            p {
+                font-size: 16px;
+                font-weight: 500;
+                color: #333;
+                text-align: center;
+            }
+        }
+    }
+}
+
+.status {
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+.status.active {
+    color: green;
+}
+
+.status.inactive {
+    color: red;
+}
+
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pagination button {
+    padding: 10px;
+    margin: 0 5px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+.pagination button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
