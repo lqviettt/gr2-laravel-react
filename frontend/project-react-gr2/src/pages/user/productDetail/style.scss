@@ -1,8 +1,17 @@
 .product-detail {
     font-family: Arial, sans-serif;
-    max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 40px;
+    // text-align: center;
+    margin: 20px auto;
+    border: 2px solid #dfdada; // Đặt viền nổi bật
+    border-radius: 12px; // Bo tròn các góc
+    box-shadow: 1px 4px 10px rgba(0, 0, 0, 0.1); // Tạo hiệu ứng bóng mờ
+    background-color: #fff; // Màu nền sáng để nổi bật
+
+    // Đặt toàn bộ nội dung vào giữa và giới hạn chiều rộng
+    max-width: 1600px; // Chiều rộng tối đa
+    padding: 30px 20px; // Khoảng cách hai bên
 
     .product-title {
         font-size: 24px;
@@ -30,15 +39,16 @@
 
             p {
                 margin: 10px 0;
+                font-size: 28px;
             }
 
             .price {
                 color: red;
-                font-size: 18px;
+                font-size: 28px;
                 font-weight: bold;
 
                 span {
-                    font-size: 20px;
+                    font-size: 28px;
                 }
             }
 
@@ -52,7 +62,8 @@
 
                 button {
                     margin-right: 10px;
-                    padding: 10px 15px;
+                    font-size: 20px;
+                    padding: 10px 20px;
                     border: 1px solid #ccc;
                     border-radius: 4px;
                     cursor: pointer;
@@ -71,19 +82,22 @@
                 label {
                     font-weight: bold;
                     margin-right: 10px;
+                    font-size: 28px;
                 }
 
                 input {
+                    font-size: 20px;
                     width: 60px;
-                    padding: 5px;
+                    padding: 10px;
                     border: 1px solid #ccc;
                     border-radius: 4px;
                 }
             }
 
             .add-to-cart {
+                font-size: 28px;
                 margin-top: 20px;
-                padding: 10px 20px;
+                padding: 15px 80px;
                 background-color: #007bff;
                 color: white;
                 border: none;
@@ -103,8 +117,8 @@
         margin-top: 10px;
 
         img {
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            height: 90px;
             border: 1px solid #ccc;
             border-radius: 4px;
             cursor: pointer;

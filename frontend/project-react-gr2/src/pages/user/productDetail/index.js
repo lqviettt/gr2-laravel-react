@@ -135,50 +135,52 @@ const ProductDetail = () => {
   }
 
   return (
-    <div className="product-detail">
-      <h1 className="product-title">{product.name}</h1>
-      <div className="product-info-wrapper">
-        <div className="product-image">
-          <img src={selectedImage} alt="Ảnh sản phẩm lớn" />
-          <div className="product-thumbnails">
-            {(productImages[product.category?.name] || []).map((image) => (
-              <img
-                key={image.id}
-                src={image.src}
-                alt={image.alt}
-                onClick={() => setSelectedImage(image.src)}
-                className={selectedImage === image.src ? "active" : ""}
-              />
-            ))}
+    <div className="content">
+      <div className="product-detail">
+        <h1 className="product-title">{product.name}</h1>
+        <div className="product-info-wrapper">
+          <div className="product-image">
+            <img src={selectedImage} alt="Ảnh sản phẩm lớn" />
+            <div className="product-thumbnails">
+              {(productImages[product.category?.name] || []).map((image) => (
+                <img
+                  key={image.id}
+                  src={image.src}
+                  alt={image.alt}
+                  onClick={() => setSelectedImage(image.src)}
+                  className={selectedImage === image.src ? "active" : ""}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="product-details">
-          <p>
-            <strong>Loại:</strong> {product.category?.name || "Không có"}
-          </p>
-          <p className="price">
-            <strong>Giá bán:</strong>{" "}
-            <span>
-              {selectedVariant?.price.toLocaleString("vi-VN") || "Liên hệ"}đ
-            </span>
-          </p>
-          <div className="variants">
-            <p className="variant-label">Dung lượng:</p>
-            {product.variants.map((variant) => (
-              <button
-                key={variant.id}
-                className={selectedVariant?.id === variant.id ? "active" : ""}
-                onClick={() => setSelectedVariant(variant)}
-              >
-                {variant.value}
-              </button>
-            ))}
+          <div className="product-details">
+            <p>
+              <strong>Loại:</strong> {product.category?.name || "Không có"}
+            </p>
+            <p className="price">
+              Giá bán:<strong></strong>{" "}
+              <span>
+                {selectedVariant?.price.toLocaleString("vi-VN") || "Liên hệ"}đ
+              </span>
+            </p>
+            <div className="variants">
+              <p className="variant-label">Mau sac:</p>
+              {product.variants.map((variant) => (
+                <button
+                  key={variant.id}
+                  className={selectedVariant?.id === variant.id ? "active" : ""}
+                  onClick={() => setSelectedVariant(variant)}
+                >
+                  {variant.value}
+                </button>
+              ))}
+            </div>
+            <div className="quantity">
+              <label>Số lượng:</label>
+              <input type="number" min="1" defaultValue="1" />
+            </div>
+            <button className="add-to-cart">Thêm vào giỏ</button>
           </div>
-          <div className="quantity">
-            <label>Số lượng:</label>
-            <input type="number" min="1" defaultValue="1" />
-          </div>
-          <button className="add-to-cart">Thêm vào giỏ</button>
         </div>
       </div>
     </div>

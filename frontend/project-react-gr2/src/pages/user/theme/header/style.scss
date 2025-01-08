@@ -235,12 +235,12 @@
     }
 
     .dropdown_column {
-        min-width: 200px;
+        min-width: 300px;
     }
 
     .dropdown_column h4 {
         margin: 0 0 10px;
-        font-size: 20px;
+        font-size: 27px;
         color: #007bff;
     }
 
@@ -254,7 +254,7 @@
 
         li {
             a {
-                font-size: 16px;
+                font-size: 20px;
             }
         }
     }
@@ -264,13 +264,13 @@
         display: none;
         position: absolute;
         top: 100%;
-        left: 0%;
+        left: -100%;
         background-color: #fff;
         border: 1px solid #ddd;
         border-radius: 4px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         z-index: 9999;
-        padding: 15px;
+        padding: 30px;
         flex-direction: row;
     }
 
