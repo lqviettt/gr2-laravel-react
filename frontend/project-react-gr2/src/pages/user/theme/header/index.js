@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import "./style.scss";
+import "./style_h.scss";
 import { FaUser } from "react-icons/fa";
 import { FaSearch } from "react-icons/fa";
 import { FaPhoneAlt } from "react-icons/fa";
@@ -10,9 +10,16 @@ import { IoLogIn } from "react-icons/io5";
 import { FaUserPlus } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { ROUTERS } from "../../../../utils/router";
+import { useCart } from "../../../../component/CartContext";
 
 const Header = () => {
   const [activeMenu, setActiveMenu] = useState(null);
+  const { cartItems } = useCart(); // Lấy giỏ hàng từ context
+
+  const totalQuantity = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
 
   const handleMouseEnter = (menuKey) => {
     setActiveMenu(menuKey);
@@ -24,6 +31,13 @@ const Header = () => {
 
   const handleLinkClick = () => {
     setActiveMenu(null);
+  };
+
+  const [showCart, setShowCart] = useState(false);
+
+  const handleToggleCart = (event) => {
+    event.preventDefault();
+    setShowCart(!showCart);
   };
 
   const menus = [
@@ -146,150 +160,144 @@ const Header = () => {
   ];
 
   return (
-    <header>
-      <div className="container">
-        <div className="h_top">
-          <div className="row col-xl-3 col-lg-3">
-            <div className="h_logo">
-              <Link to="">
-                <h1>QuocViet</h1>
-              </Link>
+    <header className="font-[sans-serif] min-h-[65px] tracking-wide relative z-50">
+      <div className="flex justify-between items-center w-full bg-[#afafaf]">
+        <div className="ml-32 h_top">
+          <Link to="">
+            <h1 className="text-2xl font-bold">QuocViet</h1>
+          </Link>
+        </div>
+
+        <div className="h_items items-center space-x-11">
+          <div className="menu_search mr-4">
+            <form action="" method="GET">
+              <input
+                type="text"
+                name="search"
+                placeholder="Tìm kiếm sản phẩm..."
+                required
+                className="p-4 rounded border border-gray-300"
+              />
+              <button type="submit" className="p-4 bg-blue-500 rounded">
+                <FaSearch />
+              </button>
+            </form>
+          </div>
+          <div className="menu_hotline flex items-center space-x-2">
+            <div className="icon">
+              <FaPhoneAlt />
+            </div>
+            <div className="content">
+              <a title="0981218999" href="tel:0981218907">
+                Hotline <br />
+                <span>0981218999</span>
+              </a>
             </div>
           </div>
-
-          <div className="row col-xl-6 col-lg-6">
-            <div className="h_items">
-              <div className="menu_search">
-                <form action="" method="GET">
-                  <input
-                    type="text"
-                    name="search"
-                    placeholder="Tìm kiếm sản phẩm..."
-                    required
-                  />
-                  <button type="submit">
-                    <FaSearch />
-                  </button>
-                </form>
-              </div>
-              <div className="menu_hotline">
-                <div className="icon">
-                  <FaPhoneAlt />
-                </div>
-                <div className="content">
-                  <a title="0981218999" href="tel:0981218907">
-                    Hotline <br />
-                    <span>0981218999</span>
-                  </a>
-                </div>
-              </div>
-              <div className="menu_hotline">
-                <div className="icon">
-                  <SiGooglemaps />
-                </div>
-                <div className="content">
-                  <a title="0981218999" href="tel:0981218907">
-                    Hệ thống <br />
-                    <span>cửa hàng</span>
-                  </a>
-                </div>
-              </div>
-              <div className="menu_hotline">
-                <div className="icon">
-                  <BsClipboard2CheckFill />
-                </div>
-                <div className="content">
-                  <a href="#">
-                    Tra cứu <br />
-                    <span>đơn hàng</span>
-                  </a>
-                </div>
-              </div>
-              <div className="menu_hotline">
-                <div className="icon">
-                  <PiHandbagFill />
-                </div>
-                <div className="content">
-                  <a href="#">
-                    Giỏ hàng <br />
-                    <span>Sản phẩm</span> <span className="spanChild">6</span>
-                  </a>
-                </div>
-              </div>
+          <div className="menu_hotline flex items-center space-x-2">
+            <div className="icon">
+              <SiGooglemaps />
+            </div>
+            <div className="content">
+              <a title="Hệ thống cửa hàng" href="#">
+                Hệ thống <br />
+                <span>cửa hàng</span>
+              </a>
             </div>
           </div>
-
-          <div className="row col-xl-3 col-lg-3">
-            <div className="h_account">
-              <ul>
-                <li className="menu_items">
-                  <div className="menu_info">
-                    <FaUser />
-                    <span>Thông tin</span>
-                  </div>
-                  <ul className="submenu">
-                    <li>
-                      <Link to="#">
-                        <IoLogIn />
-                        Đăng nhập
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="">
-                        {" "}
-                        <FaUserPlus />
-                        Đăng ký
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
+          <div className="menu_hotline flex items-center space-x-2">
+            <div className="icon">
+              <BsClipboard2CheckFill />
+            </div>
+            <div className="content">
+              <a href="#">
+                Tra cứu <br />
+                <span>đơn hàng</span>
+              </a>
+            </div>
+          </div>
+          <div className="menu_hotline flex items-center">
+            <div className="icon">
+              <PiHandbagFill />
+            </div>
+            <div className="content">
+              <a href="/cart">
+                Giỏ hàng <br />
+                <span>Sản phẩm</span>{" "}
+                <span className="spanChild">{totalQuantity}</span>
+              </a>
             </div>
           </div>
         </div>
-        <nav className="h_menu">
-          <ul>
-            {menus.map((menu, menuKey) => (
-              <li
-                key={menuKey}
-                className={`menu_itemss ${menu.child ? "has-children" : ""}`}
-                onMouseEnter={() => handleMouseEnter(menuKey)}
-                onMouseLeave={handleMouseLeave}
-              >
-                <Link to={menu.path}>{menu.name}</Link>
-                {menu.child && activeMenu === menuKey && (
-                  <div className="header_menu_dropdown">
-                    <div className="dropdown_columns">
-                      {menu.child.map((childItem, childKey) => (
-                        <div
-                          key={`${menuKey}-${childKey}`}
-                          className="dropdown_column"
-                        >
-                          <h4>{childItem.name}</h4>
-                          <ul className="sub_dropdown_list">
-                            {/* Kiểm tra childItem.child trước khi dùng map */}
-                            {childItem.child &&
-                              childItem.child.map((subChild, subKey) => (
-                                <li key={`${menuKey}-${childKey}-${subKey}`}>
-                                  <Link
-                                    to={subChild.path}
-                                    onClick={handleLinkClick} // Đóng menu khi nhấn vào link
-                                  >
-                                    {subChild.name}
-                                  </Link>
-                                </li>
-                              ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </li>
-            ))}
+
+        <div className="h_account mr-64">
+          <ul className="flex items-center space-x-6">
+            <li className="menu_items">
+              <div className="menu_info flex items-center space-x-2">
+                <FaUser />
+                <span>Thông tin</span>
+              </div>
+              <ul className="submenu">
+                <li>
+                  <Link to="#">
+                    <IoLogIn />
+                    Đăng nhập
+                  </Link>
+                </li>
+                <li>
+                  <Link to="">
+                    <FaUserPlus />
+                    Đăng ký
+                  </Link>
+                </li>
+              </ul>
+            </li>
           </ul>
-        </nav>
+        </div>
       </div>
+
+      <nav className="h_menu">
+        <ul>
+          {menus.map((menu, menuKey) => (
+            <li
+              key={menuKey}
+              className={`menu_itemss ${menu.child ? "has-children" : ""}`}
+              onMouseEnter={() => handleMouseEnter(menuKey)}
+              onMouseLeave={handleMouseLeave}
+            >
+              <Link to={menu.path}>{menu.name}</Link>
+              {menu.child && activeMenu === menuKey && (
+                <div className="header_menu_dropdown">
+                  <div className="dropdown_columns">
+                    {menu.child.map((childItem, childKey) => (
+                      <div
+                        key={`${menuKey}-${childKey}`}
+                        className="dropdown_column"
+                      >
+                        <h4>{childItem.name}</h4>
+                        <ul className="sub_dropdown_list">
+                          {/* Kiểm tra childItem.child trước khi dùng map */}
+                          {childItem.child &&
+                            childItem.child.map((subChild, subKey) => (
+                              <li key={`${menuKey}-${childKey}-${subKey}`}>
+                                <Link
+                                  to={subChild.path}
+                                  onClick={handleLinkClick} // Đóng menu khi nhấn vào link
+                                >
+                                  {subChild.name}
+                                </Link>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </nav>
     </header>
     // <header class="flex border-b py-3 px-4 sm:px-10 bg-white font-[sans-serif] min-h-[65px] tracking-wide relative z-50">
     //   <div class="flex flex-wrap items-center gap-4 max-w-screen-xl mx-auto w-full">

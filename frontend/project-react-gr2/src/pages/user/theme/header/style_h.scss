@@ -1,7 +1,7 @@
 .h_logo {
     padding: 45px 0;
     text-align: center;
-    margin: 5px 0 0 50px;
+    margin: 5px 0 0 200px;
 
     a {
         text-decoration: none;
@@ -136,7 +136,6 @@
         text-decoration: none;
         color: inherit;
         position: relative;
-        display: inline-block;
         text-align: center;
         background-color: rgb(212, 212, 207);
         padding: 12px 12px;
@@ -197,7 +196,7 @@
     border-bottom: 1px solid #636060;
 
     ul {
-        padding: 0 100px;
+        padding: 0 260px;
         display: flex;
         justify-content: space-between;
     }

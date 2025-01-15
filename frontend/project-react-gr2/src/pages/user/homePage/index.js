@@ -93,7 +93,7 @@ const HomePage = () => {
                 href={`/product?search=iphone&perPage=16`}
                 className="category-item"
               >
-                <img src={product14} alt="Dien Thoai"></img>
+                <img src={product14} alt="iPhone"></img>
                 <span>iPhone</span>
               </a>
             </div>
@@ -102,13 +102,13 @@ const HomePage = () => {
                 href={`/product?search=cap%20sac&search=tai%20nghe&perPage=15`}
                 className="category-item"
               >
-                <img src={phukien} alt="Dien Thoai"></img>
+                <img src={phukien} alt="Phụ kiện"></img>
                 <span>Phụ kiện</span>
               </a>
             </div>
             <div>
               <a href={`/product-detail/26`} className="category-item">
-                <img src={pindlchuan} alt="Dien Thoai"></img>
+                <img src={pindlchuan} alt="Pin EU dung lượng chuẩn"></img>
                 <span>Pin EU dung lượng chuẩn</span>
               </a>
             </div>
@@ -117,7 +117,7 @@ const HomePage = () => {
                 href={`/category?search=iphone&perPage=15`}
                 className="category-item"
               >
-                <img src={pindlcao} alt="Dien Thoai"></img>
+                <img src={pindlcao} alt="Pin EU dung lượng cao"></img>
                 <span>Pin EU dung lượng cao</span>
               </a>
             </div>

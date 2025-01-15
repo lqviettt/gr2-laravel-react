@@ -1,22 +1,23 @@
 .product-detail {
     font-family: Arial, sans-serif;
     margin: 0 auto;
-    padding: 40px;
+    padding: 40px 40px 100px 40px;
     // text-align: center;
-    margin: 20px auto;
+    margin-bottom: 40px;
     border: 2px solid #dfdada; // Đặt viền nổi bật
     border-radius: 12px; // Bo tròn các góc
     box-shadow: 1px 4px 10px rgba(0, 0, 0, 0.1); // Tạo hiệu ứng bóng mờ
     background-color: #fff; // Màu nền sáng để nổi bật
 
-    // Đặt toàn bộ nội dung vào giữa và giới hạn chiều rộng
-    max-width: 1600px; // Chiều rộng tối đa
-    padding: 30px 20px; // Khoảng cách hai bên
+    max-width: 1400px; // Chiều rộng tối đa
+    height: inherit;
 
     .product-title {
-        font-size: 24px;
+        font-size: 27px;
         font-weight: bold;
-        margin-bottom: 20px;
+        padding-bottom: 15px;
+        margin-bottom: 40px;
+        border-bottom: 2px solid #000000;
     }
 
     .product-info-wrapper {
@@ -24,36 +25,38 @@
         gap: 20px;
 
         .product-image {
-            flex: 1;
+            flex: 1.5;
 
             img {
-                max-width: 100%;
+                max-width: 120%;
                 border: 1px solid #ccc;
                 border-radius: 8px;
             }
         }
 
         .product-details {
-            padding-left: 70px;
-            flex: 2;
+            margin-left: 130px;
+            gap: 10px;
+            flex: 1.5;
 
             p {
                 margin: 10px 0;
-                font-size: 28px;
+                font-size: 26px;
+                margin-bottom: 20px;
             }
 
             .price {
-                color: red;
-                font-size: 28px;
+                font-size: 20px;
                 font-weight: bold;
 
                 span {
-                    font-size: 28px;
+                    color: rgb(196, 4, 4);
+                    font-size: 30px;
                 }
             }
 
             .variants {
-                margin-top: 20px;
+                margin-top: 15px;
 
                 .variant-label {
                     font-weight: bold;
@@ -63,7 +66,7 @@
                 button {
                     margin-right: 10px;
                     font-size: 20px;
-                    padding: 10px 20px;
+                    padding: 7px 14px;
                     border: 1px solid #ccc;
                     border-radius: 4px;
                     cursor: pointer;
@@ -82,22 +85,22 @@
                 label {
                     font-weight: bold;
                     margin-right: 10px;
-                    font-size: 28px;
+                    font-size: 26px;
                 }
 
                 input {
                     font-size: 20px;
-                    width: 60px;
-                    padding: 10px;
+                    width: 70px;
+                    padding: 5px;
                     border: 1px solid #ccc;
                     border-radius: 4px;
                 }
             }
 
             .add-to-cart {
-                font-size: 28px;
-                margin-top: 20px;
-                padding: 15px 80px;
+                font-size: 26px;
+                margin-top: 40px;
+                padding: 10px 45px;
                 background-color: #007bff;
                 color: white;
                 border: none;
@@ -105,7 +108,26 @@
                 cursor: pointer;
 
                 &:hover {
-                    background-color: #0056b3;
+                    background-color: #b30000;
+                }
+            }
+        }
+
+        .status {
+            flex: 1.5;
+        }
+
+        .status_iphone {
+            flex: 1.5;
+            border-radius: 10px;
+            border: 1px solid #0056b3;
+
+            .status_iphone_content {
+                padding: 20px;
+                font-size: 18px;
+
+                ul {
+                    gap: 11px;
                 }
             }
         }
@@ -114,11 +136,11 @@
     .product-thumbnails {
         display: flex;
         gap: 10px;
-        margin-top: 10px;
+        margin-top: 25px;
 
         img {
-            width: 90px;
-            height: 90px;
+            width: 97px;
+            height: 97px;
             border: 1px solid #ccc;
             border-radius: 4px;
             cursor: pointer;

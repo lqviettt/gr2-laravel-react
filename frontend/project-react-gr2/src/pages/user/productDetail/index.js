@@ -1,6 +1,9 @@
 import { memo, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./style.scss";
+import { GiCheckMark } from "react-icons/gi";
+import { IoBookmarksOutline } from "react-icons/io5";
+import { TiFlashOutline } from "react-icons/ti";
 import ip12 from "../../../assets/images/ip12.webp";
 import ip12Pro from "../../../assets/images/ip12-pro.webp";
 import ip12Black from "../../../assets/images/ip12-black.webp";
@@ -15,6 +18,7 @@ import ip15 from "../../../assets/images/ip15.webp";
 import ip15Pro from "../../../assets/images/ip15-pro.webp";
 import ip16 from "../../../assets/images/ip16.webp";
 import ip16Pro from "../../../assets/images/ip16-pro.webp";
+import { useCart } from "../../../component/CartContext";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -22,6 +26,25 @@ const ProductDetail = () => {
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState("");
+  const [cartMessage, setCartMessage] = useState("");
+  const [quantity, setQuantity] = useState(1);
+
+  const { addToCart } = useCart();
+
+  const handleAddToCart = () => {
+    if (quantity <= 0) {
+      setCartMessage("Số lượng phải lớn hơn 0!");
+      return;
+    }
+
+    const cartItem = {
+      ...product,
+      selectedVariant,
+      quantity,
+    };
+    addToCart(cartItem);
+    alert("Cập nhật giỏ hàng thành công!");
+  };
 
   const productImages = {
     "iPhone 12": [
@@ -29,21 +52,18 @@ const ProductDetail = () => {
       { id: 2, src: ip12Black, alt: "iPhone 12 Black" },
       { id: 3, src: ip12White, alt: "iPhone 12 White" },
       { id: 4, src: ip12Blue, alt: "iPhone 12 Blue" },
-      { id: 5, src: ip12Green, alt: "iPhone 12 Green" },
     ],
     "iPhone 12 Pro": [
       { id: 1, src: ip12Pro, alt: "iPhone 12 Pro" },
       { id: 2, src: ip12Black, alt: "iPhone 12 Black" },
       { id: 3, src: ip12White, alt: "iPhone 12 White" },
       { id: 4, src: ip12Blue, alt: "iPhone 12 Blue" },
-      { id: 5, src: ip12Green, alt: "iPhone 12 Green" },
     ],
     "iPhone 12 Pro Max": [
       { id: 1, src: ip12Pro, alt: "iPhone 12 Pro Max" },
       { id: 2, src: ip12Black, alt: "iPhone 12 Black" },
       { id: 3, src: ip12White, alt: "iPhone 12 White" },
       { id: 4, src: ip12Blue, alt: "iPhone 12 Blue" },
-      { id: 5, src: ip12Green, alt: "iPhone 12 Green" },
     ],
     "iPhone 13": [
       { id: 1, src: ip13, alt: "iPhone 13" },
@@ -138,7 +158,7 @@ const ProductDetail = () => {
     <div className="content">
       <div className="product-detail">
         <h1 className="product-title">{product.name}</h1>
-        <div className="product-info-wrapper">
+        <div className="product-info-wrapper flex justify-between">
           <div className="product-image">
             <img src={selectedImage} alt="Ảnh sản phẩm lớn" />
             <div className="product-thumbnails">
@@ -158,13 +178,15 @@ const ProductDetail = () => {
               <strong>Loại:</strong> {product.category?.name || "Không có"}
             </p>
             <p className="price">
-              Giá bán:<strong></strong>{" "}
+              Giá bán:
+              <br />
+              <strong></strong>{" "}
               <span>
                 {selectedVariant?.price.toLocaleString("vi-VN") || "Liên hệ"}đ
               </span>
             </p>
             <div className="variants">
-              <p className="variant-label">Mau sac:</p>
+              <p className="variant-label">Màu sắc:</p>
               {product.variants.map((variant) => (
                 <button
                   key={variant.id}
@@ -177,9 +199,69 @@ const ProductDetail = () => {
             </div>
             <div className="quantity">
               <label>Số lượng:</label>
-              <input type="number" min="1" defaultValue="1" />
+              <input
+                type="number"
+                min="1"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+              />{" "}
             </div>
-            <button className="add-to-cart">Thêm vào giỏ</button>
+            <button className="add-to-cart" onClick={handleAddToCart}>
+              Thêm vào giỏ hàng
+            </button>
+          </div>
+          <div className="status">
+            <div className="">
+              <div className="status_iphone mb-10">
+                <h1 className="flex bg-[#007bff] p-5 text-white text-2xl font-semibold rounded-tl-[7px] rounded-tr-[7px]">
+                  <IoBookmarksOutline size={30} className="mr-3" />
+                  Cam kết bán hàng
+                </h1>
+                <div className="status_iphone_content">
+                  <ul>
+                    <li className="flex items-center mb-5">
+                      <GiCheckMark size={20} className="mr-3" />
+                      Bảo hành 12 tháng lỗi 1 đổi 1
+                    </li>
+                    <li className="flex items-center mb-5">
+                      <GiCheckMark size={20} className="mr-3" />
+                      Lên đời thu 100% giá web
+                    </li>
+                    <li className="flex items-center mb-5">
+                      <GiCheckMark size={40} className="mr-3" />
+                      Bảo hành rơi vỡ vào nước sửa chữa miễn phí không giới hạn
+                    </li>
+                    <li className="flex items-center">
+                      <GiCheckMark size={30} className="mr-3" />
+                      Tặng kèm cáp sạc nhanh zin + Cường lực full màn
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="status_iphone">
+                <h1 className="flex bg-[#007bff] p-5 text-white text-2xl font-semibold rounded-tl-[8px] rounded-tr-[8px]">
+                  <TiFlashOutline size={30} className="mr-2" />
+                  Tình trạng máy
+                </h1>
+                <div className="status_iphone_content">
+                  <ul>
+                    <li className="flex items-center mb-5">
+                      <GiCheckMark size={30} className="mr-3" />
+                      Máy 98% là các máy cấn móp, xước sâu nhiều
+                    </li>
+                    <li className="flex items-center mb-5">
+                      <GiCheckMark size={30} className="mr-3" />
+                      Máy 99% là các máy gần như mới, có vài vết xước nhẹ nhỏ
+                    </li>
+                    <li className="flex items-center">
+                      <GiCheckMark size={30} className="mr-3" />
+                      Máy New 100% là các máy mới chưa Active ( không box )
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -12,6 +12,7 @@ import Login from "./pages/user/loginPage/index.js";
 import Register from "./pages/user/registerPage/index.js";
 import CategoryManageAdd from "./pages/admin/categoryManage/categoryAdd.js";
 import CategoryManageList from "./pages/admin/categoryManage/categoryList.js";
+import Cart from "./pages/user/cartPage/index.js";
 
 const renderUserRouter = () => {
   const userRouters = [
@@ -53,6 +54,11 @@ const renderUserRouter = () => {
     {
       path: ROUTERS.USER.REGISTER,
       component: <Register />,
+      layout: MasterLayout,
+    },
+    {
+      path: ROUTERS.USER.CART,
+      component: <Cart />,
       layout: MasterLayout,
     },
     {
