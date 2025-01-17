@@ -25,18 +25,16 @@ class ProductRequest extends FormRequest
         $productId = $this->route('product') ? $this->route('product')->id : null;
 
         return [
-            "name" => "required|string|max:32|unique:products,name",
+            "name" => "required|string|max:32",
             "code" => [
                 "required",
                 "string",
                 "max:20",
                 Rule::unique('products', 'code')->ignore($productId)
             ],
-            "quantity" => "required|integer|min:0",
+            "quantity" => "nullable|integer|min:0",
             "category_id" => "required|exists:categories,id",
             "description" => "nullable|string|max:255",
-            "image" => "nullable|string", 
-            // |mimes:jpeg,png,jpg,gif|max:2048
             "price" => "required|integer",
             "status" => "nullable|integer",
         ];

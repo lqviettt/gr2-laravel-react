@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Modules\Employee\Models\Employee;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -19,8 +21,12 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'user_name',
         'email',
         'password',
+        'verification_code',
+        'email_verified_at',
+        'is_verified'
     ];
 
     /**
@@ -40,5 +46,31 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'password' => 'hashed',
     ];
+
+    /**
+     * getJWTIdentifier
+     *
+     * @return void
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * getJWTCustomClaims
+     *
+     * @return void
+     */
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+
+    public function employee()
+    {
+        return $this->hasOne(Employee::class);
+    }
 }
