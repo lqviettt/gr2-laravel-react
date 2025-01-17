@@ -30,6 +30,7 @@ export const CartProvider = ({ children }) => {
         updatedItems[existingProductIndex].quantity += product.quantity;
         return updatedItems;
       } else {
+        console.log(product);
         return [...prevItems, product];
       }
     });

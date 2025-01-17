@@ -39,6 +39,12 @@ const ProductList = () => {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  };
 
   useEffect(() => {
     const fetchProductsByCategory = async () => {
@@ -128,8 +134,12 @@ const ProductList = () => {
                     className={selectedImage === image.src ? "active" : ""}
                   />
                 ))}
-                <p>{product.name}</p>
-                <p>Price: {product.price}.000đ</p>
+                <div className="text-left text-xl font-semibold w-4/5">
+                  <p>{product.name}</p>
+                  <p className="mt-5 text-red-500">
+                    {formatCurrency(product.price * 1000)}
+                  </p>
+                </div>
               </a>
             </div>
           ))}

@@ -1,6 +1,8 @@
 import { memo, useEffect, useState } from "react";
-import slider1 from "../../../assets/images/slider1.webp";
-import slider2 from "../../../assets/images/banner.jpg";
+import banner from "../../../assets/images/banner.webp";
+import banner2 from "../../../assets/images/banner2.webp";
+import slider1 from "../../../assets/images/slider_1.webp";
+import slider2 from "../../../assets/images/slider_2.webp";
 import product14 from "../../../assets/images/14promax256.webp";
 import phukien from "../../../assets/images/phukien.webp";
 import pindlchuan from "../../../assets/images/pineudlchuan.webp";
@@ -15,11 +17,35 @@ import ip15 from "../../../assets/images/ip15.webp";
 import ip15Pro from "../../../assets/images/ip15-pro.webp";
 import ip16 from "../../../assets/images/ip16.webp";
 import ip16Pro from "../../../assets/images/ip16-pro.webp";
+import { GrFormNextLink } from "react-icons/gr";
+import { GrNext } from "react-icons/gr";
+import { GrPrevious } from "react-icons/gr";
 import "./style1.scss";
 
 const HomePage = () => {
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  };
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const productsPerPage = 4;
+
+  const handleNext = () => {
+    if (currentIndex < Math.floor(products.length / productsPerPage)) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
   const [products, setProducts] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
   const productImages = {
@@ -41,11 +67,11 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    const fetchProducts = async (page = 1) => {
+    const fetchProducts = async () => {
       setLoading(true);
       try {
         const response = await fetch(
-          `http://127.0.0.1:9000/api/product?page=${page}&perPage=4`
+          `http://127.0.0.1:9000/api/product?page=1&perPage=48`
         );
         const result = await response.json();
         if (result?.data?.data) {
@@ -65,24 +91,32 @@ const HomePage = () => {
       }
     };
 
-    fetchProducts(currentPage);
-  }, [currentPage]);
+    fetchProducts();
+  }, []);
+
+  const displayedProducts = products.slice(
+    currentIndex * productsPerPage,
+    (currentIndex + 1) * productsPerPage
+  );
 
   return (
-    <content className="hd">
+    <content className="</div>hd">
       <div className="banner">
         <img
-          src={slider1}
+          className="w-full h-auto shadow-lg"
+          src={banner}
           alt="My React Image"
-          style={{
-            width: "100%",
-            height: "auto",
-            borderRadius: "10px",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-          }}
         />
       </div>
-      <div className="content">
+      <div className="slider flex justify-center gap-8 z-1 -top-[128px] relative">
+        <div className="w-full max-w-[780px]">
+          <img src={slider1} alt="Slider 1" className="rounded-lg w-full" />
+        </div>
+        <div className="w-full max-w-[780px]">
+          <img src={slider2} alt="Slider 2" className="rounded-lg w-full" />
+        </div>
+      </div>
+      <div className="content -top-[90px] relative">
         <div className="featured-categories">
           <h1 className="title-pageee">
             <span>DANH MỤC NỔI BẬT</span>
@@ -93,23 +127,30 @@ const HomePage = () => {
                 href={`/product?search=iphone&perPage=16`}
                 className="category-item"
               >
-                <img src={product14} alt="iPhone"></img>
-                <span>iPhone</span>
+                <img src={product14} alt="iPhone" className="mx-auto" />
+                <span className="text-left w-4/5">iPhone</span>
               </a>
             </div>
+
             <div>
               <a
                 href={`/product?search=cap%20sac&search=tai%20nghe&perPage=15`}
                 className="category-item"
               >
-                <img src={phukien} alt="Phụ kiện"></img>
-                <span>Phụ kiện</span>
+                <img src={phukien} alt="Phụ kiện" className="mx-auto" />
+                <span className="text-left w-4/5">Phụ kiện</span>
               </a>
             </div>
             <div>
               <a href={`/product-detail/26`} className="category-item">
-                <img src={pindlchuan} alt="Pin EU dung lượng chuẩn"></img>
-                <span>Pin EU dung lượng chuẩn</span>
+                <img
+                  src={pindlchuan}
+                  alt="Pin EU dung lượng chuẩn"
+                  className="mx-auto"
+                />
+                <span className="text-left w-4/5 font-semibold">
+                  Pin EU DL chuẩn
+                </span>
               </a>
             </div>
             <div>
@@ -117,21 +158,45 @@ const HomePage = () => {
                 href={`/category?search=iphone&perPage=15`}
                 className="category-item"
               >
-                <img src={pindlcao} alt="Pin EU dung lượng cao"></img>
-                <span>Pin EU dung lượng cao</span>
+                <img
+                  src={pindlcao}
+                  alt="Pin EU dung lượng cao"
+                  className="mx-auto"
+                />
+                <span className="text-left w-4/5">Pin EU DL cao</span>
               </a>
             </div>
           </div>
         </div>
       </div>
-      <div className="content">
-        <div className="featured-categories">
+
+      <div className="slider flex justify-center gap-8 z-1 -top-[80px] relative">
+        <div className="w-full max-w-[1600px]">
+          <img src={banner2} alt="Slider 2" className="rounded-lg w-full" />
+        </div>
+      </div>
+
+      <div className="content -top-[40px] relative">
+        <div className="featured-categories relative">
           <h1 className="title-pageee">
             <span>iPhone</span>
           </h1>
-          <div className="categories-list">
-            {Array.isArray(products) && products.length > 0 ? (
-              products.map((product) => (
+
+          <div className=" flex items-center">
+            {currentIndex === 0 ? null : (
+              <button
+                onClick={handlePrev}
+                disabled={currentIndex === 0}
+                className="absolute -left-[35px] top-1/2 rounded-r-full transform -translate-y-1/2 bg-gray-200 text-white h-16 w-16 flex items-center justify-end shadow-lg z-10 hover:bg-[#007bff] group"
+                style={{
+                  clipPath: "polygon(50% 0, 100% 0, 100% 100%, 50% 100%)",
+                }}
+              >
+                <GrPrevious className="text-2xl mr-2 group-hover:text-white" />
+              </button>
+            )}
+            <div className="categories-list">
+              {displayedProducts.map((product) => (
                 <div key={product.id}>
                   <a
                     href={`/product-detail/${product.id}`}
@@ -146,29 +211,38 @@ const HomePage = () => {
                         className={selectedImage === image.src ? "active" : ""}
                       />
                     ))}
-                    <p>{product.name}</p>
-                    <p>Price: {product.price}.000đ</p>
+                    <div className="text-left text-xl font-semibold w-4/5">
+                      <p>{product.name}</p>
+                      <p className="mt-5 text-red-500">
+                        {formatCurrency(product.price * 1000)}
+                      </p>
+                    </div>
                   </a>
                 </div>
-              ))
-            ) : (
-              <p>Không có danh mục nào.</p>
-            )}
-            {/* <div className="pagination">
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                &laquo; Trước
-              </button>
-              <span>Trang {currentPage}</span>
-              <button
-                onClick={() => setCurrentPage((prev) => prev + 1)}
-                disabled={products.length === 0}
-              >
-                Sau &raquo;
-              </button>
-            </div> */}
+              ))}
+            </div>
+            <button
+              onClick={handleNext}
+              disabled={
+                currentIndex >= Math.floor(products.length / productsPerPage)
+              }
+              className="pl-2 absolute -right-[35px] top-1/2 transform -translate-y-1/2 bg-gray-200 h-16 w-16 flex items-center rounded-l-full overflow-hidden shadow-lg z-10 hover:bg-[#007bff] group"
+              style={{ clipPath: "polygon(0 0, 50% 0, 50% 100%, 0 100%)" }}
+            >
+              <GrNext className="text-2xl group-hover:text-white" />
+            </button>
+          </div>
+
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() =>
+                (window.location.href = "/product?search=iphone&perPage=16")
+              }
+              className="flex items-center text-lg gap-1 p-3 text-[#007bff] border border-[#007bff] rounded-lg hover:bg-[#007bff] hover:text-blue-50 group"
+            >
+              Xem toàn bộ sản phẩm{" "}
+              <GrFormNextLink className="text-3xl group-hover:text-white" />
+            </button>
           </div>
         </div>
       </div>

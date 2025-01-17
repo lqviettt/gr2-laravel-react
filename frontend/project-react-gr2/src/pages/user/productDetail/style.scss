@@ -1,15 +1,12 @@
 .product-detail {
     font-family: Arial, sans-serif;
-    margin: 0 auto;
+    margin: 40px auto;
     padding: 40px 40px 100px 40px;
-    // text-align: center;
-    margin-bottom: 40px;
-    border: 2px solid #dfdada; // Đặt viền nổi bật
-    border-radius: 12px; // Bo tròn các góc
-    box-shadow: 1px 4px 10px rgba(0, 0, 0, 0.1); // Tạo hiệu ứng bóng mờ
-    background-color: #fff; // Màu nền sáng để nổi bật
-
-    max-width: 1400px; // Chiều rộng tối đa
+    border: 2px solid #dfdada;
+    border-radius: 12px;
+    box-shadow: 1px 4px 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    max-width: 1400px;
     height: inherit;
 
     .product-title {
@@ -39,14 +36,7 @@
             gap: 10px;
             flex: 1.5;
 
-            p {
-                margin: 10px 0;
-                font-size: 26px;
-                margin-bottom: 20px;
-            }
-
             .price {
-                font-size: 20px;
                 font-weight: bold;
 
                 span {
@@ -60,11 +50,10 @@
 
                 .variant-label {
                     font-weight: bold;
-                    margin-bottom: 10px;
                 }
 
                 button {
-                    margin-right: 10px;
+                    margin: 5px 10px 5px 0;
                     font-size: 20px;
                     padding: 7px 14px;
                     border: 1px solid #ccc;
@@ -135,12 +124,13 @@
 
     .product-thumbnails {
         display: flex;
+        flex-wrap: wrap;
         gap: 10px;
         margin-top: 25px;
 
         img {
-            width: 97px;
-            height: 97px;
+            width: 105px;
+            height: 105px;
             border: 1px solid #ccc;
             border-radius: 4px;
             cursor: pointer;

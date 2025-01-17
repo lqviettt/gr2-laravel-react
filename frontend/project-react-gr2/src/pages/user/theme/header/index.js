@@ -2,10 +2,10 @@ import { memo, useState } from "react";
 import "./style_h.scss";
 import { FaUser } from "react-icons/fa";
 import { FaSearch } from "react-icons/fa";
-import { FaPhoneAlt } from "react-icons/fa";
-import { BsClipboard2CheckFill } from "react-icons/bs";
-import { PiHandbagFill } from "react-icons/pi";
-import { SiGooglemaps } from "react-icons/si";
+import { FiPhone } from "react-icons/fi";
+import { BsClipboard2Check } from "react-icons/bs";
+import { PiHandbag } from "react-icons/pi";
+import { LuMapPin } from "react-icons/lu";
 import { IoLogIn } from "react-icons/io5";
 import { FaUserPlus } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -161,7 +161,7 @@ const Header = () => {
 
   return (
     <header className="font-[sans-serif] min-h-[65px] tracking-wide relative z-50">
-      <div className="flex justify-between items-center w-full bg-[#afafaf]">
+      <div className="flex justify-between items-center w-full bg-[#000000] text-white">
         <div className="ml-32 h_top">
           <Link to="">
             <h1 className="text-2xl font-bold">QuocViet</h1>
@@ -183,9 +183,9 @@ const Header = () => {
               </button>
             </form>
           </div>
-          <div className="menu_hotline flex items-center space-x-2">
-            <div className="icon">
-              <FaPhoneAlt />
+          <div className="menu_hotline flex items-center space-x-2 pt-5">
+            <div className="icon pb-6">
+              <FiPhone size={35} />
             </div>
             <div className="content">
               <a title="0981218999" href="tel:0981218907">
@@ -194,9 +194,9 @@ const Header = () => {
               </a>
             </div>
           </div>
-          <div className="menu_hotline flex items-center space-x-2">
-            <div className="icon">
-              <SiGooglemaps />
+          <div className="menu_hotline flex items-center space-x-2 pt-5">
+            <div className="icon pb-6">
+              <LuMapPin size={35} />
             </div>
             <div className="content">
               <a title="Hệ thống cửa hàng" href="#">
@@ -205,9 +205,9 @@ const Header = () => {
               </a>
             </div>
           </div>
-          <div className="menu_hotline flex items-center space-x-2">
-            <div className="icon">
-              <BsClipboard2CheckFill />
+          <div className="menu_hotline flex items-center space-x-2 pt-5">
+            <div className="icon pb-6">
+              <BsClipboard2Check size={35} />
             </div>
             <div className="content">
               <a href="#">
@@ -216,9 +216,9 @@ const Header = () => {
               </a>
             </div>
           </div>
-          <div className="menu_hotline flex items-center">
-            <div className="icon">
-              <PiHandbagFill />
+          <div className="menu_hotline flex items-center pt-5">
+            <div className="icon pb-6">
+              <PiHandbag size={35} />
             </div>
             <div className="content">
               <a href="/cart">
@@ -239,15 +239,15 @@ const Header = () => {
               </div>
               <ul className="submenu">
                 <li>
-                  <Link to="#">
+                  <Link to="#" className="flex items-center space-x-2">
                     <IoLogIn />
-                    Đăng nhập
+                    <span className="mt-2">Đăng nhập</span>
                   </Link>
                 </li>
                 <li>
-                  <Link to="">
+                  <Link to="" className="flex items-center space-x-2">
                     <FaUserPlus />
-                    Đăng ký
+                    <span className="mt-2">Đăng ký</span>
                   </Link>
                 </li>
               </ul>

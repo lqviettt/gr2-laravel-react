@@ -1,17 +1,21 @@
 .content {
-    padding: 30px 0;
+    padding-bottom: 20px;
     gap: 30px;
 }
 
 .featured-categories {
     // text-align: center;
-    margin: 20px auto;
+    margin: 0 auto;
     border: 2px solid #dfdada; // Đặt viền nổi bật
     border-radius: 12px; // Bo tròn các góc
     box-shadow: 1px 4px 10px rgba(0, 0, 0, 0.1); // Tạo hiệu ứng bóng mờ
     background-color: #fff; // Màu nền sáng để nổi bật
     max-width: 1600px; // Chiều rộng tối đa
     padding: 30px 20px; // Khoảng cách hai bên
+
+    svg {
+        color: #007bff;
+    }
 
     h2 {
         font-size: 27px;
@@ -47,17 +51,11 @@
                 margin-bottom: 20px;
             }
 
-            p {
-                font-size: 20px;
-                font-weight: 400;
-                color: #333;
-                margin: 5px;
-            }
 
             span {
                 align-items: center;
                 font-size: 27px;
-                font-weight: 400;
+                font-weight: 600;
                 color: #333;
                 margin: 5px;
             }
