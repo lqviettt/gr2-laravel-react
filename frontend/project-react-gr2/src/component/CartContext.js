@@ -66,6 +66,12 @@ export const CartProvider = ({ children }) => {
     );
   };
 
+  const getTotalPrice = () => {
+    return cartItems.reduce((total, item) => {
+      return total + ((item.selectedVariant ? item.selectedVariant.price : item.price) * item.quantity);
+    }, 0);
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -73,6 +79,7 @@ export const CartProvider = ({ children }) => {
         addToCart,
         removeFromCart,
         updateCartItem,
+        getTotalPrice,
       }}
     >
       {children}

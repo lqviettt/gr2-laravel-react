@@ -13,6 +13,9 @@ import Register from "./pages/user/registerPage/index.js";
 import CategoryManageAdd from "./pages/admin/categoryManage/categoryAdd.js";
 import CategoryManageList from "./pages/admin/categoryManage/categoryList.js";
 import Cart from "./pages/user/cartPage/index.js";
+import OrderManageList from "./pages/admin/orderManage/orderList.js";
+import OrderManageAdd from "./pages/admin/orderManage/orderAdd.js";
+import Checkout from "./pages/user/checkoutPage/index.js";
 
 const renderUserRouter = () => {
   const userRouters = [
@@ -62,6 +65,11 @@ const renderUserRouter = () => {
       layout: MasterLayout,
     },
     {
+      path: ROUTERS.USER.CHECKOUT,
+      component: <Checkout />,
+      layout: MasterLayout,
+    },
+    {
       path: ROUTERS.ADMIN.HOME,
       component: <CategoryManageAdd />,
       layout: AdminLayout,
@@ -76,6 +84,16 @@ const renderUserRouter = () => {
       component: <CategoryManageList />,
       layout: AdminLayout,
     },
+    {
+      path: ROUTERS.ADMIN.ORDER_MANAGE_LIST,
+      component: <OrderManageList />,
+      layout: AdminLayout,
+    },
+    {
+      path: ROUTERS.ADMIN.ORDER_MANAGE_ADD,
+      component: <OrderManageAdd />,
+      layout: AdminLayout,
+    }
   ];
 
   return (

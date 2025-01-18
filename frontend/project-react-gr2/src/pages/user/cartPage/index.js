@@ -263,7 +263,7 @@ const Cart = () => {
                                   className="w-full h-full object-contain"
                                 />
                               );
-                            } else if (!item.selectedVariant) {
+                            } else if (!item.selectedVariant && image.id === 1) {
                               return (
                                 <img
                                   key={image.id}
@@ -397,7 +397,7 @@ const Cart = () => {
             </div>
 
             <button
-              onClick={() => alert("Chuyển đến trang thanh toán!")}
+              onClick={() => window.location.href = "/checkout"}
               className="rounded-md mt-6 text-lg tracking-wide px-4 py-4 w-full bg-blue-500 hover:bg-red-900 text-white"
             >
               Thanh toán

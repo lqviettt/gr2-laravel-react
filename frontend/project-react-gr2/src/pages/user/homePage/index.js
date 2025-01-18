@@ -100,7 +100,7 @@ const HomePage = () => {
   );
 
   return (
-    <content className="</div>hd">
+    <content className="">
       <div className="banner">
         <img
           className="w-full h-auto shadow-lg"

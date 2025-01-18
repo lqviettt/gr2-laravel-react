@@ -101,7 +101,7 @@ const ProductList = () => {
   });
 
   return (
-    <div className="content">
+    <div className="content mt-5">
       <div className="featured-categories">
         <h1 className="title-page">
           <span>
