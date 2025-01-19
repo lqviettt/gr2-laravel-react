@@ -14,8 +14,10 @@ use Modules\Order\Http\Controllers\OrderController;
  *
 */
 
-Route::group([
-    'middleware' => 'auth:api'
-], function () {
-    Route::resource('/order', OrderController::class);
-});
+// Route::group([
+//     'middleware' => 'auth:api'
+// ], function () {
+// });
+
+Route::resource('/order', OrderController::class);
+
