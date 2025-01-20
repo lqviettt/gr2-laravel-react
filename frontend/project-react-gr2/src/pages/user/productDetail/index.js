@@ -1,5 +1,5 @@
 import { memo, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "./style.scss";
 import { GiCheckMark } from "react-icons/gi";
 import { IoBookmarksOutline } from "react-icons/io5";
@@ -77,14 +77,22 @@ import ip16prttsm from "../../../assets/images/ip16prttsm.webp";
 import { useCart } from "../../../component/CartContext";
 
 const ProductDetail = () => {
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [productByCategory, setProductByCategory] = useState(null);
+  const [categoryId, setCategoryId] = useState(null);
+  const [selectedProductId, setSelectedProductId] = useState(null);
 
-  const { addToCart } = useCart();
+  const handleClick = (productId) => {
+    setSelectedProductId(productId);
+    navigate(`/product-detail/${productId}`);
+  };
 
   const handleAddToCart = () => {
     const cartItem = {
@@ -233,7 +241,7 @@ const ProductDetail = () => {
         if (result?.data) {
           setProduct(result.data);
           setSelectedVariant(result.data.variants[0]);
-
+          setCategoryId(result.data.category_id);
           const categoryName = result.data.category?.name || "";
           const images = productImages[categoryName] || [];
           if (images.length > 0) {
@@ -252,6 +260,28 @@ const ProductDetail = () => {
       fetchProductDetail();
     }
   }, [id]);
+
+  useEffect(() => {
+    const fetchProductByCategory = async () => {
+      if (!categoryId) return;
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:9000/api/product?category_id=${categoryId}`
+        );
+        const result = await response.json();
+        setProductByCategory(result.data.data);
+        console.log("product", result.data.data);
+        // console.log(result.data.data);
+      } catch (error) {
+        console.error(
+          "Error fetching product by category:",
+          error.response?.data || error.message
+        );
+      }
+    };
+
+    fetchProductByCategory();
+  }, [categoryId]);
 
   if (error) {
     return <div className="error">Đã xảy ra lỗi: {error}</div>;
@@ -295,12 +325,47 @@ const ProductDetail = () => {
                 .000đ
               </span>
             </p>
+
+            {Array.isArray(productByCategory) &&
+            productByCategory.length > 0 ? (
+              <div className="">
+                {productByCategory.map((product) => {
+                  const storage = product.name.split(" ").pop();
+                  const isSelected = product.id === selectedProductId;
+
+                  return (
+                    <button
+                      key={product.id}
+                      onClick={() => handleClick(product.id)}
+                      className={`px-6 mr-4 mt-3 py-2 rounded-md border ${
+                        isSelected ? "border-[#007bff]" : ""
+                      }`}
+                    >
+                      <h3>{storage}</h3>
+                      <p className="price text-m font-semibold text-red-600">
+                        {product.price * 1000
+                          ? (product.price * 1000).toLocaleString("vi-VN")
+                          : "Liên hệ"}
+                        đ
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p>Không có sản phẩm cùng loại.</p>
+            )}
+
             <div className="variants mb-5">
               <p className="variant-label text-xl font-semibold">Màu sắc:</p>
               {product.variants.map((variant) => (
                 <button
                   key={variant.id}
-                  className={selectedVariant?.id === variant.id ? "active" : ""}
+                  className={
+                    selectedVariant?.id === variant.id
+                      ? "active"
+                      : "" + "border"
+                  }
                   onClick={() => {
                     setSelectedVariant(variant);
                     {
@@ -316,6 +381,7 @@ const ProductDetail = () => {
                 </button>
               ))}
             </div>
+
             <div className="text-xl font-semibold">Số lượng:</div>
             <div className="rounded-md border border-[#007bff] flex gap-2 items-center bg-white p-1 w-max">
               <button
