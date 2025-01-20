@@ -3,7 +3,6 @@
 namespace App\Repositories;
 
 use App\Contract\OrderRepositoryInterface;
-use App\Jobs\SendOrderEmailJob;
 use App\Repositories\EloquentRepository;
 use App\Services\OrderService;
 use Illuminate\Database\Eloquent\Model;
@@ -67,7 +66,6 @@ class OrderEloquentRepository extends EloquentRepository implements OrderReposit
         }
 
         $order->load('products', 'product_variants');
-        SendOrderEmailJob::dispatch($order);
 
         return $order;
     }

@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class SendOrderEmailJob implements ShouldQueue
@@ -30,9 +30,13 @@ class SendOrderEmailJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $adminEmail = config('app.admin_email');
-        Mail::to($adminEmail)->send(new OrderSuccessfulMail($this->order));
-
-        Mail::to($this->order->customer_email)->send(new OrderSuccessfulMail($this->order));
+        try {
+            Log::info('Processing order', ['order' => $this->order]);
+            Mail::to($this->order->customer_email)->send(new OrderSuccessfulMail($this->order));
+            Log::info('Email sent successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to process job', ['error' => $e->getMessage(), 'order' => $this->order->toArray()]);
+            throw $e;
+        }
     }
 }

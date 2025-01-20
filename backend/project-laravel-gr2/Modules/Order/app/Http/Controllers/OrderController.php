@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Jobs\SendOrderEmailJob;
 use Illuminate\Support\Facades\DB;
 use Modules\Order\Helpers\FormatData;
 use Modules\Order\Models\Order;
@@ -54,6 +55,10 @@ class OrderController extends Controller
         return DB::transaction(function () use ($request) {
             $order = $this->orderRepository
                 ->createOrder($request->storeOrder(), $request->order_item);
+
+            if ($order->customer_email) {
+                SendOrderEmailJob::dispatch($order);
+            }
 
             return $this->created($order);
         });

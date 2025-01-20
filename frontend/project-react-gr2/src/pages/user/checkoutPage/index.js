@@ -97,7 +97,7 @@ const CheckoutPage = () => {
     setOrder({
       ...order,
       shipping_fee: fee,
-      total_price: getTotalPrice() + fee,
+      total_price: getTotalPrice()*1000 + fee,
     });
     console.log(selectedFee, order.shipping_fee, order.total_price);
     document.getElementById(key).click();
