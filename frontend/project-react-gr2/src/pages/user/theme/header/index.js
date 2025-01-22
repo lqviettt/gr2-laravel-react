@@ -97,23 +97,22 @@ const Header = () => {
       child: [
         {
           name: "Củ sạc iPhone, iPad",
-          child: [
-            { name: "Củ sạc 20W A", path: "/charger-a" },
-            { name: "Củ sạc 20W B", path: "/charger-b" },
-          ],
+          child: [{ name: "Củ sạc 20W iPhone", path: "/product?search=cu" }],
         },
         {
           name: "Cáp sạc iPhone, iPad",
           child: [
-            { name: "Củ sạc 20W A", path: "/charger-a" },
-            { name: "Củ sạc 20W B", path: "/charger-b" },
+            { name: "Cáp Sạc Nhanh C To C 1m ", path: "/product?search=cap" },
+            { name: "Cáp Sạc Nhanh C To L 1m ", path: "/product?search=cap" },
           ],
         },
         {
           name: "Tai nghe iPhone",
           child: [
-            { name: "Củ sạc 20W A", path: "/charger-a" },
-            { name: "Củ sạc 20W B", path: "/charger-b" },
+            {
+              name: "Tai Nghe iPhone Lightning New",
+              path: "/product?search=lightning",
+            },
           ],
         },
       ],
@@ -124,24 +123,15 @@ const Header = () => {
       child: [
         {
           name: "Pin EU",
-          child: [
-            { name: "Củ sạc 20W A", path: "/charger-a" },
-            { name: "Củ sạc 20W B", path: "/charger-b" },
-          ],
+          child: [{ name: "Pin iPhone 12", path: "/product?search=pin" }],
         },
         {
           name: "Pin Pisen",
-          child: [
-            { name: "Củ sạc 20W A", path: "/charger-a" },
-            { name: "Củ sạc 20W B", path: "/charger-b" },
-          ],
+          child: [],
         },
         {
           name: "Màn hình",
-          child: [
-            { name: "Củ sạc 20W A", path: "/charger-a" },
-            { name: "Củ sạc 20W B", path: "/charger-b" },
-          ],
+          child: [],
         },
       ],
     },
@@ -159,7 +149,12 @@ const Header = () => {
     },
   ];
 
-  const isLoggedIn = false; // Thay đổi giá trị này dựa trên trạng thái đăng nhập thực tế
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const handleLogout = () => {
+    localStorage.setItem("isLoggedIn", "false");
+    localStorage.setItem("token", null);
+    window.location.href = "/";
+  };
 
   return (
     <header className="font-[sans-serif] min-h-[65px] tracking-wide relative z-50">
@@ -243,31 +238,40 @@ const Header = () => {
                 {isLoggedIn ? (
                   <>
                     <li>
-                      <Link to="#" className="flex items-center space-x-2">
+                      <a
+                        href="my-account"
+                        className="flex items-center space-x-2"
+                      >
                         <FaRegUserCircle size={25} className="text-black" />
-                        <span className="mt-2">Tài khoản của tôi</span>
-                      </Link>
+                        <span className="mt-2">Tài khoản</span>
+                      </a>
                     </li>
                     <li>
-                      <Link to="#" className="flex items-center space-x-2">
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center space-x-2"
+                      >
                         <IoLogIn size={25} className="text-black" />
                         <span className="mt-2">Đăng xuất</span>
-                      </Link>
+                      </button>
                     </li>
                   </>
                 ) : (
                   <>
                     <li>
-                      <Link to="#" className="flex items-center space-x-2">
+                      <a href="/login" className="flex items-center space-x-2">
                         <IoLogIn size={25} className="text-black" />
                         <span className="mt-2">Đăng nhập</span>
-                      </Link>
+                      </a>
                     </li>
                     <li>
-                      <Link to="" className="flex items-center space-x-2">
+                      <a
+                        href="/register"
+                        className="flex items-center space-x-2"
+                      >
                         <FaUserPlus size={25} className="text-black" />
                         <span className="mt-2">Đăng ký</span>
-                      </Link>
+                      </a>
                     </li>
                   </>
                 )}

@@ -6,7 +6,7 @@ const Slidebar = () => {
       <ul>
         <li>
           <a
-            href="javascript:void(0)"
+            href="/admin"
             className="text-black hover:text-blue-600 text-[20px] block hover:bg-blue-50 rounded px-4 py-2.5 transition-all"
           >
             Dashboard
@@ -45,7 +45,7 @@ const Slidebar = () => {
         <ul className="mt-2">
           <li>
             <a
-              href="javascript:void(0)"
+              href="/admin/product-list"
               className="text-black hover:text-blue-600 text-[15px] block hover:bg-blue-50 rounded px-4 py-2.5 transition-all"
             >
               Danh sách sản phẩm
@@ -53,7 +53,7 @@ const Slidebar = () => {
           </li>
           <li>
             <a
-              href="javascript:void(0)"
+              href="/admin/product-add"
               className="text-black hover:text-blue-600 text-[15px] block hover:bg-blue-50 rounded px-4 py-2.5 transition-all"
             >
               Thêm sản phẩm mới
@@ -69,7 +69,7 @@ const Slidebar = () => {
         <ul className="mt-2">
           <li>
             <a
-              href="javascript:void(0)"
+              href="/admin/category-list"
               className="text-black hover:text-blue-600 text-[15px] block hover:bg-blue-50 rounded px-4 py-2.5 transition-all"
             >
               Danh sách danh mục

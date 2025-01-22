@@ -11,6 +11,9 @@ export const ROUTERS = {
     CHECKOUT: "checkout",
     ORDER: "order",
     RESETPASSWORD: "reset-password",
+    MY_ACCOUNT: "my-account",
+    PAYMENT_INFO: "payment-info",
+    VERIFY_ACCOUNT: "verify-account",
   },
   ADMIN: {
     HOME: "admin",

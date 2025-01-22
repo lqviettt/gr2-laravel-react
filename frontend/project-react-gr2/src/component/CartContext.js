@@ -48,6 +48,10 @@ export const CartProvider = ({ children }) => {
     );
   };
 
+  const removeAllFromCart = () => {
+    setCartItems([]);
+  };
+
   // Cập nhật số lượng sản phẩm trong giỏ hàng
   const updateCartItem = (productId, variantId, newQuantity) => {
     setCartItems((prevItems) =>
@@ -68,7 +72,11 @@ export const CartProvider = ({ children }) => {
 
   const getTotalPrice = () => {
     return cartItems.reduce((total, item) => {
-      return total + ((item.selectedVariant ? item.selectedVariant.price : item.price) * item.quantity);
+      return (
+        total +
+        (item.selectedVariant ? item.selectedVariant.price : item.price) *
+          item.quantity
+      );
     }, 0);
   };
 
@@ -80,6 +88,7 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         updateCartItem,
         getTotalPrice,
+        removeAllFromCart,
       }}
     >
       {children}

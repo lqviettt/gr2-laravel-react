@@ -1,59 +1,55 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { React, useState } from "react";
 
 const Login = () => {
   const navigate = useNavigate();
-
-  const handleLogin = () => {
-    navigate("/home");
-  };
 
   const handleRegister = () => {
     navigate("/register");
   };
 
-  //Chuyển hướng đến trang forgotpassword khi ấn forgot password
   const handleForgotPassword = () => {
     navigate("/forgotpassword");
   };
 
-  //Xử lý login gọi API ở đây
-  const [username, setUsername] = useState("");
+  const [user_name, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleLoginn = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
+      const response = await fetch("http://localhost:9000/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ user_name, password }),
       });
-  
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "ログインに失敗しました");
+        throw new Error("Sai tên tài khoản hoặc mật khẩu. Vui lòng thử lại!");
       }
-  
+
       const data = await response.json();
-      localStorage.setItem("token", data.token); // Lưu token vào localStorage
-      localStorage.setItem("isLoggedIn", "true"); // Lưu trạng thái đăng nhập
-      navigate("/home"); // Chuyển hướng đến trang home
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("isLoggedIn", "true");
+      if (user_name === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
-      setError(err.message); // Hiển thị thông báo lỗi
+      setError(err.message);
     }
   };
 
   return (
     <div className="bg-gray-50 font-[sans-serif]">
-      <div className="min-h-screen flex flex-col items-center justify-center py-6 px-4">
+      <div className="flex flex-col items-center my-10 py-6 px-4">
         <div className="max-w-md w-full">
           <div className="p-8 rounded-2xl bg-white shadow">
             <div className="text-gray-800 text-2xl font-bold flex items-center">
-            サインイン
+              Đăng nhập
               <button type="button" className="border-none outline-none pl-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -113,18 +109,18 @@ const Login = () => {
               </button>
             </div>
             <div className="my-4 flex items-center before:mt-0.5 before:flex-1 before:border-t before:border-neutral-300 after:mt-0.5 after:flex-1 after:border-t after:border-neutral-300 dark:before:border-neutral-500 dark:after:border-neutral-500">
-              <p className="mx-4 mb-0 text-center font-semibold">または</p>
+              <p className="mx-4 mb-0 text-center font-semibold">Hoặc</p>
             </div>
             <form
               className="mt-8 space-y-4"
               onSubmit={(e) => {
                 e.preventDefault();
-                handleLoginn(); 
+                handleLoginn();
               }}
             >
               <div>
                 <label className="text-gray-800 text-sm mb-2 block">
-                ユーザー名
+                  Tên tài khoản
                 </label>
                 <div className="relative flex items-center">
                   <input
@@ -133,7 +129,7 @@ const Login = () => {
                     required
                     className="w-full text-gray-800 text-sm border border-gray-300 px-4 py-3 rounded-md outline-blue-600"
                     placeholder="Enter user name"
-                    value={username}
+                    value={user_name}
                     onChange={(e) => setUsername(e.target.value)}
                   />
                   <svg
@@ -159,7 +155,7 @@ const Login = () => {
 
               <div>
                 <label className="text-gray-800 text-sm mb-2 block">
-                パスワード
+                  Mật khẩu
                 </label>
                 <div className="relative flex items-center">
                   <input
@@ -200,7 +196,7 @@ const Login = () => {
                     htmlFor="remember-me"
                     className="ml-3 block text-sm text-gray-800"
                   >
-                    私を覚えてますか
+                    Ghi nhớ đăng nhập
                   </label>
                 </div>
                 <div className="text-sm">
@@ -209,27 +205,27 @@ const Login = () => {
                     href="javascript:void(0);"
                     className="text-blue-600 hover:underline font-semibold"
                   >
-                    パスワードをお忘れですか？
+                    Quên mật khẩu
                   </a>
                 </div>
               </div>
 
               <div className="!mt-8">
-              <button
+                <button
                   type="submit" // Đổi thành type="submit" để gọi handleLoginn
                   className="w-full py-3 px-4 text-sm tracking-wide rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
                 >
-                  サインイン
+                  Đăng nhập
                 </button>
               </div>
               <p className="text-gray-800 text-sm !mt-8 text-center">
-              アカウントをお持ちでない?{" "}
+                Quên mật khẩu?{" "}
                 <a
                   onClick={handleRegister}
                   href="javascript:void(0);"
                   className="text-blue-600 hover:underline ml-1 whitespace-nowrap font-semibold"
                 >
-                  こちらから登録
+                  Đăng ký ngay
                 </a>
               </p>
             </form>

@@ -12,6 +12,7 @@ import ip15 from "../../../assets/images/ip15.webp";
 import ip15Pro from "../../../assets/images/ip15-pro.webp";
 import ip16 from "../../../assets/images/ip16.webp";
 import ip16Pro from "../../../assets/images/ip16-pro.webp";
+import capctol from "../../../assets/images/capctol.webp";
 
 const productImages = {
   1: [{ id: 1, src: ip12, alt: "iPhone 12" }],
@@ -29,6 +30,7 @@ const productImages = {
   5: [{ id: 1, src: ip16, alt: "iPhone 16" }],
   10: [{ id: 1, src: ip16Pro, alt: "iPhone 16 Pro" }],
   15: [{ id: 1, src: ip16Pro, alt: "iPhone 16 Pro Max" }],
+  16: [{ id: 1, src: capctol, alt: "Cáp sạc" }],
 };
 
 const ProductsPage = () => {

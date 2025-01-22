@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../../../component/CartContext";
 import { BsMinecartLoaded } from "react-icons/bs";
 import { GiCheckMark } from "react-icons/gi";
 import axios from "axios";
 import ghn from "../../../assets/images/ghn.png";
 import ghtk from "../../../assets/images/ghtk.png";
+import ordersuccess from "../../../assets/images/ordersuccess.png";
 import ip12 from "../../../assets/images/ip12.webp";
 import ip12Black from "../../../assets/images/ip12-black.webp";
 import ip12White from "../../../assets/images/ip12-white.webp";
@@ -75,7 +77,8 @@ import ip16prtttn from "../../../assets/images/ip16prtttn.webp";
 import ip16prttsm from "../../../assets/images/ip16prttsm.webp";
 
 const CheckoutPage = () => {
-  const { cartItems, getTotalPrice } = useCart();
+  const navigate = useNavigate();
+  const { cartItems, getTotalPrice, removeAllFromCart } = useCart();
   const [selectedFee, setSelectedFee] = useState(0);
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -97,9 +100,8 @@ const CheckoutPage = () => {
     setOrder({
       ...order,
       shipping_fee: fee,
-      total_price: getTotalPrice()*1000 + fee,
+      total_price: getTotalPrice() * 1000 + fee,
     });
-    console.log(selectedFee, order.shipping_fee, order.total_price);
     document.getElementById(key).click();
   };
 
@@ -109,7 +111,6 @@ const CheckoutPage = () => {
       ...order,
       payment_method: method,
     });
-    console.log(selectedMethod, order.payment_method);
   };
 
   const handleChange = (e) => {
@@ -118,6 +119,12 @@ const CheckoutPage = () => {
       ...order,
       [name]: value,
     });
+  };
+
+  const handleConfirm = () => {
+    setOrderSuccess(false);
+    removeAllFromCart();
+    navigate("/");
   };
 
   const formatCurrency = (amount) => {
@@ -337,7 +344,7 @@ const CheckoutPage = () => {
           district: order.shipping_district,
           ward: order.shipping_ward,
           address: order.shipping_address_detail,
-          weight: 3000,
+          weight: 300,
           value: getTotalPrice(),
         }
       );
@@ -367,14 +374,26 @@ const CheckoutPage = () => {
     e.preventDefault();
     try {
       console.log("Thông tin đơn hàng gửi đi", order);
+
       const response = await axios.post(
         "http://127.0.0.1:9000/api/order",
         order
       );
       setOrder({ ...order, ...response.data.data });
       setOrderCode(response.data.data.code);
-      setOrderSuccess(true);
-      console.log("Order created:", response.data.data);
+
+      console.log("Đơn hàng đã được tạo:", response.data.data);
+
+      if (
+        response.data.data.payment &&
+        response.data.data.payment.payment_url
+      ) {
+        console.log("Chuyển hướng đến payment URL");
+        window.location.href = response.data.data.payment.payment_url;
+      } else {
+        console.log("Không có payment_url, đơn hàng thành công");
+        setOrderSuccess(true);
+      }
     } catch (error) {
       console.error(
         "Error create order:",
@@ -387,7 +406,7 @@ const CheckoutPage = () => {
     <div>
       <form className="" onSubmit={handleSubmit}>
         <div className="flex flex-col items-center justify-center bg-gray-100 max-h-[1500px]">
-          <div className="font-[sans-serif] bg-white my-4 w-4/6 h-full p-5 rounded-xl">
+          <div className="font-[sans-serif] bg-white my-6 mb-12 w-4/6 h-full p-5 rounded-xl">
             <div className="flex flex-row gap-4">
               <div className="flex-1 h-max rounded-md px-4 py-2">
                 <h2 className="border-l-[5px] pl-1 border-[#00adf0] text-2xl font-bold text-gray-800 mb-7">
@@ -732,9 +751,24 @@ const CheckoutPage = () => {
       </form>
       <div>
         {orderSuccess && (
-          <div className="popup">
-            <p>Đặt hàng thành công! Mã đơn hàng: {orderCode}</p>
-            <button onClick={() => setOrderSuccess(false)}>Đóng</button>
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white p-10 rounded-lg shadow-lg text-center">
+              <img
+                src={ordersuccess}
+                alt="iPhone 12"
+                className="w-20 h-20 mx-auto"
+              />
+              <h2 className="text-2xl font-bold mb-4">
+                Đặt hàng thành công! Mã đơn hàng: {order.code}
+              </h2>
+
+              <button
+                className="bg-green-500 text-white px-6 py-2 rounded-md"
+                onClick={() => handleConfirm()}
+              >
+                Xác nhận
+              </button>
+            </div>
           </div>
         )}
       </div>

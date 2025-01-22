@@ -124,7 +124,7 @@ const HomePage = () => {
           <div className="categories-list">
             <div>
               <a
-                href={`/product?search=iphone&perPage=16`}
+                href={`/product?search=GB&perPage=16`}
                 className="category-item"
               >
                 <img src={product14} alt="iPhone" className="mx-auto" />
