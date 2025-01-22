@@ -30,16 +30,14 @@ const ProfilePage = () => {
   }, []);
 
   return (
-    <div className="my-account-page">
+    <div className="my-account-page p-4">
       {user ? (
-        <div>
-          <h1>Welcome, {user.name}</h1>
-          <p>Email: {user.email}</p>
-          <p>Username: {user.user_name}</p>
-          {/* Thêm các thông tin khác nếu cần */}
+        <div className="bg-white shadow-md rounded-lg p-6">
+          <h1 className="text-2xl font-bold mb-4">Welcome, {user.name}</h1>
+          <p className="text-lg">Email: {user.email}</p>
         </div>
       ) : (
-        <p>Loading user information...</p>
+        <p className="text-center text-gray-500">Loading user information...</p>
       )}
     </div>
   );

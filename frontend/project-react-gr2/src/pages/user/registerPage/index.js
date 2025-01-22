@@ -162,7 +162,7 @@ const Register = () => {
                     type="password"
                     required
                     className="bg-white border border-gray-300 w-full text-sm text-gray-800 pl-4 pr-10 py-2.5 rounded-md outline-blue-500"
-                    placeholder="Nhập mật khẩu"
+                    placeholder="Nhập mật khẩu - ít nhất 6 ký tự"
                     value={formData.password}
                     onChange={handleChange}
                   />
