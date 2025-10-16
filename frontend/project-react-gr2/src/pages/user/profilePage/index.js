@@ -10,7 +10,7 @@ const ProfilePage = () => {
       try {
         const response = await fetch("http://127.0.0.1:9000/api/profile", {
           headers: {
-            Authorization: `Bearer ${token}`, // Sử dụng Bearer Token
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
