@@ -15,6 +15,7 @@ php artisan queue:work --timeout=60 &
 php artisan optimize:clear
 php artisan view:clear
 php artisan route:clear
+php artisan jwt:secret --force
 
 php-fpm -D
 nginx -g "daemon off;"
