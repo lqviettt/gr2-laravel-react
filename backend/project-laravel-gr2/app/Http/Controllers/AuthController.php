@@ -75,8 +75,8 @@ class AuthController extends Controller
             'verification_code' => Str::random(6),
         ]));
 
-        SendVerificationEmail::dispatch($user);
-        return response()->json($user);
+        // SendVerificationEmail::dispatch($user);
+        return $this->created($user);
     }
 
     /**

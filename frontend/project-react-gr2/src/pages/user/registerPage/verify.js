@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axiosClient from "../../../utils/axiosClient";
+import { toast } from "react-toastify";
 
 const VerifyPage = () => {
   const [verificationCode, setVerificationCode] = useState("");
@@ -14,21 +16,17 @@ const VerifyPage = () => {
 
   const verifyCode = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:9000/api/auth/verify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, code: verificationCode }),
-      });
-
-      const data = await response.json();
+        const response = await axiosClient.post("/auth/verify", 
+          {email, code: verificationCode }
+        );
 
       if (response.ok) {
-        alert("Verification successful!");
-        navigate("/login");
+        toast.success("Xác minh thành công! Chuyển hướng đến trang đăng nhập...");
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);        
       } else {
-        setMessage(data.message || "Invalid verification code.");
+        toast.error("Mã xác minh không hợp lệ. Vui lòng thử lại.");
       }
     } catch (error) {
       setMessage("An error occurred. Please try again.");

@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { React, useState } from "react";
+import axiosClient from "../../../utils/axiosClient";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,28 +20,25 @@ const Login = () => {
 
   const handleLoginn = async () => {
     try {
-      const response = await fetch("http://localhost:9000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ user_name, password }),
-      });
+        const response = await axiosClient.post("/auth/login", 
+          {user_name, password }
+        );
 
-      if (!response.ok) {
-        throw new Error("Sai tên tài khoản hoặc mật khẩu. Vui lòng thử lại!");
-      }
-
-      const data = await response.json();
-      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("token", response.data.access_token);
       localStorage.setItem("isLoggedIn", "true");
-      if (user_name === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/");
-      }
+
+      toast.success("Đăng nhập thành công!");
+
+      setTimeout(() => {
+        if (user_name === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
+      }, 2000);
+
     } catch (err) {
-      setError(err.message);
+      toast.error("Thông tin đăng nhập không hợp lệ.");
     }
   };
 
