@@ -69,6 +69,7 @@ import ip16prttd from "../../../assets/images/ip16prttd.webp";
 import ip16prttt from "../../../assets/images/ip16prttt.webp";
 import ip16prtttn from "../../../assets/images/ip16prtttn.webp";
 import ip16prttsm from "../../../assets/images/ip16prttsm.webp";
+import { toast } from "react-toastify";
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateCartItem } = useCart();
@@ -85,7 +86,7 @@ const Cart = () => {
       (total, item) =>
         total +
         (item.selectedVariant ? item.selectedVariant.price : item.price) *
-          item.quantity,
+        item.quantity,
       0
     );
   };
@@ -93,6 +94,18 @@ const Cart = () => {
   const handleQuantityChange = (itemId, variantId, newQuantity) => {
     if (newQuantity < 1) return;
     updateCartItem(itemId, variantId, newQuantity);
+  };
+
+  const handleRemoveFromCart = (item) => {
+    return () => {
+      removeFromCart(
+        item.id,
+        item.selectedVariant
+          ? item.selectedVariant.id
+          : null
+      );
+      toast.success("Cập nhật giỏ hàng thành công!");
+    };
   };
 
   const productImages = {
@@ -214,9 +227,9 @@ const Cart = () => {
   };
 
   return (
-    <div className="pt-6 pb-10 bg-gray-100">
-      <div className="font-sans bg-white max-w-6xl mx-auto p-4 rounded-md">
-        <div className="overflow-x-auto">
+    <div className="pt-10 pb-10 bg-gray-100">
+      <div className="font-sans bg-white max-w-6xl mx-auto p-8 rounded-md">
+        <div className="mx-auto opacity-70">
           {cartItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center mt-6">
               <BsMinecartLoaded size={100} />
@@ -346,22 +359,15 @@ const Cart = () => {
                           (item.selectedVariant
                             ? item.selectedVariant.price
                             : item.price) *
-                            item.quantity *
-                            1000
+                          item.quantity *
+                          1000
                         )}
                       </span>
                     </td>
 
                     <td className="px-2 py-4">
                       <button
-                        onClick={() =>
-                          removeFromCart(
-                            item.id,
-                            item.selectedVariant
-                              ? item.selectedVariant.id
-                              : null
-                          )
-                        }
+                        onClick={handleRemoveFromCart(item)}
                         className="bg-transparent flex items-center justify-center w-16 h-10"
                       >
                         <svg

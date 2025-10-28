@@ -75,6 +75,7 @@ import ip16prttd from "../../../assets/images/ip16prttd.webp";
 import ip16prttt from "../../../assets/images/ip16prttt.webp";
 import ip16prtttn from "../../../assets/images/ip16prtttn.webp";
 import ip16prttsm from "../../../assets/images/ip16prttsm.webp";
+import { toast } from "react-toastify";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -393,12 +394,14 @@ const CheckoutPage = () => {
       } else {
         console.log("Không có payment_url, đơn hàng thành công");
         setOrderSuccess(true);
+        toast.success("Đơn hàng đã được tạo thành công!");
       }
     } catch (error) {
       console.error(
         "Error create order:",
         error.response?.data || error.message
       );
+      toast.error("Đã xảy ra lỗi khi tạo đơn hàng. Vui lòng thử lại sau.");
     }
   };
 

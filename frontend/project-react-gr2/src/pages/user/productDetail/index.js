@@ -4,6 +4,7 @@ import "./style.scss";
 import { GiCheckMark } from "react-icons/gi";
 import { IoBookmarksOutline } from "react-icons/io5";
 import { TiFlashOutline } from "react-icons/ti";
+import { toast } from "react-toastify";
 
 import ip12 from "../../../assets/images/ip12.webp";
 import ip12Black from "../../../assets/images/ip12-black.webp";
@@ -101,7 +102,7 @@ const ProductDetail = () => {
       quantity,
     };
     addToCart(cartItem);
-    alert("Cập nhật giỏ hàng thành công!");
+    toast.success("Cập nhật giỏ hàng thành công!");
   };
 
   const productImages = {
@@ -327,7 +328,7 @@ const ProductDetail = () => {
             </p>
 
             {Array.isArray(productByCategory) &&
-            productByCategory.length > 0 ? (
+              productByCategory.length > 0 ? (
               <div className="">
                 {productByCategory.map((product) => {
                   const storage = product.name.split(" ").pop();
@@ -337,9 +338,8 @@ const ProductDetail = () => {
                     <button
                       key={product.id}
                       onClick={() => handleClick(product.id)}
-                      className={`px-6 mr-4 mt-3 py-2 rounded-md border ${
-                        isSelected ? "border-[#007bff]" : ""
-                      }`}
+                      className={`px-6 mr-4 mt-3 py-2 rounded-md border ${isSelected ? "border-[#007bff]" : ""
+                        }`}
                     >
                       <h3>{storage}</h3>
                       <p className="price text-m font-semibold text-red-600">

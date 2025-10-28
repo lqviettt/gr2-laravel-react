@@ -47,7 +47,9 @@ const OrderAdd = () => {
             order
           );
           setOrder([...order, response.data.data]);
+          toast.success("Order added successfully!");
         } catch (error) {
+          toast.error("Failed to add order. Please try again.");
           console.error("Error adding order:", error);
         }
     toast.success("Order submitted successfully!");
