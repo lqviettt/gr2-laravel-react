@@ -17,6 +17,7 @@ export const ROUTERS = {
   },
   ADMIN: {
     HOME: "admin",
+    DASHBOARD: "/admin/dashboard",
     CATEGORY_MANAGE_ADD: "/admin/category-add",
     CATEGORY_MANAGE_LIST: "/admin/category-list",
     PRODUCT_MANAGE_ADD: "/admin/product-add",

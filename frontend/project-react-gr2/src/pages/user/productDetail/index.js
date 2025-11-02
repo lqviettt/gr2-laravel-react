@@ -233,7 +233,7 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProductDetail = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:9000/api/product/${id}`);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/product/${id}`);
         if (!response.ok) {
           throw new Error("Không thể tải dữ liệu từ API");
         }
@@ -266,7 +266,7 @@ const ProductDetail = () => {
       if (!categoryId) return;
       try {
         const response = await fetch(
-          `http://127.0.0.1:9000/api/product?category_id=${categoryId}`
+          `${process.env.REACT_APP_API_URL}/product?category_id=${categoryId}`
         );
         const result = await response.json();
         setProductByCategory(result.data.data);

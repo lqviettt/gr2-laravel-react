@@ -71,7 +71,7 @@ const HomePage = () => {
       setLoading(true);
       try {
         const response = await fetch(
-          `http://127.0.0.1:9000/api/product?page=1&perPage=48`
+          `${process.env.REACT_APP_API_URL}/product?page=1&perPage=48`
         );
         const result = await response.json();
         if (result?.data?.data) {

@@ -8,7 +8,7 @@ const ProfilePage = () => {
 
     const userData = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:9000/api/profile", {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

@@ -52,7 +52,7 @@ const ProductsPage = () => {
       if (search) {
         try {
           const response = await fetch(
-            `http://127.0.0.1:9000/api/product?search=${search}&perPage=16&page=${page}`
+            `${process.env.REACT_APP_API_URL}/product?search=${search}&perPage=16&page=${page}`
           );
           const result = await response.json();
           if (result && Array.isArray(result.data.data)) {

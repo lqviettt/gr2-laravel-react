@@ -50,7 +50,7 @@ const ProductList = () => {
     const fetchProductsByCategory = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:9000/api/product?category_id=${categoryId}`
+          `${process.env.REACT_APP_API_URL}/product?category_id=${categoryId}`
         );
         if (!response.ok) {
           throw new Error("Không thể tải dữ liệu từ API");

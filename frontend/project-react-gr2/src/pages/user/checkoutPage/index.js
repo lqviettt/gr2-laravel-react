@@ -337,7 +337,7 @@ const CheckoutPage = () => {
   const calculateShippingFee = async () => {
     try {
       const response = await axios.post(
-        "http://127.0.0.1:9000/api/shipping-fee",
+        `${process.env.REACT_APP_API_URL}/shipping-fee`,
         {
           service_type_id: 2,
           province: order.shipping_province,
@@ -376,7 +376,7 @@ const CheckoutPage = () => {
       console.log("Thông tin đơn hàng gửi đi", order);
 
       const response = await axios.post(
-        "http://127.0.0.1:9000/api/order",
+        `${process.env.REACT_APP_API_URL}/order`,
         order
       );
       setOrder({ ...order, ...response.data.data });

@@ -21,6 +21,7 @@ import PaymentInfo from "./pages/user/paymentInfo/index.js";
 import ProductManageAdd from "./pages/admin/productManage/productAdd.js";
 import ProductManageList from "./pages/admin/productManage/productList.js";
 import VerifyAccount from "./pages/user/registerPage/verify.js";
+import AdminDashboard from "./pages/admin/dashboard/index.js";
 
 const renderUserRouter = () => {
   const userRouters = [
@@ -92,9 +93,15 @@ const renderUserRouter = () => {
     },
     {
       path: ROUTERS.ADMIN.HOME,
-      component: <CategoryManageList />,
+      component: <AdminDashboard />,
       layout: AdminLayout,
-      protected: false,
+      protected: true,
+    },
+    {
+      path: ROUTERS.ADMIN.DASHBOARD,
+      component: <AdminDashboard />,
+      layout: AdminLayout,
+      protected: true,
     },
     {
       path: ROUTERS.ADMIN.CATEGORY_MANAGE_ADD,

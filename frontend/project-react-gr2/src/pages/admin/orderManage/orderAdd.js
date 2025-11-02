@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const OrderAdd = () => {
   const [order, setOrder] = useState({
@@ -42,14 +43,14 @@ const OrderAdd = () => {
     e.preventDefault();
         try {
           const response = await axios.post(
-            "http://127.0.0.1:9000/api/order",
+            `${process.env.REACT_APP_API_URL}/order`,
             order
           );
           setOrder([...order, response.data.data]);
         } catch (error) {
           console.error("Error adding order:", error);
         }
-    alert("Submitted");
+    toast.success("Order submitted successfully!");
     console.log(order);
   };
 
