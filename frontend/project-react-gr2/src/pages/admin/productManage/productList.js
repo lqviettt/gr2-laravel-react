@@ -2,53 +2,139 @@ import React, { useEffect, useState, memo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import CommonTable from "../../../components/CommonTable";
-import { FaPlus, FaEdit, FaTrash, FaBox, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import ConfirmDialog from "../../../components/ConfirmDialog";
+import SearchInput from "../../../components/SearchInput";
+import { FaPlus, FaBox, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 const ProductList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [products, setProducts] = useState([]);
+  const [variants, setVariants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [searchFilters, setSearchFilters] = useState({});
   const [newProduct, setNewProduct] = useState({
     code: "",
     name: "",
+    color: "",
     price: "",
     quantity: "",
     status: "1",
     weight: "",
     category_id: "",
     description: "",
+    image: null,
   });
 
   const [editingProductId, setEditingProductId] = useState(null);
+  const [editingVariant, setEditingVariant] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [loadingEdit, setLoadingEdit] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    productId: null,
+    title: '',
+    message: ''
+  });
 
   const fields = {
     code: 'code',
     name: 'name',
+    color: 'color',
     price: 'price',
     status: 'status',
     quantity: 'quantity',
     weight: 'weight',
+    image: 'pattern.image',
     actions: 'pattern.modified',
   };
 
   const listTitle = {
     code: 'Mã sản phẩm',
     name: 'Tên sản phẩm',
+    color: 'Màu sắc',
     price: 'Giá bán',
     status: 'Trạng thái',
     quantity: 'Số lượng',
     weight: 'Trọng lượng',
+    image: 'Hình ảnh',
     actions: 'Tùy biến',
   };
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (filters = {}) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/product`);
-      setProducts(response.data.data.data || []);
+      
+      // Build query parameters from filters
+      const queryParams = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          queryParams.append(key, value);
+        }
+      });
+      
+      const url = `${process.env.REACT_APP_API_URL}/product${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      
+      // Log API call
+      console.log('🔍 [SEARCH API CALL]');
+      console.log('Filters:', filters);
+      console.log('Query params:', queryParams.toString() || '(none)');
+      console.log('Full URL:', url);
+      console.log('---');
+      
+      const response = await axios.get(url);
+      const products = response.data.data.data || [];
+      
+      console.log('📦 [SEARCH API RESPONSE]');
+      console.log('Products found:', products.length);
+      console.log('---');
+      
+      console.log('📦 [SEARCH API RESPONSE]');
+      console.log('Products found:', products.length);
+      console.log('---');
+      
+      const transformedVariants = [];
+      products.forEach(product => {
+        if (product.variants && product.variants.length > 0) {
+          product.variants.forEach(variant => {
+            transformedVariants.push({
+              id: `variant_${variant.id}`,
+              code: product.code,
+              name: product.name,
+              color: variant.value || 'N/A',
+              price: variant.price || product.price,
+              quantity: variant.quantity || product.quantity,
+              image: variant.image ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${variant.image}` : 
+                     product.image ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}` : null,
+              status: product.status,
+              weight: product.weight,
+              category_id: product.category_id,
+              product_id: product.id,
+              variant_id: variant.id,
+              is_variant: true
+            });
+          });
+        } else {
+          transformedVariants.push({
+            id: `product_${product.id}`,
+            code: product.code,
+            name: product.name,
+            color: '',
+            price: product.price,
+            quantity: product.quantity,
+            image: product.image ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}` : null,
+            status: product.status,
+            weight: product.weight,
+            category_id: product.category_id,
+            product_id: product.id,
+            variant_id: null,
+            is_variant: false
+          });
+        }
+      });
+      
+      setVariants(transformedVariants);
     } catch (error) {
       console.error("Error fetching products:", error);
       setError("Không thể tải danh sách sản phẩm");
@@ -72,57 +158,323 @@ const ProductList = () => {
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(searchFilters);
+  }, [searchFilters]);
+
+  useEffect(() => {
     fetchCategories();
   }, []);
 
-  const handleEditProduct = (productId) => {
-    const productToEdit = products.find((product) => product.id === productId);
-    setNewProduct(productToEdit);
-    setEditingProductId(productId);
-    setIsModalOpen(true);
+  const handleSearch = (filters) => {
+    console.log('🔍 [SEARCH TRIGGERED]');
+    console.log('Search filters received:', filters);
+    console.log('---');
+    setSearchFilters(filters);
+  };
+
+  const handleEditProduct = (variantId) => {
+    if (loadingEdit) return;
+    
+    console.log('Editing variantId:', variantId);
+    const variantToEdit = variants.find((variant) => variant.id === variantId);
+    console.log('variantToEdit:', variantToEdit);
+    
+    if (variantToEdit && variantToEdit.is_variant) {
+      console.log('Editing variant:', variantToEdit.variant_id);
+      setNewProduct({
+        code: variantToEdit.code || "",
+        name: variantToEdit.name || "",
+        color: variantToEdit.color || "",
+        price: variantToEdit.price || "",
+        quantity: variantToEdit.quantity || "",
+        status: variantToEdit.status?.toString() || "1",
+        weight: variantToEdit.weight || "",
+        category_id: variantToEdit.category_id || "",
+        description: "",
+        image: variantToEdit.image || null,
+      });
+      setEditingProductId(variantToEdit.variant_id);
+      setEditingVariant(true);
+      setIsModalOpen(true);
+      setImagePreview(null);
+    } else if (variantToEdit && !variantToEdit.is_variant) {
+      console.log('Editing product without variants:', variantToEdit.product_id);
+      setLoadingEdit(true);
+      fetchProductDetails(variantToEdit.product_id);
+    } else {
+      console.log('variantId not found in variants, assuming product ID:', variantId);
+      setLoadingEdit(true);
+      fetchProductDetails(variantId);
+    }
+  };
+
+  const fetchProductDetails = async (productId) => {
+    try {
+      console.log('Fetching product details for ID:', productId);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/product/${productId}`);
+      const product = response.data.data;
+      console.log('Fetched product:', product);
+      
+      setNewProduct({
+        code: product.code || "",
+        name: product.name || "",
+        color: "",
+        price: product.price || "",
+        quantity: product.quantity || "",
+        status: product.status?.toString() || "1",
+        weight: product.weight || "",
+        category_id: product.category_id || "",
+        description: product.description || "",
+        image: product.image ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}` : null,
+      });
+      setEditingProductId(productId);
+      setEditingVariant(false);
+      console.log('Set editing product ID to:', productId);
+      setIsModalOpen(true);
+      setImagePreview(null);
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      toast.error("Không thể tải thông tin sản phẩm");
+    } finally {
+      setLoadingEdit(false);
+    }
   };
 
   const handleSaveProduct = async (e) => {
     e.preventDefault();
     try {
+      const formData = new FormData();
+
+      Object.keys(newProduct).forEach(key => {
+        if (key === 'image' && newProduct[key]) {
+          formData.append('image', newProduct[key]);
+        } else if (key !== 'image' && key !== 'color') {
+          let value = newProduct[key];
+
+          if (key === 'category_id' && value !== '') {
+            value = parseInt(value, 10);
+          } else if (key === 'price' && value !== '') {
+            value = parseFloat(value);
+          } else if (key === 'quantity' && value !== '') {
+            value = parseInt(value, 10);
+          } else if (key === 'weight' && value !== '') {
+            value = parseFloat(value);
+          } else if (key === 'status') {
+            value = parseInt(value, 10);
+          }
+
+          if (value !== undefined) {
+            formData.append(key, value);
+          }
+        }
+      });
+
       if (editingProductId) {
-        // Update existing product
-        const productData = {
-          ...newProduct,
-          category_id: parseInt(newProduct.category_id, 10),
-          price: parseFloat(newProduct.price),
-          quantity: parseInt(newProduct.quantity, 10),
-          weight: parseFloat(newProduct.weight),
-          status: parseInt(newProduct.status, 10),
-        };
-        const response = await axios.put(
-          `${process.env.REACT_APP_API_URL}/product/${editingProductId}`,
-          productData
-        );
-        setProducts(
-          products.map((product) =>
-            product.id === editingProductId ? response.data.data : product
-          )
-        );
-        toast.success("Cập nhật sản phẩm thành công!");
+        if (editingVariant) {
+          if (newProduct.image && newProduct.image instanceof File) {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              const base64Image = e.target.result;
+
+              const variantData = {
+                value: newProduct.color,
+                quantity: parseInt(newProduct.quantity, 10),
+                price: parseFloat(newProduct.price),
+                image: base64Image,
+              };
+
+              console.log('Updating variant with image:', variantData);
+
+              try {
+                const response = await axios.put(
+                  `${process.env.REACT_APP_API_URL}/product-variant/${editingProductId}`,
+                  variantData
+                );
+                await fetchProducts();
+                toast.success("Cập nhật thành công!");
+                setIsModalOpen(false);
+                setNewProduct({
+                  code: "",
+                  name: "",
+                  color: "",
+                  price: "",
+                  quantity: "",
+                  status: "1",
+                  weight: "",
+                  category_id: "",
+                  description: "",
+                  image: null,
+                });
+                setImagePreview(null);
+                setEditingProductId(null);
+                setEditingVariant(false);
+              } catch (error) {
+                console.error("Error updating variant:", error.response?.data || error.message);
+                toast.error("Có lỗi xảy ra khi cập nhật");
+              }
+            };
+            reader.readAsDataURL(newProduct.image);
+            return;
+          } else {
+            const variantData = {
+              value: newProduct.color,
+              quantity: parseInt(newProduct.quantity, 10),
+              price: parseFloat(newProduct.price),
+            };
+
+            console.log('Updating variant without image change:', variantData);
+
+            const response = await axios.put(
+              `${process.env.REACT_APP_API_URL}/product-variant/${editingProductId}`,
+              variantData
+            );
+            await fetchProducts();
+            toast.success("Cập nhật biến thể thành công!");
+          }
+        } else {
+          if (newProduct.image && newProduct.image instanceof File) {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              const base64Image = e.target.result;
+
+            const productData = {
+              code: newProduct.code,
+              name: newProduct.name,
+              price: parseFloat(newProduct.price),
+              quantity: parseInt(newProduct.quantity, 10),
+              status: parseInt(newProduct.status, 10),
+              weight: parseFloat(newProduct.weight),
+              category_id: parseInt(newProduct.category_id, 10),
+              description: newProduct.description,
+              image: base64Image,
+            };
+            console.log('Updating product with base64 image:', productData);
+
+              try {
+                const response = await axios.put(
+                  `${process.env.REACT_APP_API_URL}/product/${editingProductId}`,
+                  productData
+                );
+                await fetchProducts();
+                toast.success("Cập nhật sản phẩm thành công!");
+                setIsModalOpen(false);
+                setNewProduct({
+                  code: "",
+                  name: "",
+                  color: "",
+                  price: "",
+                  quantity: "",
+                  status: "1",
+                  weight: "",
+                  category_id: "",
+                  description: "",
+                  image: null,
+                });
+                setImagePreview(null);
+                setEditingProductId(null);
+                setEditingVariant(false);
+              } catch (error) {
+                console.error("Error updating product:", error.response?.data || error.message);
+                toast.error("Có lỗi xảy ra khi cập nhật sản phẩm");
+              }
+            };
+            reader.readAsDataURL(newProduct.image);
+            return;
+          } else {
+            const productData = {
+              code: newProduct.code,
+              name: newProduct.name,
+              price: parseFloat(newProduct.price),
+              quantity: parseInt(newProduct.quantity, 10),
+              status: parseInt(newProduct.status, 10),
+              weight: parseFloat(newProduct.weight),
+              category_id: parseInt(newProduct.category_id, 10),
+              description: newProduct.description,
+            };
+
+            console.log('Updating product without image change:', productData);
+
+            const response = await axios.put(
+              `${process.env.REACT_APP_API_URL}/product/${editingProductId}`,
+              productData
+            );
+            await fetchProducts();
+            toast.success("Cập nhật sản phẩm thành công!");
+          }
+        }
       } else {
-        // Create new product
-        const productData = {
-          ...newProduct,
-          category_id: parseInt(newProduct.category_id, 10),
-          price: parseFloat(newProduct.price),
-          quantity: parseInt(newProduct.quantity, 10),
-          weight: parseFloat(newProduct.weight),
-          status: parseInt(newProduct.status, 10),
-        };
-        console.log('Sending product data:', productData);
-        const response = await axios.post(
-          `${process.env.REACT_APP_API_URL}/product`,
-          productData
-        );
-        setProducts([...products, response.data.data]);
-        toast.success("Thêm sản phẩm thành công!");
+        if (newProduct.image && newProduct.image instanceof File) {
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const base64Image = e.target.result;
+
+            const productData = {
+              code: newProduct.code,
+              name: newProduct.name,
+              price: parseFloat(newProduct.price),
+              quantity: parseInt(newProduct.quantity, 10),
+              status: parseInt(newProduct.status, 10),
+              weight: parseFloat(newProduct.weight),
+              category_id: parseInt(newProduct.category_id, 10),
+              description: newProduct.description,
+              image: base64Image,
+              color: newProduct.color,
+            };
+
+            console.log('Creating product with image:', productData);
+
+            try {
+              const response = await axios.post(
+                `${process.env.REACT_APP_API_URL}/product`,
+                productData
+              );
+              await fetchProducts();
+              toast.success("Thêm sản phẩm thành công!");
+              setIsModalOpen(false);
+              setNewProduct({
+                code: "",
+                name: "",
+                color: "",
+                price: "",
+                quantity: "",
+                status: "1",
+                weight: "",
+                category_id: "",
+                description: "",
+                image: null,
+              });
+              setImagePreview(null);
+              setEditingProductId(null);
+              setEditingVariant(false);
+            } catch (error) {
+              console.error("Error creating product:", error.response?.data || error.message);
+              toast.error("Có lỗi xảy ra khi tạo sản phẩm");
+            }
+          };
+          reader.readAsDataURL(newProduct.image);
+          return;
+        } else {
+          const productData = {
+            code: newProduct.code,
+            name: newProduct.name,
+            price: parseFloat(newProduct.price),
+            quantity: parseInt(newProduct.quantity, 10),
+            status: parseInt(newProduct.status, 10),
+            weight: parseFloat(newProduct.weight),
+            category_id: parseInt(newProduct.category_id, 10),
+            description: newProduct.description,
+            color: newProduct.color,
+          };
+
+          console.log('Creating product without image:', productData);
+
+          const response = await axios.post(
+            `${process.env.REACT_APP_API_URL}/product`,
+            productData
+          );
+          await fetchProducts();
+          toast.success("Thêm sản phẩm thành công!");
+        }
       }
       setIsModalOpen(false);
       setNewProduct({
@@ -134,8 +486,11 @@ const ProductList = () => {
         weight: "",
         category_id: "",
         description: "",
+        image: null,
       });
+      setImagePreview(null);
       setEditingProductId(null);
+      setEditingVariant(false);
     } catch (error) {
       console.error(
         "Error saving product:",
@@ -145,28 +500,59 @@ const ProductList = () => {
     }
   };
 
-  const handleDeleteProduct = async (productId) => {
+  const formatPrice = (price) => {
+    if (!price) return '';
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(price);
+  };
+
+  const handleDeleteProduct = (variantId) => {
+    const variant = variants.find(v => v.id === variantId);
+    const productId = variant.product_id;
+    const product = variants.find(v => v.id === variantId);
+    setConfirmDialog({
+      isOpen: true,
+      productId: productId,
+      title: 'Xác nhận xóa sản phẩm',
+      message: `Bạn có chắc chắn muốn xóa sản phẩm "${product?.name || 'này'}"? Hành động này không thể hoàn tác.`
+    });
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      if (!window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
-        return;
-      }
-      await axios.delete(`${process.env.REACT_APP_API_URL}/product/${productId}`);
-      if (Array.isArray(products)) {
-        setProducts(products.filter((product) => product.id !== productId));
+      await axios.delete(`${process.env.REACT_APP_API_URL}/product/${confirmDialog.productId}`);
+      if (Array.isArray(variants)) {
+        await fetchProducts();
       }
       toast.success("Xóa sản phẩm thành công!");
+      setConfirmDialog({ isOpen: false, productId: null, title: '', message: '' });
     } catch (error) {
-      console.error(
-        "Error deleting product:",
-        error.response?.data || error.message
-      );
+      console.error("Error deleting product:", error.response?.data || error.message);
       toast.error("Có lỗi xảy ra khi xóa sản phẩm");
     }
   };
 
+  const handleCancelDelete = () => {
+    setConfirmDialog({ isOpen: false, productId: null, title: '', message: '' });
+  };
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewProduct({ ...newProduct, [name]: value });
+    const { name, value, type, files } = e.target;
+
+    if (type === 'file' && files && files[0]) {
+      const file = files[0];
+      setNewProduct({ ...newProduct, [name]: file });
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setNewProduct({ ...newProduct, [name]: value });
+    }
   };
 
   return (
@@ -183,14 +569,18 @@ const ProductList = () => {
               setNewProduct({
                 code: "",
                 name: "",
+                color: "",
                 price: "",
                 quantity: "",
                 status: "1",
                 weight: "",
                 category_id: "",
                 description: "",
+                image: null,
               });
+              setImagePreview(null);
               setEditingProductId(null);
+              setEditingVariant(false);
               setIsModalOpen(true);
             }}
             className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -198,6 +588,45 @@ const ProductList = () => {
             <FaPlus className="mr-2 h-4 w-4" />
             Thêm sản phẩm
           </button>
+        </div>
+
+        {/* Search Input */}
+        <div className="mb-6">
+          <SearchInput
+            searchFields={[
+              {
+                key: 'name',
+                label: 'Tên sản phẩm',
+                type: 'text',
+                placeholder: 'Nhập tên sản phẩm...'
+              },
+              {
+                key: 'status',
+                label: 'Trạng thái',
+                type: 'select',
+                options: [
+                  { value: '1', label: 'Đang hoạt động' },
+                  { value: '0', label: 'Không hoạt động' }
+                ],
+                placeholder: 'Chọn trạng thái...'
+              },
+              {
+                key: 'color',
+                label: 'Màu sắc',
+                type: 'text',
+                placeholder: 'Nhập màu sắc...'
+              },
+              {
+                key: 'quantity',
+                label: 'Số lượng',
+                type: 'number',
+                placeholder: 'Nhập số lượng...'
+              }
+            ]}
+            onSearch={handleSearch}
+            size="medium"
+            useSearchButton={true}
+          />
         </div>
 
         {/* Error Message */}
@@ -237,8 +666,8 @@ const ProductList = () => {
                       <FaBox className="h-6 w-6" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Tổng sản phẩm</p>
-                      <p className="text-2xl font-bold text-gray-900">{Array.isArray(products) ? products.length : 0}</p>
+                    <p className="text-sm font-medium text-gray-600">Tổng sản phẩm</p>
+                    <p className="text-2xl font-bold text-gray-900">{Array.isArray(variants) ? variants.length : 0}</p>
                     </div>
                   </div>
                 </div>
@@ -250,7 +679,7 @@ const ProductList = () => {
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Đang hoạt động</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {Array.isArray(products) ? products.filter(product => product.status === '1').length : 0}
+                        {Array.isArray(variants) ? variants.filter(variant => variant.status == '1').length : 0}
                       </p>
                     </div>
                   </div>
@@ -263,7 +692,7 @@ const ProductList = () => {
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Không hoạt động</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {Array.isArray(products) ? products.filter(product => product.status !== '1').length : 0}
+                        {Array.isArray(variants) ? variants.filter(variant => variant.status != '1').length : 0}
                       </p>
                     </div>
                   </div>
@@ -275,7 +704,7 @@ const ProductList = () => {
             <div className="bg-white shadow-sm rounded-lg overflow-hidden">
               <CommonTable
                 fields={fields}
-                items={products}
+                items={variants}
                 showIndex={true}
                 onEdit={handleEditProduct}
                 onDelete={handleDeleteProduct}
@@ -300,7 +729,10 @@ const ProductList = () => {
                   {editingProductId ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
                 </h3>
                 <button
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setImagePreview(null);
+                  }}
                   className="text-gray-400 hover:text-gray-600"
                 >
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -323,6 +755,24 @@ const ProductList = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Nhập tên sản phẩm"
                 required
+              />
+                  </div>
+
+                  <div className="md:col-span-2">
+              <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
+                Màu sắc {editingVariant ? '(bắt buộc cho biến thể)' : '(không áp dụng cho sản phẩm)'}
+              </label>
+              <input
+                type="text"
+                name="color"
+                value={newProduct.color}
+                onChange={handleInputChange}
+                disabled={!editingVariant}
+                className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  !editingVariant ? 'bg-gray-100 cursor-not-allowed' : ''
+                }`}
+                placeholder={editingVariant ? "Nhập màu sắc (ví dụ: Đỏ, Xanh, Vàng)" : "Không áp dụng cho sản phẩm"}
+                required={editingVariant}
               />
                   </div>
 
@@ -426,12 +876,49 @@ const ProductList = () => {
                           placeholder="Nhập mô tả sản phẩm"
                         />
                       </div>
-                    </div>
+
+                      <div className="md:col-span-2">
+                        <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
+                          Hình ảnh sản phẩm
+                        </label>
+                        <div className="space-y-2">
+                          <input
+                            type="file"
+                            name="image"
+                            accept="image/*"
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                          {imagePreview && (
+                            <div className="mt-2">
+                              <img
+                                src={imagePreview}
+                                alt="Preview"
+                                className="w-32 h-32 object-cover rounded-md border border-gray-300"
+                              />
+                            </div>
+                          )}
+                          {editingProductId && newProduct.image && (
+                            <div className="mt-2">
+                              <p className="text-sm text-gray-600">Ảnh hiện tại:</p>
+                              <img
+                                src={newProduct.image}
+                                alt="Current"
+                                className="w-32 h-32 object-cover rounded-md border border-gray-300"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>                    
 
                     <div className="flex justify-end space-x-3 pt-4">
                       <button
                         type="button"
-                        onClick={() => setIsModalOpen(false)}
+                        onClick={() => {
+                          setIsModalOpen(false);
+                          setImagePreview(null);
+                        }}
                         className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
                         Hủy
@@ -450,6 +937,15 @@ const ProductList = () => {
           </div>
         )}
       </div>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };

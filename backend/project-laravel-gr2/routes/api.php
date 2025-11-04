@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,3 +32,7 @@ Route::group([
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
 });
+
+Route::post('/upload/image', [UploadController::class, 'uploadImage']);
+Route::post('/upload/images', [UploadController::class, 'uploadImages']);
+Route::delete('/upload/image', [UploadController::class, 'deleteImage']);

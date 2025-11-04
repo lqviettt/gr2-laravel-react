@@ -24,11 +24,13 @@ use Modules\Product\Http\Controllers\VariantOptionController;
 Route::group([
     'middleware' => 'auth:api'
 ], function () {
-    Route::post('/product/{productId}/variant', [ProductVariantController::class, 'store']);
-    Route::put('/product-variant/{pvariantId}', [ProductVariantController::class, 'update']);
-    Route::get('/product-variant/{pvariantId}', [ProductVariantController::class, 'show']);
-    Route::delete('/product-variant/{pvariantId}', [ProductVariantController::class, 'delete']);
+    // Product variant routes that need authentication can be added here later
 });
+
+Route::post('/product/{productId}/variant', [ProductVariantController::class, 'store']);
+Route::put('/product-variant/{pvariantId}', [ProductVariantController::class, 'update']);
+Route::get('/product-variant/{pvariantId}', [ProductVariantController::class, 'show']);
+Route::delete('/product-variant/{pvariantId}', [ProductVariantController::class, 'delete']);
 
 Route::resource('/product', ProductController::class);
 Route::resource('/category', CategoryController::class);

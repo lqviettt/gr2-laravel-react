@@ -22,6 +22,7 @@ import ProductManageAdd from "./pages/admin/productManage/productAdd.js";
 import ProductManageList from "./pages/admin/productManage/productList.js";
 import VerifyAccount from "./pages/user/registerPage/verify.js";
 import AdminDashboard from "./pages/admin/dashboard/index.js";
+import UploadDemo from "./pages/UploadDemo";
 
 const renderUserRouter = () => {
   const userRouters = [
@@ -90,6 +91,12 @@ const renderUserRouter = () => {
       path: ROUTERS.USER.VERIFY_ACCOUNT,
       component: <VerifyAccount />,
       layout: MasterLayout,
+    },
+    {
+      path: ROUTERS.USER.UPLOAD_DEMO,
+      component: <UploadDemo />,
+      layout: AdminLayout,
+      protected: true,
     },
     {
       path: ROUTERS.ADMIN.HOME,

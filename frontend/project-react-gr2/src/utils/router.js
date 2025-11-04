@@ -14,6 +14,7 @@ export const ROUTERS = {
     MY_ACCOUNT: "my-account",
     PAYMENT_INFO: "payment-info",
     VERIFY_ACCOUNT: "verify-account",
+    UPLOAD_DEMO: "upload-demo",
   },
   ADMIN: {
     HOME: "admin",

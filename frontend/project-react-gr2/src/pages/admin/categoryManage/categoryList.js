@@ -2,6 +2,7 @@ import React, { useState, useEffect, memo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import CommonTable from "../../../components/CommonTable";
+import ConfirmDialog from "../../../components/ConfirmDialog";
 import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 const CategoryManageList = () => {
@@ -50,6 +51,12 @@ const CategoryManageList = () => {
   });
 
   const [editingCategoryId, setEditingCategoryId] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    categoryId: null,
+    title: '',
+    message: ''
+  });
 
   const handleEditCategory = (categoryId) => {
     if (!Array.isArray(categories)) return;
@@ -95,25 +102,34 @@ const CategoryManageList = () => {
     }
   };
 
-  const handleDeleteCategory = async (categoryId) => {
+  const handleDeleteCategory = (categoryId) => {
+    const category = categories.find(c => c.id === categoryId);
+    setConfirmDialog({
+      isOpen: true,
+      categoryId,
+      title: 'Xác nhận xóa danh mục',
+      message: `Bạn có chắc chắn muốn xóa danh mục "${category?.name || 'này'}"? Hành động này không thể hoàn tác.`
+    });
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      if (!window.confirm("Bạn có chắc chắn muốn xóa danh mục này?")) {
-        return;
-      }
-      await axios.delete(`${process.env.REACT_APP_API_URL}/category/${categoryId}`);
+      await axios.delete(`${process.env.REACT_APP_API_URL}/category/${confirmDialog.categoryId}`);
       if (Array.isArray(categories)) {
         setCategories(
-          categories.filter((category) => category.id !== categoryId)
+          categories.filter((category) => category.id !== confirmDialog.categoryId)
         );
       }
       toast.success("Xóa danh mục thành công!");
+      setConfirmDialog({ isOpen: false, categoryId: null, title: '', message: '' });
     } catch (error) {
-      console.error(
-        "Error deleting category:",
-        error.response?.data || error.message
-      );
+      console.error("Error deleting category:", error.response?.data || error.message);
       toast.error("Có lỗi xảy ra khi xóa danh mục");
     }
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDialog({ isOpen: false, categoryId: null, title: '', message: '' });
   };
 
   const handleInputChange = (e) => {
@@ -317,6 +333,15 @@ const CategoryManageList = () => {
           </div>
         )}
       </div>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };

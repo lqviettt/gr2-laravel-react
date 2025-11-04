@@ -106,6 +106,11 @@ const Slidebar = () => {
         { title: "Thêm nhân viên mới", href: "#" },
       ],
     },
+    {
+      title: "Upload Ảnh",
+      href: "/upload-demo",
+      icon: "📤",
+    },
   ];
 
   // Get user initials for avatar fallback

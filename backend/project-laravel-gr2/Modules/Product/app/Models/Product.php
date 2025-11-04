@@ -21,6 +21,7 @@ class Product extends BaseModel
         'description',
         'category_id',
         'status',
+        'image',
     ];
     protected $hidden = ['created_at', 'updated_at'];
     public $timestamps = false;
@@ -44,6 +45,11 @@ class Product extends BaseModel
     public function variants()
     {
         return $this->hasMany(ProductVariant::class);
+    }
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
     }
 
     public function scopeSearchByCategory($query, $categoryId)

@@ -5,6 +5,7 @@ import {
   FaCheck,
   FaExclamationTriangle,
   FaFilter,
+  FaTimes,
 } from "react-icons/fa";
 
 const CommonTable = ({
@@ -33,12 +34,24 @@ const CommonTable = ({
   method = "post",
 }) => {
   const [sortField, setSortField] = useState("");
+  const [imageModal, setImageModal] = useState({ isOpen: false, src: "", alt: "" });
 
   const handleSort = (field) => {
     if (sortableFields.includes(field)) {
       setSortField(field);
       if (onSort) onSort(field);
     }
+  };
+
+  const openImageModal = (src, alt = "") => {
+    if (!src || typeof src !== 'string') return;
+
+    const fullSrc = src.startsWith('http') ? src : `${process.env.REACT_APP_API_URL.replace('/api', '')}/${src}`;
+    setImageModal({ isOpen: true, src: fullSrc, alt });
+  };
+
+  const closeImageModal = () => {
+    setImageModal({ isOpen: false, src: "", alt: "" });
   };
 
   const getFieldTitle = (key) => {
@@ -70,15 +83,25 @@ const CommonTable = ({
         </div>
       );
     } else if (value === "pattern.image") {
-      return item.image ? (
+      const imageSrc = item.image && typeof item.image === 'string'
+        ? (item.image.startsWith('http') ? item.image : `${process.env.REACT_APP_API_URL.replace('/api', '')}/${item.image}`)
+        : null;
+
+      return imageSrc ? (
         <img
-          src={item.image}
+          src={imageSrc}
           alt=""
           width="50"
           height="50"
-          className="img-table"
+          className="img-table rounded cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => openImageModal(item.image, `Product ${item.name || item.id}`)}
+          style={{ cursor: 'pointer' }}
         />
-      ) : null;
+      ) : (
+        <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
+          No Image
+        </div>
+      );
     } else if (value.startsWith("pivot.")) {
       const pivotKey = value.replace("pivot.", "");
       return item.pivot ? item.pivot[pivotKey] || "" : "";
@@ -407,6 +430,32 @@ const CommonTable = ({
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Modal */}
+      {imageModal.isOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75"
+          onClick={closeImageModal}
+        >
+          <div className="relative max-w-4xl max-h-screen p-4">
+            {/* Close button */}
+            <button
+              className="absolute top-2 right-2 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
+              onClick={closeImageModal}
+            >
+              <FaTimes className="text-gray-700" />
+            </button>
+
+            {/* Image */}
+            <img
+              src={imageModal.src}
+              alt={imageModal.alt}
+              className="max-w-full max-h-full object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on image
+            />
           </div>
         </div>
       )}

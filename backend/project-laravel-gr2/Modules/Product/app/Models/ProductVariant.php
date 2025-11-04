@@ -16,7 +16,10 @@ class ProductVariant extends Model
         'value',
         'quantity',
         'price',
+        'image',
     ];
+
+    protected $appends = ['image_url'];
 
     public function product()
     {
@@ -26,5 +29,10 @@ class ProductVariant extends Model
     public function variantOption()
     {
         return $this->belongsTo(VariantOption::class);
+    }
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
     }
 }

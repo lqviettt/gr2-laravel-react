@@ -38,6 +38,8 @@ class ProductRequest extends FormRequest
             "price" => "required|integer",
             "weight" => "nullable|integer",
             "status" => "nullable|integer",
+            "color" => "nullable|string|max:50",
+            "image" => "nullable|string",
         ];
     }
 }
