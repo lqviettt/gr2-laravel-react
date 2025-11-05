@@ -65,35 +65,18 @@ const ProductList = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Build query parameters from filters
+
       const queryParams = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
           queryParams.append(key, value);
         }
       });
-      
+
       const url = `${process.env.REACT_APP_API_URL}/product${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-      
-      // Log API call
-      console.log('🔍 [SEARCH API CALL]');
-      console.log('Filters:', filters);
-      console.log('Query params:', queryParams.toString() || '(none)');
-      console.log('Full URL:', url);
-      console.log('---');
-      
       const response = await axios.get(url);
+
       const products = response.data.data.data || [];
-      
-      console.log('📦 [SEARCH API RESPONSE]');
-      console.log('Products found:', products.length);
-      console.log('---');
-      
-      console.log('📦 [SEARCH API RESPONSE]');
-      console.log('Products found:', products.length);
-      console.log('---');
-      
       const transformedVariants = [];
       products.forEach(product => {
         if (product.variants && product.variants.length > 0) {
@@ -105,8 +88,8 @@ const ProductList = () => {
               color: variant.value || 'N/A',
               price: variant.price || product.price,
               quantity: variant.quantity || product.quantity,
-              image: variant.image ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${variant.image}` : 
-                     product.image ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}` : null,
+              image: variant.image ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${variant.image}` :
+                product.image ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}` : null,
               status: product.status,
               weight: product.weight,
               category_id: product.category_id,
@@ -133,7 +116,7 @@ const ProductList = () => {
           });
         }
       });
-      
+
       setVariants(transformedVariants);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -147,9 +130,6 @@ const ProductList = () => {
   const fetchCategories = async () => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/category`);
-      console.log('Full response:', response.data);
-      console.log('Response data.data:', response.data.data);
-      console.log('Response data.data.data:', response.data.data?.data);
       setCategories(response.data.data?.data || response.data.data || []);
       console.log("Fetched categories:", response.data.data?.data || response.data.data || []);
     } catch (error) {
@@ -165,20 +145,13 @@ const ProductList = () => {
     fetchCategories();
   }, []);
 
-  const handleSearch = (filters) => {
-    console.log('🔍 [SEARCH TRIGGERED]');
-    console.log('Search filters received:', filters);
-    console.log('---');
-    setSearchFilters(filters);
-  };
-
   const handleEditProduct = (variantId) => {
     if (loadingEdit) return;
-    
+
     console.log('Editing variantId:', variantId);
     const variantToEdit = variants.find((variant) => variant.id === variantId);
     console.log('variantToEdit:', variantToEdit);
-    
+
     if (variantToEdit && variantToEdit.is_variant) {
       console.log('Editing variant:', variantToEdit.variant_id);
       setNewProduct({
@@ -214,7 +187,7 @@ const ProductList = () => {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/product/${productId}`);
       const product = response.data.data;
       console.log('Fetched product:', product);
-      
+
       setNewProduct({
         code: product.code || "",
         name: product.name || "",
@@ -234,7 +207,7 @@ const ProductList = () => {
       setImagePreview(null);
     } catch (error) {
       console.error("Error fetching product details:", error);
-      toast.error("Không thể tải thông tin sản phẩm");
+      toast.error("Không thể tải thông tin sản phẩm: " + (error.response?.data?.message || error.message));
     } finally {
       setLoadingEdit(false);
     }
@@ -310,7 +283,28 @@ const ProductList = () => {
                 setEditingVariant(false);
               } catch (error) {
                 console.error("Error updating variant:", error.response?.data || error.message);
-                toast.error("Có lỗi xảy ra khi cập nhật");
+                const resp = error.response?.data;
+                let errMsg = "Có lỗi xảy ra khi lưu sản phẩm: ";
+
+                if (resp) {
+                  if (resp.message) {
+                    errMsg += resp.message;
+                  } else if (typeof resp.error === "string") {
+                    errMsg += resp.error;
+                  } else if (resp.error && typeof resp.error === "object") {
+                    const flattened = [].concat(...Object.values(resp.error)).join(", ");
+                    errMsg += flattened || JSON.stringify(resp.error);
+                  } else if (resp.errors && typeof resp.errors === "object") {
+                    const flattened = [].concat(...Object.values(resp.errors)).join(", ");
+                    errMsg += flattened;
+                  } else {
+                    errMsg += JSON.stringify(resp);
+                  }
+                } else {
+                  errMsg += error.message || JSON.stringify(error);
+                }
+
+                toast.error(errMsg);
               }
             };
             reader.readAsDataURL(newProduct.image);
@@ -329,7 +323,7 @@ const ProductList = () => {
               variantData
             );
             await fetchProducts();
-            toast.success("Cập nhật biến thể thành công!");
+            toast.success("Cập nhật thành công!");
           }
         } else {
           if (newProduct.image && newProduct.image instanceof File) {
@@ -337,18 +331,18 @@ const ProductList = () => {
             reader.onload = async (e) => {
               const base64Image = e.target.result;
 
-            const productData = {
-              code: newProduct.code,
-              name: newProduct.name,
-              price: parseFloat(newProduct.price),
-              quantity: parseInt(newProduct.quantity, 10),
-              status: parseInt(newProduct.status, 10),
-              weight: parseFloat(newProduct.weight),
-              category_id: parseInt(newProduct.category_id, 10),
-              description: newProduct.description,
-              image: base64Image,
-            };
-            console.log('Updating product with base64 image:', productData);
+              const productData = {
+                code: newProduct.code,
+                name: newProduct.name,
+                price: parseFloat(newProduct.price),
+                quantity: parseInt(newProduct.quantity, 10),
+                status: parseInt(newProduct.status, 10),
+                weight: parseFloat(newProduct.weight),
+                category_id: parseInt(newProduct.category_id, 10),
+                description: newProduct.description,
+                image: base64Image,
+              };
+              console.log('Updating product with base64 image:', productData);
 
               try {
                 const response = await axios.put(
@@ -375,7 +369,28 @@ const ProductList = () => {
                 setEditingVariant(false);
               } catch (error) {
                 console.error("Error updating product:", error.response?.data || error.message);
-                toast.error("Có lỗi xảy ra khi cập nhật sản phẩm");
+                const resp = error.response?.data;
+                let errMsg = "Có lỗi xảy ra khi lưu sản phẩm: ";
+
+                if (resp) {
+                  if (resp.message) {
+                    errMsg += resp.message;
+                  } else if (typeof resp.error === "string") {
+                    errMsg += resp.error;
+                  } else if (resp.error && typeof resp.error === "object") {
+                    const flattened = [].concat(...Object.values(resp.error)).join(", ");
+                    errMsg += flattened || JSON.stringify(resp.error);
+                  } else if (resp.errors && typeof resp.errors === "object") {
+                    const flattened = [].concat(...Object.values(resp.errors)).join(", ");
+                    errMsg += flattened;
+                  } else {
+                    errMsg += JSON.stringify(resp);
+                  }
+                } else {
+                  errMsg += error.message || JSON.stringify(error);
+                }
+
+                toast.error(errMsg);
               }
             };
             reader.readAsDataURL(newProduct.image);
@@ -448,7 +463,28 @@ const ProductList = () => {
               setEditingVariant(false);
             } catch (error) {
               console.error("Error creating product:", error.response?.data || error.message);
-              toast.error("Có lỗi xảy ra khi tạo sản phẩm");
+              const resp = error.response?.data;
+              let errMsg = "Có lỗi xảy ra khi lưu sản phẩm: ";
+
+              if (resp) {
+                if (resp.message) {
+                  errMsg += resp.message;
+                } else if (typeof resp.error === "string") {
+                  errMsg += resp.error;
+                } else if (resp.error && typeof resp.error === "object") {
+                  const flattened = [].concat(...Object.values(resp.error)).join(", ");
+                  errMsg += flattened || JSON.stringify(resp.error);
+                } else if (resp.errors && typeof resp.errors === "object") {
+                  const flattened = [].concat(...Object.values(resp.errors)).join(", ");
+                  errMsg += flattened;
+                } else {
+                  errMsg += JSON.stringify(resp);
+                }
+              } else {
+                errMsg += error.message || JSON.stringify(error);
+              }
+
+              toast.error(errMsg);
             }
           };
           reader.readAsDataURL(newProduct.image);
@@ -496,16 +532,29 @@ const ProductList = () => {
         "Error saving product:",
         error.response?.data || error.message
       );
-      toast.error("Có lỗi xảy ra khi lưu sản phẩm");
-    }
-  };
+      const resp = error.response?.data;
+      let errMsg = "Có lỗi xảy ra khi lưu sản phẩm: ";
 
-  const formatPrice = (price) => {
-    if (!price) return '';
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
+      if (resp) {
+        if (resp.message) {
+          errMsg += resp.message;
+        } else if (typeof resp.error === "string") {
+          errMsg += resp.error;
+        } else if (resp.error && typeof resp.error === "object") {
+          const flattened = [].concat(...Object.values(resp.error)).join(", ");
+          errMsg += flattened || JSON.stringify(resp.error);
+        } else if (resp.errors && typeof resp.errors === "object") {
+          const flattened = [].concat(...Object.values(resp.errors)).join(", ");
+          errMsg += flattened;
+        } else {
+          errMsg += JSON.stringify(resp);
+        }
+      } else {
+        errMsg += error.message || JSON.stringify(error);
+      }
+
+      toast.error(errMsg);
+    }
   };
 
   const handleDeleteProduct = (variantId) => {
@@ -530,7 +579,28 @@ const ProductList = () => {
       setConfirmDialog({ isOpen: false, productId: null, title: '', message: '' });
     } catch (error) {
       console.error("Error deleting product:", error.response?.data || error.message);
-      toast.error("Có lỗi xảy ra khi xóa sản phẩm");
+      const resp = error.response?.data;
+      let errMsg = "Có lỗi xảy ra khi lưu sản phẩm: ";
+
+      if (resp) {
+        if (resp.message) {
+          errMsg += resp.message;
+        } else if (typeof resp.error === "string") {
+          errMsg += resp.error;
+        } else if (resp.error && typeof resp.error === "object") {
+          const flattened = [].concat(...Object.values(resp.error)).join(", ");
+          errMsg += flattened || JSON.stringify(resp.error);
+        } else if (resp.errors && typeof resp.errors === "object") {
+          const flattened = [].concat(...Object.values(resp.errors)).join(", ");
+          errMsg += flattened;
+        } else {
+          errMsg += JSON.stringify(resp);
+        }
+      } else {
+        errMsg += error.message || JSON.stringify(error);
+      }
+
+      toast.error(errMsg);
     }
   };
 
@@ -595,26 +665,27 @@ const ProductList = () => {
           <SearchInput
             searchFields={[
               {
-                key: 'name',
+                key: 'search',
                 label: 'Tên sản phẩm',
                 type: 'text',
                 placeholder: 'Nhập tên sản phẩm...'
               },
               {
+                key: 'category_id',
+                label: 'Danh mục',
+                type: 'select',
+                options: categories.map(cat => ({ value: cat.id, label: cat.name })),
+                placeholder: 'Chọn danh mục...'
+              },
+              {
                 key: 'status',
                 label: 'Trạng thái',
                 type: 'select',
+                placeholder: 'Chọn trạng thái...',
                 options: [
                   { value: '1', label: 'Đang hoạt động' },
                   { value: '0', label: 'Không hoạt động' }
-                ],
-                placeholder: 'Chọn trạng thái...'
-              },
-              {
-                key: 'color',
-                label: 'Màu sắc',
-                type: 'text',
-                placeholder: 'Nhập màu sắc...'
+                ]
               },
               {
                 key: 'quantity',
@@ -623,7 +694,9 @@ const ProductList = () => {
                 placeholder: 'Nhập số lượng...'
               }
             ]}
-            onSearch={handleSearch}
+            onSearch={(filters) => {
+              fetchProducts(filters);
+            }}
             size="medium"
             useSearchButton={true}
           />
@@ -666,8 +739,8 @@ const ProductList = () => {
                       <FaBox className="h-6 w-6" />
                     </div>
                     <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Tổng sản phẩm</p>
-                    <p className="text-2xl font-bold text-gray-900">{Array.isArray(variants) ? variants.length : 0}</p>
+                      <p className="text-sm font-medium text-gray-600">Tổng sản phẩm</p>
+                      <p className="text-2xl font-bold text-gray-900">{Array.isArray(variants) ? variants.length : 0}</p>
                     </div>
                   </div>
                 </div>
@@ -706,6 +779,7 @@ const ProductList = () => {
                 fields={fields}
                 items={variants}
                 showIndex={true}
+                indexByOrder={true}
                 onEdit={handleEditProduct}
                 onDelete={handleDeleteProduct}
                 listTitle={listTitle}
@@ -715,101 +789,100 @@ const ProductList = () => {
         )}
 
         {/* Modal */}
-          {isModalOpen && (
-            <div className="fixed inset-0 z-50 overflow-y-auto">
-              <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-                </div>
-
-                <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle max-w-lg sm:max-w-2xl w-full">
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  {editingProductId ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
-                </h3>
-                <button
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    setImagePreview(null);
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
               </div>
 
-              <form onSubmit={handleSaveProduct} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Tên sản phẩm
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={newProduct.name}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Nhập tên sản phẩm"
-                required
-              />
+              <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle max-w-lg sm:max-w-2xl w-full">
+                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      {editingProductId ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
+                    </h3>
+                    <button
+                      onClick={() => {
+                        setIsModalOpen(false);
+                        setImagePreview(null);
+                      }}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </div>
 
-                  <div className="md:col-span-2">
-              <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
-                Màu sắc {editingVariant ? '(bắt buộc cho biến thể)' : '(không áp dụng cho sản phẩm)'}
-              </label>
-              <input
-                type="text"
-                name="color"
-                value={newProduct.color}
-                onChange={handleInputChange}
-                disabled={!editingVariant}
-                className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  !editingVariant ? 'bg-gray-100 cursor-not-allowed' : ''
-                }`}
-                placeholder={editingVariant ? "Nhập màu sắc (ví dụ: Đỏ, Xanh, Vàng)" : "Không áp dụng cho sản phẩm"}
-                required={editingVariant}
-              />
-                  </div>
+                  <form onSubmit={handleSaveProduct} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="md:col-span-2">
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                          Tên sản phẩm
+                        </label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={newProduct.name}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Nhập tên sản phẩm"
+                          required
+                        />
+                      </div>
 
-                  <div>
-              <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">
-                Mã sản phẩm
-              </label>
-              <input
-                type="text"
-                name="code"
-                value={newProduct.code}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Nhập mã sản phẩm"
-                required
-              />
-                  </div>
+                      <div className="md:col-span-2">
+                        <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
+                          Màu sắc {editingVariant ? '(bắt buộc cho biến thể)' : '(không áp dụng cho sản phẩm)'}
+                        </label>
+                        <input
+                          type="text"
+                          name="color"
+                          value={newProduct.color}
+                          onChange={handleInputChange}
+                          disabled={!editingVariant}
+                          className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!editingVariant ? 'bg-gray-100 cursor-not-allowed' : ''
+                            }`}
+                          placeholder={editingVariant ? "Nhập màu sắc (ví dụ: Đỏ, Xanh, Vàng)" : "Không áp dụng cho sản phẩm"}
+                          required={editingVariant}
+                        />
+                      </div>
 
-                  <div>
-              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-                Giá bán
-              </label>
-              <input
-                type="number"
-                name="price"
-                value={newProduct.price}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Nhập giá bán"
-                required
-              />
-                  </div>
+                      <div>
+                        <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">
+                          Mã sản phẩm
+                        </label>
+                        <input
+                          type="text"
+                          name="code"
+                          value={newProduct.code}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Nhập mã sản phẩm"
+                          required
+                        />
+                      </div>
 
-                  <div>
-              <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
-                Số lượng
-              </label>
+                      <div>
+                        <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+                          Giá bán
+                        </label>
+                        <input
+                          type="number"
+                          name="price"
+                          value={newProduct.price}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Nhập giá bán"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
+                          Số lượng
+                        </label>
                         <input
                           type="number"
                           name="quantity"
@@ -910,7 +983,7 @@ const ProductList = () => {
                           )}
                         </div>
                       </div>
-                    </div>                    
+                    </div>
 
                     <div className="flex justify-end space-x-3 pt-4">
                       <button

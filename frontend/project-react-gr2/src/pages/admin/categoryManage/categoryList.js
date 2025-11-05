@@ -4,27 +4,34 @@ import { toast } from "react-toastify";
 import CommonTable from "../../../components/CommonTable";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import SearchInput from "../../../components/SearchInput";
 
 const CategoryManageList = () => {
   const [categories, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchFilters, setSearchFilters] = useState({});
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    fetchCategories(searchFilters);
+  }, [searchFilters]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = async (filters = {}) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/category`);
-      console.log('Category API response:', response.data);
-      console.log('Response data.data:', response.data.data);
-      console.log('Response data.data.data:', response.data.data?.data);
-      
-      // Handle different API response formats
+
+      const queryParams = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          queryParams.append(key, value);
+        }
+      });
+
+      const url = `${process.env.REACT_APP_API_URL}/category${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      const response = await axios.get(url);
+
       let categoriesData = [];
       if (Array.isArray(response.data.data)) {
         categoriesData = response.data.data;
@@ -33,7 +40,7 @@ const CategoryManageList = () => {
       } else if (Array.isArray(response.data)) {
         categoriesData = response.data;
       }
-      
+
       console.log('Final categories data:', categoriesData);
       setCategories(categoriesData);
     } catch (error) {
@@ -72,24 +79,21 @@ const CategoryManageList = () => {
     e.preventDefault();
     try {
       if (editingCategoryId) {
-        // Update existing category
         await axios.put(
           `${process.env.REACT_APP_API_URL}/category/${editingCategoryId}`,
           newCategory
         );
         toast.success("Cập nhật danh mục thành công!");
       } else {
-        // Create new category
         await axios.post(
           `${process.env.REACT_APP_API_URL}/category`,
           newCategory
         );
         toast.success("Thêm danh mục thành công!");
       }
-      
-      // Refresh data from server
+
       await fetchCategories();
-      
+
       setIsModalOpen(false);
       setNewCategory({ name: "", status: "1" });
       setEditingCategoryId(null);
@@ -98,7 +102,28 @@ const CategoryManageList = () => {
         "Error saving category:",
         error.response?.data || error.message
       );
-      toast.error("Có lỗi xảy ra khi lưu danh mục");
+      const resp = error.response?.data;
+      let errMsg = "Có lỗi xảy ra khi lưu danh mục: ";
+
+      if (resp) {
+        if (resp.message) {
+          errMsg += resp.message;
+        } else if (typeof resp.error === "string") {
+          errMsg += resp.error;
+        } else if (resp.error && typeof resp.error === "object") {
+          const flattened = [].concat(...Object.values(resp.error)).join(", ");
+          errMsg += flattened || JSON.stringify(resp.error);
+        } else if (resp.errors && typeof resp.errors === "object") {
+          const flattened = [].concat(...Object.values(resp.errors)).join(", ");
+          errMsg += flattened;
+        } else {
+          errMsg += JSON.stringify(resp);
+        }
+      } else {
+        errMsg += error.message || JSON.stringify(error);
+      }
+
+      toast.error(errMsg);
     }
   };
 
@@ -124,7 +149,28 @@ const CategoryManageList = () => {
       setConfirmDialog({ isOpen: false, categoryId: null, title: '', message: '' });
     } catch (error) {
       console.error("Error deleting category:", error.response?.data || error.message);
-      toast.error("Có lỗi xảy ra khi xóa danh mục");
+      const resp = error.response?.data;
+      let errMsg = "Có lỗi xảy ra khi xóa: ";
+
+      if (resp) {
+        if (resp.message) {
+          errMsg += resp.message;
+        } else if (typeof resp.error === "string") {
+          errMsg += resp.error;
+        } else if (resp.error && typeof resp.error === "object") {
+          const flattened = [].concat(...Object.values(resp.error)).join(", ");
+          errMsg += flattened || JSON.stringify(resp.error);
+        } else if (resp.errors && typeof resp.errors === "object") {
+          const flattened = [].concat(...Object.values(resp.errors)).join(", ");
+          errMsg += flattened;
+        } else {
+          errMsg += JSON.stringify(resp);
+        }
+      } else {
+        errMsg += error.message || JSON.stringify(error);
+      }
+
+      toast.error(errMsg);
     }
   };
 
@@ -144,7 +190,7 @@ const CategoryManageList = () => {
   };
 
   const listTitle = {
-    name: 'Tên sản phẩm',
+    name: 'Tên danh mục',
     status: 'Trạng thái',
     actions: 'Tùy biến',
   };
@@ -169,6 +215,34 @@ const CategoryManageList = () => {
             <FaPlus className="mr-2 h-4 w-4" />
             Thêm danh mục
           </button>
+        </div>
+
+        <div className="mb-6">
+          <SearchInput
+            searchFields={[
+              {
+                key: 'search',
+                label: 'Tên sản phẩm',
+                type: 'text',
+                placeholder: 'Nhập tên sản phẩm...'
+              },
+              {
+                key: 'status',
+                label: 'Trạng thái',
+                type: 'select',
+                placeholder: 'Chọn trạng thái...',
+                options: [
+                  { value: '1', label: 'Đang hoạt động' },
+                  { value: '0', label: 'Không hoạt động' }
+                ]
+              }
+            ]}
+            onSearch={(filters) => {
+              fetchCategories(filters);
+            }}
+            size="medium"
+            useSearchButton={true}
+          />
         </div>
 
         {/* Error Message */}
@@ -248,6 +322,7 @@ const CategoryManageList = () => {
                 fields={fields}
                 items={categories}
                 showIndex={true}
+                indexByOrder={true}
                 onEdit={handleEditCategory}
                 onDelete={handleDeleteCategory}
                 listTitle={listTitle}

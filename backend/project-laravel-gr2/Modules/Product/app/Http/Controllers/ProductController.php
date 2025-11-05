@@ -41,7 +41,8 @@ class ProductController extends Controller
         $query = $this->productRepository
             ->builderQuery()
             ->searchByNameCode($request->search)
-            ->searchByCategory($request->category_id);
+            ->searchByCategory($request->category_id)
+            ->searchByStatus($request->status);
 
         $result = $query->paginate($perPage);
         $result->getCollection()->load('variants.variantOption');

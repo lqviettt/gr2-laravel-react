@@ -268,6 +268,7 @@ const OrderList = () => {
                     fields={fields}
                     items={orders}
                     showIndex={true}
+                    indexByOrder={true}
                     onEdit={handleEditOrder}
                     onDelete={handleDeleteOrder}
                     listTitle={listTitle}
