@@ -24,9 +24,6 @@ const OrderList = () => {
     created_by: "admin",
   });
 
-const OrderList = () => {
-  const [orders, setOrders] = useState([]);
-  const [newOrder, setNewOrder] = useState(initialNewOrder);
   const [editingOrderId, setEditingOrderId] = useState(null);
   const fetchOrders = async () => {
     try {
@@ -46,9 +43,6 @@ const OrderList = () => {
 
   useEffect(() => {
     fetchOrders();
-    return () => {
-      mounted = false;
-    };
   }, []);
 
   const handleEditOrder = (orderId) => {
