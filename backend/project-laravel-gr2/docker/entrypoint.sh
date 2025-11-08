@@ -7,6 +7,11 @@ else
     echo "env file exists."
 fi
 
+echo "Setting permissions for Laravel storage..."
+mkdir -p /var/www/storage/logs
+chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
 composer install --no-progress --no-interaction
 
 php artisan key:generate
