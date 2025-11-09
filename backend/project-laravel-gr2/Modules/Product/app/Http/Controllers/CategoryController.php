@@ -26,7 +26,7 @@ class CategoryController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->input('perPage', 50);
+        $perPage = $request->input('perPage', 15);
         $this->authorize('view', Category::class);
         $query = $this->categoryRepository
             ->builderQuery()

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PaymentRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -76,36 +77,6 @@ class PaymentController extends Controller
             'code' => '00',
             'message' => 'success',
             'data' => $vnp_Url
-        ]);
-    }
-
-    /**
-     * returnPay
-     *
-     * @param  mixed $request
-     * @return void
-     */
-    public function returnPay(Request $request)
-    {
-        $vnp_HashSecret = config('app.vnp_HashSecret');
-        $vnp_SecureHash = $request->input('vnp_SecureHash');
-        $inputData = $request->except('vnp_SecureHash');
-
-        ksort($inputData);
-        $hashData = '';
-        foreach ($inputData as $key => $value) {
-            $hashData .= urlencode($key) . "=" . urlencode($value) . "&";
-        }
-
-        $hashData = rtrim($hashData, "&");
-        $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
-        $isSignatureValid = $secureHash === $vnp_SecureHash;
-        $isSuccess = $request->input('vnp_ResponseCode') === '00';
-
-        return view('payments.return', [
-            'data' => $request->all(),
-            'isSignatureValid' => $isSignatureValid,
-            'isSuccess' => $isSuccess,
         ]);
     }
 }

@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import CommonTable from "../../../components/CommonTable";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import SearchInput from "../../../components/SearchInput";
+import Pagination from "../../../components/Pagination";
 import { FaPlus, FaBox, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 const ProductList = () => {
@@ -36,6 +37,8 @@ const ProductList = () => {
     title: '',
     message: ''
   });
+  const [pagination, setPagination] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
 
   const fields = {
     code: 'code',
@@ -61,22 +64,27 @@ const ProductList = () => {
     actions: 'Tùy biến',
   };
 
-  const fetchProducts = async (filters = {}) => {
+  const fetchProducts = async (filters = {}, page = currentPage) => {
     try {
       setLoading(true);
       setError(null);
 
       const queryParams = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
+      // Default status='all' for admin to show all
+      const effectiveFilters = { ...filters };
+      Object.entries(effectiveFilters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
           queryParams.append(key, value);
         }
       });
+      queryParams.append('page', page);
 
       const url = `${process.env.REACT_APP_API_URL}/product${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
       const response = await axios.get(url);
 
       const products = response.data.data.data || [];
+      const paginationData = response.data.data;
+      setPagination(paginationData);
       const transformedVariants = [];
       products.forEach(product => {
         if (product.variants && product.variants.length > 0) {
@@ -95,6 +103,7 @@ const ProductList = () => {
               category_id: product.category_id,
               product_id: product.id,
               variant_id: variant.id,
+              description: product.description,
               is_variant: true
             });
           });
@@ -138,8 +147,8 @@ const ProductList = () => {
   };
 
   useEffect(() => {
-    fetchProducts(searchFilters);
-  }, [searchFilters]);
+    fetchProducts(searchFilters, currentPage);
+  }, [searchFilters, currentPage]);
 
   useEffect(() => {
     fetchCategories();
@@ -163,10 +172,10 @@ const ProductList = () => {
         status: variantToEdit.status?.toString() || "1",
         weight: variantToEdit.weight || "",
         category_id: variantToEdit.category_id || "",
-        description: "",
+        description: variantToEdit.description || "",
         image: variantToEdit.image || null,
       });
-      setEditingProductId(variantToEdit.variant_id);
+      setEditingProductId(variantId);
       setEditingVariant(true);
       setIsModalOpen(true);
       setImagePreview(null);
@@ -249,67 +258,90 @@ const ProductList = () => {
             reader.onload = async (e) => {
               const base64Image = e.target.result;
 
+              const variant = variants.find(v => v.id === editingProductId);
+              const productId = variant.product_id;
+
+              const productData = {
+                code: newProduct.code,
+                name: newProduct.name,
+                price: parseFloat(newProduct.price),
+                quantity: parseInt(newProduct.quantity, 10),
+                status: parseInt(newProduct.status, 10),
+                weight: parseFloat(newProduct.weight),
+                category_id: parseInt(newProduct.category_id, 10),
+                description: newProduct.description,
+                image: base64Image,
+              };
+
+              console.log('Updating product for variant edit with image:', productData);
+
+              await axios.put(
+                `${process.env.REACT_APP_API_URL}/product/${productId}`,
+                productData
+              );
+
               const variantData = {
                 value: newProduct.color,
                 quantity: parseInt(newProduct.quantity, 10),
                 price: parseFloat(newProduct.price),
-                image: base64Image,
               };
 
-              console.log('Updating variant with image:', variantData);
+              console.log('Updating variant:', variantData);
 
-              try {
-                const response = await axios.put(
-                  `${process.env.REACT_APP_API_URL}/product-variant/${editingProductId}`,
-                  variantData
-                );
-                await fetchProducts();
-                toast.success("Cập nhật thành công!");
-                setIsModalOpen(false);
-                setNewProduct({
-                  code: "",
-                  name: "",
-                  color: "",
-                  price: "",
-                  quantity: "",
-                  status: "1",
-                  weight: "",
-                  category_id: "",
-                  description: "",
-                  image: null,
-                });
-                setImagePreview(null);
-                setEditingProductId(null);
-                setEditingVariant(false);
-              } catch (error) {
-                console.error("Error updating variant:", error.response?.data || error.message);
-                const resp = error.response?.data;
-                let errMsg = "Có lỗi xảy ra khi lưu sản phẩm: ";
-
-                if (resp) {
-                  if (resp.message) {
-                    errMsg += resp.message;
-                  } else if (typeof resp.error === "string") {
-                    errMsg += resp.error;
-                  } else if (resp.error && typeof resp.error === "object") {
-                    const flattened = [].concat(...Object.values(resp.error)).join(", ");
-                    errMsg += flattened || JSON.stringify(resp.error);
-                  } else if (resp.errors && typeof resp.errors === "object") {
-                    const flattened = [].concat(...Object.values(resp.errors)).join(", ");
-                    errMsg += flattened;
-                  } else {
-                    errMsg += JSON.stringify(resp);
-                  }
-                } else {
-                  errMsg += error.message || JSON.stringify(error);
-                }
-
-                toast.error(errMsg);
-              }
+              await axios.put(
+                `${process.env.REACT_APP_API_URL}/product-variant/${editingProductId.replace('variant_', '')}`,
+                variantData
+              );
+              await fetchProducts();
+              toast.success("Cập nhật thành công!");
+              setIsModalOpen(false);
+              setNewProduct({
+                code: "",
+                name: "",
+                color: "",
+                price: "",
+                quantity: "",
+                status: "1",
+                weight: "",
+                category_id: "",
+                description: "",
+                image: null,
+              });
+              setImagePreview(null);
+              setEditingProductId(null);
+              setEditingVariant(false);
             };
             reader.readAsDataURL(newProduct.image);
             return;
           } else {
+            const variant = variants.find(v => v.id === editingProductId);
+            if (!variant) {
+              toast.error("Không tìm thấy variant để cập nhật");
+              return;
+            }
+            const productId = variant.product_id;
+
+            const productData = {
+              code: newProduct.code,
+              name: newProduct.name,
+              price: parseFloat(newProduct.price),
+              quantity: parseInt(newProduct.quantity, 10),
+              status: parseInt(newProduct.status, 10),
+              category_id: parseInt(newProduct.category_id, 10),
+              description: newProduct.description,
+            };
+
+            if (newProduct.weight !== '') {
+              productData.weight = parseFloat(newProduct.weight);
+            }
+
+            console.log('Updating product for variant edit:', productData);
+
+            await axios.put(
+              `${process.env.REACT_APP_API_URL}/product/${productId}`,
+              productData
+            );
+
             const variantData = {
               value: newProduct.color,
               quantity: parseInt(newProduct.quantity, 10),
@@ -318,8 +350,8 @@ const ProductList = () => {
 
             console.log('Updating variant without image change:', variantData);
 
-            const response = await axios.put(
-              `${process.env.REACT_APP_API_URL}/product-variant/${editingProductId}`,
+            await axios.put(
+              `${process.env.REACT_APP_API_URL}/product-variant/${editingProductId.replace('variant_', '')}`,
               variantData
             );
             await fetchProducts();
@@ -402,10 +434,13 @@ const ProductList = () => {
               price: parseFloat(newProduct.price),
               quantity: parseInt(newProduct.quantity, 10),
               status: parseInt(newProduct.status, 10),
-              weight: parseFloat(newProduct.weight),
               category_id: parseInt(newProduct.category_id, 10),
               description: newProduct.description,
             };
+
+            if (newProduct.weight !== '') {
+              productData.weight = parseFloat(newProduct.weight);
+            }
 
             console.log('Updating product without image change:', productData);
 
@@ -429,12 +464,15 @@ const ProductList = () => {
               price: parseFloat(newProduct.price),
               quantity: parseInt(newProduct.quantity, 10),
               status: parseInt(newProduct.status, 10),
-              weight: parseFloat(newProduct.weight),
               category_id: parseInt(newProduct.category_id, 10),
               description: newProduct.description,
               image: base64Image,
               color: newProduct.color,
             };
+
+            if (newProduct.weight !== '') {
+              productData.weight = parseFloat(newProduct.weight);
+            }
 
             console.log('Creating product with image:', productData);
 
@@ -490,19 +528,20 @@ const ProductList = () => {
           reader.readAsDataURL(newProduct.image);
           return;
         } else {
-          const productData = {
-            code: newProduct.code,
-            name: newProduct.name,
-            price: parseFloat(newProduct.price),
-            quantity: parseInt(newProduct.quantity, 10),
-            status: parseInt(newProduct.status, 10),
-            weight: parseFloat(newProduct.weight),
-            category_id: parseInt(newProduct.category_id, 10),
-            description: newProduct.description,
-            color: newProduct.color,
-          };
+            const productData = {
+              code: newProduct.code,
+              name: newProduct.name,
+              price: parseFloat(newProduct.price),
+              quantity: parseInt(newProduct.quantity, 10),
+              status: parseInt(newProduct.status, 10),
+              category_id: parseInt(newProduct.category_id, 10),
+              description: newProduct.description,
+              color: newProduct.color,
+            };
 
-          console.log('Creating product without image:', productData);
+            if (newProduct.weight !== '') {
+              productData.weight = parseFloat(newProduct.weight);
+            }          console.log('Creating product without image:', productData);
 
           const response = await axios.post(
             `${process.env.REACT_APP_API_URL}/product`,
@@ -559,6 +598,10 @@ const ProductList = () => {
 
   const handleDeleteProduct = (variantId) => {
     const variant = variants.find(v => v.id === variantId);
+    if (!variant) {
+      toast.error("Không tìm thấy variant để xóa");
+      return;
+    }
     const productId = variant.product_id;
     const product = variants.find(v => v.id === variantId);
     setConfirmDialog({
@@ -660,8 +703,6 @@ const ProductList = () => {
           </button>
         </div>
 
-        {/* Search Input */}
-        <div className="mb-6">
           <SearchInput
             searchFields={[
               {
@@ -687,20 +728,19 @@ const ProductList = () => {
                   { value: '0', label: 'Không hoạt động' }
                 ]
               },
-              {
-                key: 'quantity',
-                label: 'Số lượng',
-                type: 'number',
-                placeholder: 'Nhập số lượng...'
-              }
             ]}
             onSearch={(filters) => {
-              fetchProducts(filters);
+              const updatedFilters = { ...filters };
+              if (!updatedFilters.status) {
+                updatedFilters.status = 'all';
+              }
+              setCurrentPage(1);
+              setSearchFilters(updatedFilters);
             }}
             size="medium"
             useSearchButton={true}
+            showClearButton={false}
           />
-        </div>
 
         {/* Error Message */}
         {error && (
@@ -785,6 +825,13 @@ const ProductList = () => {
                 listTitle={listTitle}
               />
             </div>
+
+            {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={pagination.last_page || 1}
+              onPageChange={setCurrentPage}
+            />
           </>
         )}
 
@@ -906,8 +953,23 @@ const ProductList = () => {
                           onChange={handleInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           placeholder="Nhập trọng lượng"
-                          required
                         />
+                      </div>
+
+                      <div>
+                        <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                          Trạng thái
+                        </label>
+                        <select
+                          name="status"
+                          value={newProduct.status}
+                          onChange={handleInputChange}
+                          className="w-full px-2 py-2 text-sm sm:px-3 sm:py-2 sm:text-base border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          required
+                        >
+                          <option value="1">Đang hoạt động</option>
+                          <option value="0">Không hoạt động</option>
+                        </select>
                       </div>
 
                       <div>

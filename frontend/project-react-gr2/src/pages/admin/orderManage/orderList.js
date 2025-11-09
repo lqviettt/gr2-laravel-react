@@ -1,14 +1,27 @@
-import React, { useEffect, useState, memo } from "react";
+import React, { useEffect, useState, memo, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import CommonTable from "../../../components/CommonTable";
-import { FaShoppingCart, FaClock, FaTruck, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import Pagination from "../../../components/Pagination";
+import ConfirmDialog from "../../../components/ConfirmDialog";
+import SearchInput from "../../../components/SearchInput";
+import { FaShoppingCart, FaClock, FaTruck, FaCheckCircle } from "react-icons/fa";
 
 const OrderList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const [searchFilters, setSearchFilters] = useState({
+    customer_name: '',
+    customer_phone: '',
+    status: '',
+    start_date: '',
+    end_date: '',
+  });
 
   const [orders, setOrders] = useState([]);
   const [newOrder, setNewOrder] = useState({
@@ -25,13 +38,56 @@ const OrderList = () => {
   });
 
   const [editingOrderId, setEditingOrderId] = useState(null);
-  const fetchOrders = async () => {
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+  const fetchOrders = useCallback(async (page = currentPage, filters = searchFilters) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/order`);
-      console.log('Order data:', response.data); // Debug log
-      setOrders(response.data.data || []);
+      const queryParams = new URLSearchParams();
+      queryParams.append('page', page);
+      if (filters.customer_name) queryParams.append('search', filters.customer_name);
+      if (filters.customer_phone) queryParams.append('phone', filters.customer_phone);
+      if (filters.status !== undefined && filters.status !== '') queryParams.append('status', filters.status);
+      if (filters.start_date) queryParams.append('start_date', filters.start_date);
+      if (filters.end_date) queryParams.append('end_date', filters.end_date);
+      const url = `${process.env.REACT_APP_API_URL}/order${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      const response = await axios.get(url);
+      console.log('Order data:', response.data);
+      let ordersData = [];
+      let paginationData = {};
+      if (response.data && typeof response.data === 'object' && 'data' in response.data && typeof response.data.data === 'object' && 'data' in response.data.data && Array.isArray(response.data.data.data)) {
+        // Paginated response
+        ordersData = response.data.data.data.map(order => ({
+          ...order,
+          product_names: order.order_item.map(item => item.product_name || 'N/A').join(', '),
+          variants: order.order_item.map(item => item.product_variant_name || 'N/A').join(', '),
+          combined_products: order.order_item.map(item => `${item.product_name || 'N/A'}(${item.product_variant_name || 'N/A'})`).join(', '),
+          quantities: order.order_item.map(item => item.quantity).join(', '),
+          created_at_formatted: formatDate(order.created_at),
+        }));
+        paginationData = { ...response.data.data };
+        delete paginationData.data;
+      } else if (Array.isArray(response.data)) {
+        ordersData = response.data;
+        paginationData = {};
+      } else {
+        ordersData = [];
+        paginationData = {};
+      }
+      setOrders(ordersData);
+      setPagination(paginationData);
+      console.log('Orders data set:', ordersData);
+      console.log('Pagination set:', paginationData);
     } catch (error) {
       console.error("Error fetching orders:", error);
       setError("Không thể tải danh sách đơn hàng");
@@ -39,11 +95,17 @@ const OrderList = () => {
     } finally {
       setLoading(false);
     }
+  }, [searchFilters, currentPage]);
+
+  const handleSearch = (filters) => {
+    setSearchFilters(filters);
+    setCurrentPage(1);
+    fetchOrders(1, filters);
   };
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    fetchOrders(currentPage);
+  }, [currentPage, fetchOrders]);
 
   const handleEditOrder = (orderId) => {
     const orderToEdit = orders.find((order) => order.id === orderId);
@@ -83,9 +145,16 @@ const OrderList = () => {
 
       console.log("Save response:", response.data);
 
-      // Refresh data from server instead of updating local state
-      const refreshResponse = await axios.get(`${process.env.REACT_APP_API_URL}/order`);
-      setOrders(refreshResponse.data.data);
+      await fetchOrders();
+
+      setSearchFilters({
+        customer_name: '',
+        customer_phone: '',
+        status: '',
+        start_date: '',
+        end_date: '',
+      });
+      setCurrentPage(1);
 
       setEditingOrderId(null);
       toast.success("Order saved successfully!");
@@ -122,19 +191,21 @@ const OrderList = () => {
   };
 
   const handleDeleteOrder = async (orderId) => {
-    try {
-      if (!window.confirm("Bạn có chắc chắn muốn xóa đơn hàng này?")) {
-        return;
+    setConfirmAction(() => async () => {
+      try {
+        await axios.delete(`${process.env.REACT_APP_API_URL}/order/${orderId}`);
+        if (Array.isArray(orders)) {
+          setOrders(orders.filter((order) => order.id !== orderId));
+        }
+        toast.success("Xóa đơn hàng thành công!");
+        setIsConfirmOpen(false);
+      } catch (error) {
+        console.error("Error deleting order:", error);
+        toast.error("Có lỗi xảy ra khi xóa đơn hàng");
+        setIsConfirmOpen(false);
       }
-      await axios.delete(`${process.env.REACT_APP_API_URL}/order/${orderId}`);
-      if (Array.isArray(orders)) {
-        setOrders(orders.filter((order) => order.id !== orderId));
-      }
-      toast.success("Xóa đơn hàng thành công!");
-    } catch (error) {
-      console.error("Error deleting order:", error);
-      toast.error("Có lỗi xảy ra khi xóa đơn hàng");
-    }
+    });
+    setIsConfirmOpen(true);
   };
 
   const fields = {
@@ -142,11 +213,10 @@ const OrderList = () => {
     customer_name: 'customer_name',
     customer_phone: 'customer_phone',
     shipping_address: 'shipping_address',
-    product_names: 'custom.product_names',
-    variants: 'custom.variants',
-    quantities: 'custom.quantities',
+    combined_products: 'custom.combined_products',
+    quantities: 'quantities',
     total_price: 'total_price',
-    created_at: 'created_at',
+    created_at: 'created_at_formatted',
     status: 'status',
     actions: 'pattern.modified',
   };
@@ -156,14 +226,26 @@ const OrderList = () => {
     customer_name: 'Khách hàng',
     customer_phone: 'SĐT',
     shipping_address: 'Địa chỉ',
-    product_names: 'Sản phẩm',
-    variants: 'Màu sắc',
+    combined_products: 'Sản phẩm (Màu sắc)',
     quantities: 'SL',
     total_price: 'Tổng tiền',
     created_at: 'Ngày tạo',
     status: 'Trạng thái',
     actions: 'Thao tác',
   };
+
+  const searchFields = [
+    { key: 'customer_name', label: 'Tên khách hàng', type: 'text', placeholder: 'Nhập tên khách hàng' },
+    { key: 'customer_phone', label: 'Số điện thoại', type: 'text', placeholder: 'Nhập số điện thoại' },
+    { key: 'status', label: 'Trạng thái', type: 'select', placeholder: 'Tất cả', options: [
+      { value: 'pending', label: 'Đang chờ' },
+      { value: 'shipping', label: 'Đang giao hàng' },
+      { value: 'delivered', label: 'Đã giao' },
+      { value: 'canceled', label: 'Đã hủy' }
+    ]},
+    { key: 'start_date', label: 'Từ ngày', type: 'date' },
+    { key: 'end_date', label: 'Đến ngày', type: 'date' },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -174,6 +256,17 @@ const OrderList = () => {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Quản lý đơn hàng</h1>
             <p className="text-gray-600">Quản lý các đơn hàng của cửa hàng</p>
           </div>
+        </div>
+
+        {/* Search Form */}
+        <div className="mb-6">
+          <SearchInput
+            searchFields={searchFields}
+            onSearch={handleSearch}
+            useSearchButton={true}
+            showClearButton={false}
+            className="mb-4"
+          />
         </div>
 
         {/* Error Message */}
@@ -273,10 +366,20 @@ const OrderList = () => {
                     onDelete={handleDeleteOrder}
                     listTitle={listTitle}
                     hiddenOnMobile={['customer_phone', 'shipping_address', 'created_at']}
+                    columnStyles={{
+                      created_at: { minWidth: '120px', whiteSpace: 'nowrap' },
+                    }}
                   />
                 </div>
               </div>
             </div>
+
+            {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={pagination.last_page || 1}
+              onPageChange={setCurrentPage}
+            />
           </>
         )}
 
@@ -426,6 +529,18 @@ const OrderList = () => {
             </div>
           </div>
         )}
+
+        {/* Confirm Dialog */}
+        <ConfirmDialog
+          isOpen={isConfirmOpen}
+          title="Xác nhận xóa"
+          message="Bạn có chắc chắn muốn xóa đơn hàng này?"
+          confirmText="Xóa"
+          cancelText="Hủy"
+          onConfirm={() => confirmAction && confirmAction()}
+          onCancel={() => setIsConfirmOpen(false)}
+          type="danger"
+        />
       </div>
     </div>
   );

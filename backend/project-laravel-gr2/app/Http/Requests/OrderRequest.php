@@ -32,6 +32,9 @@ class OrderRequest extends FormRequest
                 'max:20',
                 Rule::unique('orders', 'code')->ignore($orderId)
             ];
+
+        $isUpdate = $this->isMethod('PUT') || $this->isMethod('PATCH');
+
         return [
             "code" => $codeRule,
             'customer_name' => 'required|string|max:32',
@@ -45,11 +48,11 @@ class OrderRequest extends FormRequest
             'shipping_fee'  => 'nullable|numeric',
             'total_price' => 'nullable|numeric',
             'payment_method' => 'nullable|string',
-            'order_item' => 'required|array',
-            'order_item.*.product_id' => 'required|exists:products,id',
+            'order_item' => $isUpdate ? 'nullable|array' : 'required|array',
+            'order_item.*.product_id' => $isUpdate ? 'nullable|exists:products,id' : 'required|exists:products,id',
             'order_item.*.product_variant_id' => 'nullable|exists:product_variants,id',
-            'order_item.*.quantity' => 'required|integer|min:1',
-            'order_item.*.price' => 'required|integer',
+            'order_item.*.quantity' => $isUpdate ? 'nullable|integer|min:1' : 'required|integer|min:1',
+            'order_item.*.price' => $isUpdate ? 'nullable|integer' : 'required|integer',
         ];
     }
 
@@ -88,7 +91,7 @@ class OrderRequest extends FormRequest
         $firstname = array_pop($nameParts);
         $lastname = implode(' ', $nameParts);
 
-        return [
+        $data = [
             'code' => $this->code,
             'firstname' => $firstname,
             'lastname' => $lastname,
@@ -102,7 +105,13 @@ class OrderRequest extends FormRequest
             'total_price' => $this->total_price,
             'payment_method' => $this->payment_method,
             'status' => $this->status,
-            'order_item' => $this->order_item
         ];
+
+        // Only include order_item if it's provided
+        if ($this->has('order_item')) {
+            $data['order_item'] = $this->order_item;
+        }
+
+        return $data;
     }
 }

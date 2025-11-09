@@ -47,6 +47,13 @@ class Product extends BaseModel
         return $this->hasMany(ProductVariant::class);
     }
 
+    public function scopeWhereCategoryActive($query)
+    {
+        return $query->whereHas('category', function ($q) {
+            $q->where('status', 1);
+        });
+    }
+
     public function getImageUrlAttribute()
     {
         return $this->image ? asset('storage/' . $this->image) : null;

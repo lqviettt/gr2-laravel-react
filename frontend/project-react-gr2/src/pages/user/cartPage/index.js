@@ -229,7 +229,7 @@ const Cart = () => {
   return (
     <div className="pt-10 pb-10 bg-gray-100">
       <div className="font-sans bg-white max-w-6xl mx-auto p-8 rounded-md">
-        <div className="mx-auto opacity-70">
+        <div className="mx-auto">
           {cartItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center mt-6">
               <BsMinecartLoaded size={100} />

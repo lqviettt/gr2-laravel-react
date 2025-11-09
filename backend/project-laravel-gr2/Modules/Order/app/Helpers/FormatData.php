@@ -14,7 +14,7 @@ class FormatData
      * @param  mixed $orders
      * @return SupportCollection
      */
-    public function formatData(LengthAwarePaginator|Collection $orders): SupportCollection
+    public function formatData(LengthAwarePaginator|Collection|SupportCollection $orders): SupportCollection
     {
         if ($orders instanceof LengthAwarePaginator) {
             $orders = $orders->getCollection();
@@ -38,14 +38,20 @@ class FormatData
                 'payment_method' => $order->payment_method ?? null,
                 'created_at' => $order->created_at->format('Y-m-d H:i:s') ?? null,
                 'order_item' => $order->orderItem->map(function ($item) {
+                    // Get product name from product or from product_variant's product
+                    $productName = $item->product?->name;
+                    if (!$productName && $item->product_variant) {
+                        $productName = $item->product_variant->product?->name;
+                    }
+
                     return [
                         'id' => $item->id ?? null,
                         'order_id' => $item->order_id ?? null,
-                        'product_id' => $item->product->id ?? null,
-                        'product_name' => $item->product->name ?? null,
-                        'weight' => $item->product->weight ?? null,
-                        'product_variant_id' => $item->product_variant->id ?? null,
-                        'product_variant_name' => $item->product_variant->value ?? null,
+                        'product_id' => $item->product?->id ?? $item->product_variant?->product_id ?? null,
+                        'product_name' => $productName ?? null,
+                        'weight' => $item->product?->weight ?? null,
+                        'product_variant_id' => $item->product_variant?->id ?? null,
+                        'product_variant_name' => $item->product_variant?->value ?? null,
                         'quantity' => $item->quantity ?? null,
                         'price' => $item->price ?? null,
                     ];

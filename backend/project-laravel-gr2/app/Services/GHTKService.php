@@ -45,6 +45,8 @@ class GHTKService
         $response = Http::withHeaders([
             'Token' => $this->apiToken,
             'Content-Type' => 'application/json',
+        ])->withOptions([
+            'verify' => false,
         ])->get("{$this->apiUrl}/services/shipment/fee", [
             'pick_province' => config('app.pick_province'),
             'pick_district' => config('app.pick_district'),

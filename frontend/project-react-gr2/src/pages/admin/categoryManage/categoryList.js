@@ -5,6 +5,7 @@ import CommonTable from "../../../components/CommonTable";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import SearchInput from "../../../components/SearchInput";
+import Pagination from "../../../components/Pagination";
 
 const CategoryManageList = () => {
   const [categories, setCategories] = useState([]);
@@ -12,22 +13,26 @@ const CategoryManageList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchFilters, setSearchFilters] = useState({});
+  const [pagination, setPagination] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    fetchCategories(searchFilters);
-  }, [searchFilters]);
+    fetchCategories(searchFilters, currentPage);
+  }, [searchFilters, currentPage]);
 
-  const fetchCategories = async (filters = {}) => {
+  const fetchCategories = async (filters = {}, page = currentPage) => {
     try {
       setLoading(true);
       setError(null);
 
       const queryParams = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
+      const effectiveFilters = { ...filters };
+      Object.entries(effectiveFilters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
           queryParams.append(key, value);
         }
       });
+      queryParams.append('page', page);
 
       const url = `${process.env.REACT_APP_API_URL}/category${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
       const response = await axios.get(url);
@@ -35,10 +40,13 @@ const CategoryManageList = () => {
       let categoriesData = [];
       if (Array.isArray(response.data.data)) {
         categoriesData = response.data.data;
+        setPagination({});
       } else if (Array.isArray(response.data.data?.data)) {
         categoriesData = response.data.data.data;
+        setPagination(response.data.data);
       } else if (Array.isArray(response.data)) {
         categoriesData = response.data;
+        setPagination({});
       }
 
       console.log('Final categories data:', categoriesData);
@@ -70,13 +78,21 @@ const CategoryManageList = () => {
     const categoryToEdit = categories.find(
       (category) => category.id === categoryId
     );
-    setNewCategory(categoryToEdit);
+    setNewCategory({
+      ...categoryToEdit,
+      status: categoryToEdit.status?.toString() || "1"
+    });
     setEditingCategoryId(categoryId);
     setIsModalOpen(true);
   };
 
   const handleSaveCategory = async (e) => {
     e.preventDefault();
+    if (!newCategory.name || newCategory.name.trim() === "") {
+      toast.error("Tên danh mục không được rỗng");
+      return;
+    }
+    console.log('Saving category:', newCategory);
     try {
       if (editingCategoryId) {
         await axios.put(
@@ -217,7 +233,6 @@ const CategoryManageList = () => {
           </button>
         </div>
 
-        <div className="mb-6">
           <SearchInput
             searchFields={[
               {
@@ -238,12 +253,17 @@ const CategoryManageList = () => {
               }
             ]}
             onSearch={(filters) => {
-              fetchCategories(filters);
+              const updatedFilters = { ...filters };
+              if (!updatedFilters.status) {
+                updatedFilters.status = 'all';
+              }
+              setCurrentPage(1);
+              setSearchFilters(updatedFilters);
             }}
             size="medium"
             useSearchButton={true}
+            showClearButton={false}
           />
-        </div>
 
         {/* Error Message */}
         {error && (
@@ -328,6 +348,13 @@ const CategoryManageList = () => {
                 listTitle={listTitle}
               />
             </div>
+
+            {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={pagination.last_page || 1}
+              onPageChange={setCurrentPage}
+            />
           </>
         )}
 
@@ -363,11 +390,10 @@ const CategoryManageList = () => {
                       <input
                         type="text"
                         name="name"
-                        value={newCategory.name}
+                        value={newCategory.name || ""}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Nhập tên danh mục"
-                        required
                       />
                     </div>
 

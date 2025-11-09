@@ -36,7 +36,7 @@ class ProductRequest extends FormRequest
             "category_id" => "required|exists:categories,id",
             "description" => "nullable|string|max:255",
             "price" => "required|integer",
-            "weight" => "nullable|integer",
+            "weight" => "nullable|numeric",
             "status" => "nullable|integer",
             "color" => "nullable|string|max:50",
             "image" => "nullable|string",

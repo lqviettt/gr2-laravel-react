@@ -36,12 +36,18 @@ class OrderController extends Controller
         // $this->authorize('view', Order::class);
         $query = $this->orderRepository
             ->builderQuery()
-            ->searchByStatus($request->status)
+            ->searchByStatusOrder($request->status)
             ->searchByNameCode($request->search)
             ->searchByPhone($request->phone)
-            ->searchByCreated($request->created_by);
+            ->searchByCreated($request->created_by)
+            ->searchByDate($request->start_date, $request->end_date)
+            ->orderBy('created_at', 'desc');
 
-        return $this->sendSuccess($formatData->formatData($query->paginate($perPage)));
+        $paginator = $query->paginate($perPage);
+        $formattedData = $formatData->formatData($paginator->getCollection());
+        $paginator->setCollection($formattedData);
+
+        return $this->sendSuccess($paginator);
     }
 
     /**
@@ -93,7 +99,7 @@ class OrderController extends Controller
     }
 
     //Doan nay tam thoi de day, sau nay se chuyen vao service
-    private function generateUrlPayment(string $vnpBankCode, Order $order, array $config): array
+    private function generateUrlPayment(string $vnpBankCode, Order $order, array $config)
     {
         $vnpHashSecret = $config['secret_key'];
         $vnpUrl = $config['url'];
@@ -178,7 +184,7 @@ class OrderController extends Controller
      * @param  mixed $order
      * @return JsonResponse
      */
-    public function update(OrderRequest $request, Order $order): JsonResponse
+    public function update(OrderRequest $request, Order $order, FormatData $formatData): JsonResponse
     {
         // $this->authorize('update', $order);
         if ($order->status === 'canceled') {
@@ -192,7 +198,10 @@ class OrderController extends Controller
                 $this->orderRepository->updateOrder($order, $request->updateOrder());
             });
 
-            return $this->updated($order->load('orderItem'));
+            $order->load('orderItem.product', 'orderItem.product_variant.product');
+            $formattedOrder = $formatData->formatData(collect([$order]))->first();
+
+            return $this->updated($formattedOrder);
         } catch (\Exception $e) {
 
             return $this->sendError($e->getMessage());
@@ -211,5 +220,35 @@ class OrderController extends Controller
         $order->delete($order);
 
         return $this->deteled();
+    }
+
+    /**
+     * returnPay
+     *
+     * @param  mixed $request
+     * @return void
+     */
+    public function returnPay(Request $request)
+    {
+        $vnp_HashSecret = config('app.vnp_HashSecret');
+        $vnp_SecureHash = $request->input('vnp_SecureHash');
+        $inputData = $request->except('vnp_SecureHash');
+
+        ksort($inputData);
+        $hashData = '';
+        foreach ($inputData as $key => $value) {
+            $hashData .= urlencode($key) . "=" . urlencode($value) . "&";
+        }
+
+        $hashData = rtrim($hashData, "&");
+        $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
+        $isSignatureValid = $secureHash === $vnp_SecureHash;
+        $isSuccess = $request->input('vnp_ResponseCode') === '00';
+
+        return view('payments.return', [
+            'data' => $request->all(),
+            'isSignatureValid' => $isSignatureValid,
+            'isSuccess' => $isSuccess,
+        ]);
     }
 }

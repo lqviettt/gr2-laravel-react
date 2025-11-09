@@ -37,12 +37,13 @@ class ProductController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->input('perPage', 100);
+        $perPage = $request->input('perPage', 2);
         $query = $this->productRepository
             ->builderQuery()
             ->searchByNameCode($request->search)
             ->searchByCategory($request->category_id)
-            ->searchByStatus($request->status);
+            ->searchByStatus($request->status)
+            ->whereCategoryActive();
 
         $result = $query->paginate($perPage);
         $result->getCollection()->load('variants.variantOption');

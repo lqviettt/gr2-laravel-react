@@ -104,4 +104,27 @@ class Order extends BaseModel
             })
         );
     }
+
+    public function scopeSearchByDate($query, $startDate, $endDate)
+    {
+        return $query->when(
+            !is_null($startDate) || !is_null($endDate),
+            function ($query) use ($startDate, $endDate) {
+                if (!is_null($startDate) && !is_null($endDate)) {
+                    $query->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                } elseif (!is_null($startDate)) {
+                    $query->where('created_at', '>=', $startDate . ' 00:00:00');
+                } elseif (!is_null($endDate)) {
+                    $query->where('created_at', '<=', $endDate . ' 23:59:59');
+                }
+            }
+        );
+    }
+
+    public function scopeSearchByStatusOrder($query, $status)
+    {
+        if (!is_null($status) && $status !== '') {
+            $query->where('status', $status);
+        }
+    }
 }

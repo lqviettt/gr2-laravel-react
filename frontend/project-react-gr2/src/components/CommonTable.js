@@ -32,6 +32,7 @@ const CommonTable = ({
   formId = "",
   routeToSort = "",
   method = "post",
+  columnStyles = {}, // New prop for column-specific styles
 }) => {
   const [sortField, setSortField] = useState("");
   const [imageModal, setImageModal] = useState({ isOpen: false, src: "", alt: "" });
@@ -195,7 +196,7 @@ const CommonTable = ({
             badgeClass = "bg-red-100 text-red-800";
             break;
           case "pending":
-            statusText = "Chờ xử lý";
+            statusText = "Đang chờ";
             badgeClass = "bg-yellow-100 text-yellow-800";
             break;
           case "shipping":
@@ -234,15 +235,6 @@ const CommonTable = ({
           <input type="hidden" name="field-table-to-sort" value={sortField} />
         </form>
       )}
-
-      {/* <button
-        type="button"
-        className="btn btn-primary filter-table-btn"
-        data-bs-toggle="modal"
-        data-bs-target={`#${filterModalId}`}
-      >
-        <FaFilter />
-      </button> */}
 
       <div
         className="table-responsive w-100"
@@ -318,6 +310,7 @@ const CommonTable = ({
                             : "default",
                           border: "1px solid #ddd",
                           padding: "8px 12px",
+                          ...columnStyles[key],
                         }}
                       >
                         {getFieldTitle(key)}
@@ -364,7 +357,7 @@ const CommonTable = ({
                         hiddenOnMobile.includes(key) ? "hidden-on-mobile" : ""
                       }`}
                       title={item[value] || item[key]}
-                      style={{ border: "1px solid #ddd", padding: "8px 12px" }}
+                      style={{ border: "1px solid #ddd", padding: "8px 12px", ...columnStyles[key] }}
                     >
                       {renderCell(item, key, value)}
                     </td>
