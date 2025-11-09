@@ -1,35 +1,12 @@
 import { memo, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { FaSortAmountDown } from "react-icons/fa";
+import LoadingSpinner from "../../../component/user/LoadingSpinner";
+import ErrorMessage from "../../../component/user/ErrorMessage";
+import ProductGrid from "../../../component/user/ProductGrid";
+import Section from "../../../component/user/Section";
+import { formatCurrency } from "../../../utils/common";
 import "./style.scss";
-import ip12 from "../../../assets/images/ip12.webp";
-import ip12Pro from "../../../assets/images/ip12-pro.webp";
-import ip13 from "../../../assets/images/ip13.webp";
-import ip13Pro from "../../../assets/images/ip13-pro.webp";
-import ip14 from "../../../assets/images/ip14.webp";
-import ip14Pro from "../../../assets/images/ip14-pro.webp";
-import ip15 from "../../../assets/images/ip15.webp";
-import ip15Pro from "../../../assets/images/ip15-pro.webp";
-import ip16 from "../../../assets/images/ip16.webp";
-import ip16Pro from "../../../assets/images/ip16-pro.webp";
-
-const productImages = {
-  1: [{ id: 1, src: ip12, alt: "iPhone 12" }],
-  6: [{ id: 1, src: ip12Pro, alt: "iPhone 12 Pro" }],
-  11: [{ id: 1, src: ip12Pro, alt: "iPhone 12 Pro Max" }],
-  2: [{ id: 1, src: ip13, alt: "iPhone 13" }],
-  7: [{ id: 1, src: ip13Pro, alt: "iPhone 13 Pro" }],
-  12: [{ id: 1, src: ip13Pro, alt: "iPhone 13 Pro Max" }],
-  3: [{ id: 1, src: ip14, alt: "iPhone 14" }],
-  8: [{ id: 1, src: ip14Pro, alt: "iPhone 14 Pro" }],
-  13: [{ id: 1, src: ip14Pro, alt: "iPhone 14 Pro Max" }],
-  4: [{ id: 1, src: ip15, alt: "iPhone 15" }],
-  9: [{ id: 1, src: ip15Pro, alt: "iPhone 15 Pro" }],
-  14: [{ id: 1, src: ip15Pro, alt: "iPhone 15 Pro Max" }],
-  5: [{ id: 1, src: ip16, alt: "iPhone 16" }],
-  10: [{ id: 1, src: ip16Pro, alt: "iPhone 16 Pro" }],
-  15: [{ id: 1, src: ip16Pro, alt: "iPhone 16 Pro Max" }],
-};
 
 const ProductList = () => {
   const location = useLocation();
@@ -37,14 +14,7 @@ const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
 
   useEffect(() => {
     const fetchProductsByCategory = async () => {
@@ -58,10 +28,6 @@ const ProductList = () => {
         const result = await response.json();
         if (result?.data.data) {
           setProducts(result.data.data);
-          const images = productImages[categoryId] || [];
-          if (images.length > 0) {
-            setSelectedImage(images[0].src);
-          }
         } else {
           throw new Error("Dữ liệu trả về không hợp lệ");
         }
@@ -81,15 +47,22 @@ const ProductList = () => {
   }, [categoryId]);
 
   if (loading) {
-    return <p>Đang tải danh sách sản phẩm...</p>;
+    return <LoadingSpinner message="Đang tải danh sách sản phẩm..." />;
   }
 
   if (error) {
-    return <div className="error">Đã xảy ra lỗi: {error}</div>;
+    return <ErrorMessage message={error} />;
   }
 
   if (!products.length) {
-    return <p>Không có sản phẩm nào trong danh mục này.</p>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center text-gray-500">
+          <div className="text-6xl mb-4">📦</div>
+          <h3 className="text-lg font-medium">Không có sản phẩm nào trong danh mục này.</h3>
+        </div>
+      </div>
+    );
   }
 
   const handleSort = (order) => {
@@ -100,51 +73,69 @@ const ProductList = () => {
     return sortOrder === "asc" ? a.price - b.price : b.price - a.price;
   });
 
+  const getCategoryTitle = () => {
+    // You can expand this with more category mappings
+    const categoryTitles = {
+      1: "iPhone 12 Series",
+      2: "iPhone 13 Series",
+      3: "iPhone 14 Series",
+      4: "iPhone 15 Series",
+      5: "iPhone 16 Series",
+    };
+    return categoryTitles[categoryId] || "Danh mục sản phẩm";
+  };
+
   return (
-    <div className="content mt-5">
-      <div className="featured-categories">
-        <h1 className="title-page">
-          <span>
-            {categoryId && productImages[categoryId]
-              ? productImages[categoryId][0].alt
-              : "Danh mục sản phẩm"}
-          </span>
-        </h1>
-        <h2 className="sort-title">
-          <FaSortAmountDown />
-          <span>Xếp theo: </span>
-        </h2>
-        <div className="sort-buttons">
-          <button onClick={() => handleSort("asc")}>Giá thấp đến cao</button>
-          <button onClick={() => handleSort("desc")}>Giá cao xuống thấp</button>
-        </div>
-        <div className="categories-list">
-          {sortedProducts.map((product) => (
-            <div key={product.id}>
-              <a
-                href={`/product-detail/${product.id}`}
-                className="category-item"
-              >
-                {(productImages[product.category_id] || []).map((image) => (
-                  <img
-                    key={image.id}
-                    src={image.src}
-                    alt={image.alt}
-                    onClick={() => setSelectedImage(image.src)}
-                    className={selectedImage === image.src ? "active" : ""}
-                  />
-                ))}
-                <div className="text-left text-xl font-semibold w-4/5">
-                  <p>{product.name}</p>
-                  <p className="mt-5 text-red-500">
-                    {formatCurrency(product.price * 1000)}
-                  </p>
-                </div>
-              </a>
+    <div className="min-h-screen bg-gray-50">
+      <Section className="py-6 lg:py-8">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 lg:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800">
+            {getCategoryTitle()}
+          </h1>
+
+          {/* Sort Controls */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex items-center gap-2 text-sm lg:text-base font-medium text-gray-700">
+              <FaSortAmountDown />
+              <span>Xếp theo:</span>
             </div>
-          ))}
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleSort("asc")}
+                className={`px-3 lg:px-4 py-2 text-sm lg:text-base rounded-md transition-colors ${
+                  sortOrder === "asc"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                Giá thấp đến cao
+              </button>
+              <button
+                onClick={() => handleSort("desc")}
+                className={`px-3 lg:px-4 py-2 text-sm lg:text-base rounded-md transition-colors ${
+                  sortOrder === "desc"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                Giá cao xuống thấp
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+
+        {/* Products Grid */}
+        <ProductGrid
+          products={sortedProducts}
+          columns={{ default: 2, sm: 3, md: 4, lg: 5, xl: 6 }}
+          className="gap-4 lg:gap-6"
+        />
+
+        {/* Results Count */}
+        <div className="text-center mt-8 text-sm lg:text-base text-gray-600">
+          Hiển thị {sortedProducts.length} sản phẩm
+        </div>
+      </Section>
     </div>
   );
 };

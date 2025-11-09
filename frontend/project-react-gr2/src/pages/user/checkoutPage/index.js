@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../../component/CartContext";
 import { BsMinecartLoaded } from "react-icons/bs";
@@ -295,7 +295,7 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     const fetchDistricts = async () => {
-      if (!order.shipping_province) return;
+      if (!order.shipping_province_id) return;
       try {
         const response = await axios.get(
           `https://online-gateway.ghn.vn/shiip/public-api/master-data/district?province_id=${order.shipping_province_id}`,
@@ -312,11 +312,11 @@ const CheckoutPage = () => {
     };
 
     fetchDistricts();
-  }, [order.shipping_province]);
+  }, [order.shipping_province_id]);
 
   useEffect(() => {
     const fetchWards = async () => {
-      if (!order.shipping_district) return;
+      if (!order.shipping_district_id) return;
       try {
         const response = await axios.get(
           `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=${order.shipping_district_id}`,
@@ -333,9 +333,9 @@ const CheckoutPage = () => {
     };
 
     fetchWards();
-  }, [order.shipping_district]);
+  }, [order.shipping_district_id]);
 
-  const calculateShippingFee = async () => {
+  const calculateShippingFee = useCallback(async () => {
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/shipping-fee`,
@@ -356,7 +356,7 @@ const CheckoutPage = () => {
         error.response?.data || error.message
       );
     }
-  };
+  }, [order.shipping_province, order.shipping_district, order.shipping_ward, order.shipping_address_detail, getTotalPrice]);
 
   useEffect(() => {
     if (
@@ -366,10 +366,9 @@ const CheckoutPage = () => {
     ) {
       calculateShippingFee();
     }
-  }, [order.shipping_province, order.shipping_district, order.shipping_ward]);
+  }, [order.shipping_province, order.shipping_district, order.shipping_ward, calculateShippingFee]);
 
   const [orderSuccess, setOrderSuccess] = useState(false);
-  const [orderCode, setOrderCode] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -381,7 +380,6 @@ const CheckoutPage = () => {
         order
       );
       setOrder({ ...order, ...response.data.data });
-      setOrderCode(response.data.data.code);
 
       console.log("Đơn hàng đã được tạo:", response.data.data);
 
@@ -406,247 +404,257 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-6 lg:py-8">
       <form className="" onSubmit={handleSubmit}>
-        <div className="flex flex-col items-center justify-center bg-gray-100 max-h-[1500px]">
-          <div className="font-[sans-serif] bg-white my-6 mb-12 w-4/6 h-full p-5 rounded-xl">
-            <div className="flex flex-row gap-4">
-              <div className="flex-1 h-max rounded-md px-4 py-2">
-                <h2 className="border-l-[5px] pl-1 border-[#00adf0] text-2xl font-bold text-gray-800 mb-7">
-                  Thông tin đặt hàng
-                </h2>
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-800 mb-4">
-                    Thông tin người nhận
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <input
-                        type="text"
-                        name="customer_name"
-                        placeholder="Họ và tên"
-                        value={order.customer_name}
-                        onChange={handleChange}
-                        required
-                        className="px-4 py-3 bg-gray-100 focus:bg-transparent text-gray-800 w-full text-sm rounded-md focus:outline-blue-600"
-                      />
-                    </div>
-                    <div>
-                      <input
-                        type="text"
-                        name="customer_phone"
-                        placeholder="Số điện thoại"
-                        value={order.customer_phone}
-                        onChange={handleChange}
-                        required
-                        className="px-4 py-3 bg-gray-100 focus:bg-transparent text-gray-800 w-full text-sm rounded-md focus:outline-blue-600"
-                      />
-                    </div>
-                    <div>
-                      <input
-                        type="email"
-                        name="customer_email"
-                        placeholder="Email"
-                        value={order.customer_email}
-                        onChange={handleChange}
-                        className="px-4 py-3 bg-gray-100 focus:bg-transparent text-gray-800 w-full text-sm rounded-md focus:outline-blue-600"
-                      />
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="p-4 sm:p-6 lg:p-8">
+              <div className="flex flex-col xl:flex-row gap-6 lg:gap-8">
+                {/* Order Information */}
+                <div className="flex-1 order-2 xl:order-1">
+                  <h2 className="border-l-[5px] pl-3 border-blue-500 text-xl sm:text-2xl font-bold text-gray-800 mb-6 lg:mb-8">
+                    Thông tin đặt hàng
+                  </h2>
+
+                  {/* Customer Information */}
+                  <div className="mb-6 lg:mb-8">
+                    <h3 className="text-base lg:text-lg font-semibold text-gray-800 mb-3 lg:mb-4">
+                      Thông tin người nhận
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                      <div>
+                        <input
+                          type="text"
+                          name="customer_name"
+                          placeholder="Họ và tên"
+                          value={order.customer_name}
+                          onChange={handleChange}
+                          required
+                          className="px-3 lg:px-4 py-3 bg-gray-50 focus:bg-white text-gray-800 w-full text-sm lg:text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          name="customer_phone"
+                          placeholder="Số điện thoại"
+                          value={order.customer_phone}
+                          onChange={handleChange}
+                          required
+                          className="px-3 lg:px-4 py-3 bg-gray-50 focus:bg-white text-gray-800 w-full text-sm lg:text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 transition-colors"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <input
+                          type="email"
+                          name="customer_email"
+                          placeholder="Email"
+                          value={order.customer_email}
+                          onChange={handleChange}
+                          className="px-3 lg:px-4 py-3 bg-gray-50 focus:bg-white text-gray-800 w-full text-sm lg:text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 transition-colors"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="mt-5">
-                  <h3 className="text-sm font-semibold lg:text-base text-gray-800 mb-4">
-                    Địa chỉ nhận hàng
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="relative">
-                      <select
-                        name="shipping_province"
-                        value={`${order.shipping_province},${order.shipping_province_id}`}
-                        required
-                        onChange={(e) => {
-                          const [provinceName, provinceID] =
-                            e.target.value.split(",");
-                          setOrder({
-                            ...order,
-                            shipping_province: provinceName,
-                            shipping_province_id: provinceID,
-                          });
-                        }}
-                        className="px-4 py-3 bg-gray-100 focus:bg-white text-gray-800 w-full text-sm rounded-md focus:outline-none border border-gray-300"
-                      >
-                        <option value="">Chọn tỉnh/thành phố</option>
-                        {sortedProvinces.map((province) => (
-                          <option
-                            key={province.ProvinceID}
-                            value={`${province.ProvinceName},${province.ProvinceID}`}
-                            className="bg-white"
-                          >
-                            {province.ProvinceName}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
 
-                    <div>
-                      <select
-                        name="shipping_district"
-                        value={`${order.shipping_district},${order.shipping_district_id}`}
-                        required
-                        onChange={(e) => {
-                          const [districtName, districtID] =
-                            e.target.value.split(",");
-                          setOrder({
-                            ...order,
-                            shipping_district: districtName,
-                            shipping_district_id: districtID,
-                          });
-                        }}
-                        className="px-4 py-3 bg-gray-100 focus:bg-white text-gray-800 w-full text-sm rounded-md focus:outline-none border border-gray-300"
-                      >
-                        <option value="">Chọn quận/huyện</option>
-                        {districts.map((district) => (
-                          <option
-                            key={district.DistrictID}
-                            value={`${district.DistrictName},${district.DistrictID}`}
-                          >
-                            {district.DistrictName}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <select
-                        name="shipping_ward"
-                        value={order.shipping_ward}
-                        onChange={handleChange}
-                        required
-                        className="px-4 py-3 bg-gray-100 focus:bg-white text-gray-800 w-full text-sm rounded-md focus:outline-none border border-gray-300"
-                      >
-                        <option value="">Chọn phường/xã</option>
-                        {wards.map((ward) => (
-                          <option key={ward.WardID} value={ward.WardID}>
-                            {ward.WardName}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <input
-                        type="text"
-                        name="shipping_address_detail"
-                        placeholder="Địa chỉ cụ thể"
-                        value={order.shipping_address_detail}
-                        onChange={handleChange}
-                        className="px-4 py-3 bg-gray-100 focus:bg-transparent text-gray-800 w-full text-sm rounded-md focus:outline-blue-600"
-                      />
+                  {/* Shipping Address */}
+                  <div className="mb-6 lg:mb-8">
+                    <h3 className="text-base lg:text-lg font-semibold text-gray-800 mb-3 lg:mb-4">
+                      Địa chỉ nhận hàng
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                      <div>
+                        <select
+                          name="shipping_province"
+                          value={`${order.shipping_province},${order.shipping_province_id}`}
+                          required
+                          onChange={(e) => {
+                            const [provinceName, provinceID] =
+                              e.target.value.split(",");
+                            setOrder({
+                              ...order,
+                              shipping_province: provinceName,
+                              shipping_province_id: provinceID,
+                            });
+                          }}
+                          className="px-3 lg:px-4 py-3 bg-gray-50 focus:bg-white text-gray-800 w-full text-sm lg:text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 transition-colors"
+                        >
+                          <option value="">Chọn tỉnh/thành phố</option>
+                          {sortedProvinces.map((province) => (
+                            <option
+                              key={province.ProvinceID}
+                              value={`${province.ProvinceName},${province.ProvinceID}`}
+                              className="bg-white"
+                            >
+                              {province.ProvinceName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <select
+                          name="shipping_district"
+                          value={`${order.shipping_district},${order.shipping_district_id}`}
+                          required
+                          onChange={(e) => {
+                            const [districtName, districtID] =
+                              e.target.value.split(",");
+                            setOrder({
+                              ...order,
+                              shipping_district: districtName,
+                              shipping_district_id: districtID,
+                            });
+                          }}
+                          className="px-3 lg:px-4 py-3 bg-gray-50 focus:bg-white text-gray-800 w-full text-sm lg:text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 transition-colors"
+                        >
+                          <option value="">Chọn quận/huyện</option>
+                          {districts.map((district) => (
+                            <option
+                              key={district.DistrictID}
+                              value={`${district.DistrictName},${district.DistrictID}`}
+                            >
+                              {district.DistrictName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <select
+                          name="shipping_ward"
+                          value={order.shipping_ward}
+                          onChange={handleChange}
+                          required
+                          className="px-3 lg:px-4 py-3 bg-gray-50 focus:bg-white text-gray-800 w-full text-sm lg:text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 transition-colors"
+                        >
+                          <option value="">Chọn phường/xã</option>
+                          {wards.map((ward) => (
+                            <option key={ward.WardID} value={ward.WardID}>
+                              {ward.WardName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          name="shipping_address_detail"
+                          placeholder="Địa chỉ cụ thể"
+                          value={order.shipping_address_detail}
+                          onChange={handleChange}
+                          className="px-3 lg:px-4 py-3 bg-gray-50 focus:bg-white text-gray-800 w-full text-sm lg:text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 transition-colors"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="mt-5">
-                  <h3 className="text-sm font-semibold lg:text-base text-gray-800 mb-4">
-                    Đơn vị vận chuyển
-                  </h3>
-                  {Object.keys(shippingUnits).length === 0 ? null : (
-                    <div className="grid grid-cols-2 gap-4">
-                      {["GHTK", "GHN"].map((key) => {
-                        const value = shippingUnits[key];
-                        let fee = 0;
-                        let imageUrl = key === "GHTK" ? ghtk : ghn;
-                        let imageSize =
-                          key === "GHTK" ? "w-18 h-5" : "w-14 h-8";
+                  {/* Shipping Units */}
+                  <div className="mb-6 lg:mb-8">
+                    <h3 className="text-base lg:text-lg font-semibold text-gray-800 mb-3 lg:mb-4">
+                      Đơn vị vận chuyển
+                    </h3>
+                    {Object.keys(shippingUnits).length === 0 ? null : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                        {["GHTK", "GHN"].map((key) => {
+                          const value = shippingUnits[key];
+                          let fee = 0;
+                          let imageUrl = key === "GHTK" ? ghtk : ghn;
+                          let imageSize =
+                            key === "GHTK" ? "w-16 h-5 sm:w-18 sm:h-5" : "w-12 h-8 sm:w-14 sm:h-8";
 
-                        if (key === "GHTK" && value.success) {
-                          fee = value.fee.options.shipMoney;
-                        } else if (key === "GHN" && value.code === 200) {
-                          fee = value.data.service_fee;
-                        }
+                          if (key === "GHTK" && value.success) {
+                            fee = value.fee.options.shipMoney;
+                          } else if (key === "GHN" && value.code === 200) {
+                            fee = value.data.service_fee;
+                          }
 
-                        return (
-                          <div
-                            key={key}
-                            className="flex items-center p-3 border rounded-md cursor-pointer"
-                            onClick={() => handleShippingUnitChange(key, fee)}
-                          >
-                            <input
-                              id={key}
-                              type="radio"
-                              name="shipping_unit"
-                              required
-                              value={key}
-                              className="mr-2"
-                            />
-                            <img
-                              src={imageUrl}
-                              alt={key}
-                              className={`${imageSize} mr-2`}
-                            />
-                            <label className="text-sm font-semibold text-gray-800 cusor-pointer">
-                              {key === "GHTK"
-                                ? "Giao hàng tiết kiệm"
-                                : "GHN - Nhanh"}{" "}
-                              <span className="text-blue-600 ml-2">
-                                {formatCurrency(fee)}
-                              </span>
-                            </label>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                          return (
+                            <div
+                              key={key}
+                              className="flex items-center p-3 lg:p-4 border rounded-lg cursor-pointer hover:border-blue-500 transition-all duration-200 hover:shadow-md"
+                              onClick={() => handleShippingUnitChange(key, fee)}
+                            >
+                              <input
+                                id={key}
+                                type="radio"
+                                name="shipping_unit"
+                                required
+                                value={key}
+                                className="mr-3"
+                              />
+                              <img
+                                src={imageUrl}
+                                alt={key}
+                                className={`${imageSize} mr-3 flex-shrink-0`}
+                              />
+                              <div className="min-w-0 flex-1">
+                                <label className="text-sm font-semibold text-gray-800 cursor-pointer block">
+                                  {key === "GHTK"
+                                    ? "Giao hàng tiết kiệm"
+                                    : "GHN - Nhanh"}
+                                </label>
+                                <p className="text-blue-600 font-medium text-sm lg:text-base">
+                                  {formatCurrency(fee)}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
 
-                <div className="mt-5">
-                  <h3 className="text-sm font-semibold lg:text-base text-gray-800 mb-4">
-                    Phương thức thanh toán
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {paymentMethods.map((method) => (
-                      <div key={method.id} className="flex items-center">
+                  {/* Payment Methods */}
+                  <div className="mb-6 lg:mb-8">
+                    <h3 className="text-base lg:text-lg font-semibold text-gray-800 mb-3 lg:mb-4">
+                      Phương thức thanh toán
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                      {paymentMethods.map((method) => (
                         <button
+                          key={method.id}
                           type="button"
-                          className={`w-full py-3 border text-gray-800 text-sm font-semibold rounded-lg flex items-center ${
+                          className={`w-full py-3 lg:py-4 px-3 lg:px-4 border text-gray-800 text-sm lg:text-base font-semibold rounded-lg flex items-center transition-all duration-200 ${
                             selectedMethod === method.id
-                              ? "border-[#007bff]"
-                              : "hover:border-[#007bff]"
+                              ? "border-blue-500 bg-blue-50 shadow-md"
+                              : "hover:border-blue-500 hover:shadow-sm"
                           }`}
                           onClick={() => handleSelectMethod(method.id)}
                         >
-                          <span className="w-6 h-6 flex justify-center items-center mr-2 ml-1">
+                          <span className="w-5 h-5 lg:w-6 lg:h-6 flex justify-center items-center mr-3 flex-shrink-0">
                             {selectedMethod === method.id && (
-                              <GiCheckMark className="text-blue-600" />
+                              <GiCheckMark className="text-blue-600 w-4 h-4" />
                             )}
                           </span>
-                          {method.label}
+                          <span className="text-left">{method.label}</span>
                         </button>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex-[0.5] h-max">
-                <div className="rounded-xl px-6 py-4 bg-gray-100">
-                  <div className="h-full p-3 rounded-md">
+                {/* Order Summary */}
+                <div className="xl:w-96 order-1 xl:order-2">
+                  <div className="bg-gray-50 rounded-lg p-4 lg:p-6 xl:sticky xl:top-4">
+                    <h2 className="text-base lg:text-lg border-l-[5px] border-blue-500 pl-3 font-semibold text-gray-800 mb-4 lg:mb-6">
+                      Thông tin sản phẩm
+                    </h2>
+
                     {cartItems.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center mt-6">
-                        <BsMinecartLoaded size={100} />
-                        <h3 className="text-xl font-semibold">
+                      <div className="flex flex-col items-center justify-center py-8 lg:py-12">
+                        <BsMinecartLoaded size={48} className="text-gray-400 mb-4" />
+                        <h3 className="text-base lg:text-lg font-semibold text-gray-600 text-center">
                           Không có sản phẩm nào trong giỏ hàng.
                         </h3>
                       </div>
                     ) : (
-                      cartItems.map((item, index) => (
-                        <div
-                          key={index}
-                          className="w-full h-max mb-4 border-b border-gray-200 pb-4"
-                        >
-                          <h2 className="text-lg border-l-[5px] border-[#00adf0] pl-1 font-semibold text-gray-800 mb-5">
-                            Thông tin sản phẩm
-                          </h2>
-                          <div className="flex items-start gap-4">
-                            <div className="w-28 h-28 flex p-1 shrink-0 rounded-md">
+                      <div className="space-y-3 lg:space-y-4 mb-4 lg:mb-6">
+                        {cartItems.map((item, index) => (
+                          <div
+                            key={index}
+                            className="flex gap-3 lg:gap-4 p-3 lg:p-4 bg-white rounded-lg border shadow-sm"
+                          >
+                            <div className="w-12 h-12 lg:w-16 lg:h-16 flex-shrink-0">
                               {productImages[item.category.name]?.map(
                                 (image) => {
                                   if (
@@ -660,7 +668,7 @@ const CheckoutPage = () => {
                                         key={image.id}
                                         src={image.src}
                                         alt={image.alt}
-                                        className="w-full object-contain"
+                                        className="w-full h-full object-contain rounded"
                                       />
                                     );
                                   } else if (
@@ -678,7 +686,7 @@ const CheckoutPage = () => {
                                           productImages[item.category.name][0]
                                             .alt
                                         }
-                                        className="w-full h-full object-contain"
+                                        className="w-full h-full object-contain rounded"
                                       />
                                     );
                                   }
@@ -686,95 +694,84 @@ const CheckoutPage = () => {
                                 }
                               )}
                             </div>
-                            <div className="w-full">
-                              <h3 className="text-sm font-semibold lg:text-base text-gray-800">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-sm font-semibold text-gray-800 truncate">
                                 {item.name}
                               </h3>
-                              <ul className="text-xs text-gray-800 space-y-1 mt-3">
-                                <li className="flex flex-wrap gap-4">
-                                  Số lượng
-                                  <span className="ml-auto">
-                                    {item.quantity}
-                                  </span>
-                                </li>
-                                <li className="flex flex-wrap gap-4">
-                                  Giá tiền
-                                  <span className="ml-auto">
-                                    {formatCurrency(item.price * 1000)}
-                                  </span>
-                                </li>
-                              </ul>
+                              <div className="text-xs text-gray-600 mt-1 space-y-1">
+                                <p>Số lượng: {item.quantity}</p>
+                                <p>Giá: {formatCurrency(item.price * 1000)}</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))
+                        ))}
+                      </div>
                     )}
-                    <div className="w-full p-1 mt-1 border-b border-gray-200">
-                      <h4 className="flex flex-wrap text-sm mb-1 font-semibold text-gray-800">
-                        Tạm tính:{" "}
-                        <span className="ml-auto">
-                          {formatCurrency(getTotalPrice() * 1000)}
-                        </span>
-                      </h4>
-                      <h4 className="flex flex-wrap mb-2 text-sm font-semibold text-gray-800">
-                        Phí vận chuyển:{" "}
-                        <span className="ml-auto">
-                          {formatCurrency(selectedFee)}
-                        </span>
-                      </h4>
-                    </div>
-                    <h4 className="flex flex-wrap mt-2 ml-1 text-lg font-semibold text-gray-800">
-                      Tổng cộng:{" "}
-                      <span className="ml-auto text-lg font-semibold text-blue-600">
-                        {formatCurrency(getTotalPrice() * 1000 + selectedFee)}
-                      </span>
-                    </h4>
-                  </div>
-                </div>
 
-                <div className="flex gap-4 max-md:flex-col mt-8">
-                  <button
-                    type="button"
-                    onClick={() => window.history.back()}
-                    className="rounded-md px-4 py-2.5 w-full text-sm tracking-wide bg-transparent hover:bg-gray-100 border border-gray-300 text-gray-800 max-md:order-1"
-                  >
-                    Quay lại giỏ hàng
-                  </button>
-                  <button
-                    type="submit"
-                    className="rounded-md px-4 py-2.5 w-full text-sm tracking-wide bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Đặt hàng
-                  </button>
+                    <div className="border-t border-gray-200 pt-4 space-y-2 lg:space-y-3">
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>Tạm tính:</span>
+                        <span>{formatCurrency(getTotalPrice() * 1000)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>Phí vận chuyển:</span>
+                        <span>{formatCurrency(selectedFee)}</span>
+                      </div>
+                      <div className="flex justify-between text-base lg:text-lg font-semibold text-gray-800 border-t border-gray-200 pt-2 lg:pt-3">
+                        <span>Tổng cộng:</span>
+                        <span className="text-blue-600">
+                          {formatCurrency(getTotalPrice() * 1000 + selectedFee)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                      <button
+                        type="button"
+                        onClick={() => window.history.back()}
+                        className="flex-1 py-3 px-4 text-sm lg:text-base font-medium bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-md transition-colors shadow-sm hover:shadow-md"
+                      >
+                        Quay lại giỏ hàng
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-3 px-4 text-sm lg:text-base font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm hover:shadow-md"
+                      >
+                        Đặt hàng
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </form>
-      <div>
-        {orderSuccess && (
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white p-10 rounded-lg shadow-lg text-center">
-              <img
-                src={ordersuccess}
-                alt="iPhone 12"
-                className="w-20 h-20 mx-auto"
-              />
-              <h2 className="text-2xl font-bold mb-4">
-                Đặt hàng thành công! Mã đơn hàng: {order.code}
-              </h2>
 
-              <button
-                className="bg-green-500 text-white px-6 py-2 rounded-md"
-                onClick={() => handleConfirm()}
-              >
-                Xác nhận
-              </button>
-            </div>
+      {/* Success Modal */}
+      {orderSuccess && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+          <div className="bg-white p-6 lg:p-8 rounded-lg shadow-xl text-center max-w-sm lg:max-w-md w-full mx-4">
+            <img
+              src={ordersuccess}
+              alt="Order Success"
+              className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-4"
+            />
+            <h2 className="text-lg lg:text-xl font-bold mb-2 text-gray-800">
+              Đặt hàng thành công!
+            </h2>
+            <p className="text-gray-600 mb-6 text-sm lg:text-base">
+              Mã đơn hàng: <span className="font-semibold text-blue-600">{order.code}</span>
+            </p>
+            <button
+              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-md font-medium transition-colors w-full sm:w-auto"
+              onClick={() => handleConfirm()}
+            >
+              Xác nhận
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

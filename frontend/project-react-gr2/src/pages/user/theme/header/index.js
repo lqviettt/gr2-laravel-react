@@ -8,6 +8,7 @@ import { PiHandbag } from "react-icons/pi";
 import { LuMapPin } from "react-icons/lu";
 import { IoLogIn } from "react-icons/io5";
 import { FaUserPlus } from "react-icons/fa";
+import { FaBars, FaTimes } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { ROUTERS } from "../../../../utils/router";
 import { useCart } from "../../../../component/CartContext";
@@ -38,6 +39,12 @@ const Header = () => {
   const handleToggleCart = (event) => {
     event.preventDefault();
     setShowCart(!showCart);
+  };
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   const menus = [
@@ -158,14 +165,22 @@ const Header = () => {
 
   return (
     <header className="font-[sans-serif] min-h-[65px] tracking-wide relative z-50">
-      <div className="flex justify-between items-center w-full bg-[#000000] text-white">
-        <div className="ml-32 h_top">
+      <div className="flex justify-between items-center w-full bg-[#000000] text-white px-4 sm:px-8 lg:px-32">
+        <div className="h_top">
           <Link to="">
-            <h1 className="text-2xl font-bold">QuocViet</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">QuocViet</h1>
           </Link>
         </div>
 
-        <div className="h_items items-center space-x-11">
+        {/* Mobile menu button */}
+        <button
+          className="lg:hidden text-white p-2"
+          onClick={toggleMobileMenu}
+        >
+          {isMobileMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+        </button>
+
+        <div className="hidden lg:flex h_items items-center space-x-4 lg:space-x-11">
           <div className="menu_search mr-4">
             <form action="" method="GET">
               <input
@@ -227,7 +242,7 @@ const Header = () => {
           </div>
         </div>
 
-        <div className="h_account mr-64">
+        <div className="hidden lg:block h_account">
           <ul className="flex items-center space-x-6">
             <li className="menu_items">
               <div className="menu_info flex items-center space-x-2 text-white">
@@ -281,7 +296,7 @@ const Header = () => {
         </div>
       </div>
 
-      <nav className="h_menu">
+      <nav className="h_menu hidden lg:block">
         <ul>
           {menus.map((menu, menuKey) => (
             <li
@@ -322,6 +337,109 @@ const Header = () => {
           ))}
         </ul>
       </nav>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden absolute top-full left-0 w-full bg-[#000000] text-white z-40">
+          <div className="px-4 py-4">
+            {/* Mobile Search */}
+            <div className="mb-4">
+              <form action="" method="GET" className="flex">
+                <input
+                  type="text"
+                  name="search"
+                  placeholder="Tìm kiếm sản phẩm..."
+                  required
+                  className="flex-1 p-2 rounded-l border border-gray-300 text-black"
+                />
+                <button type="submit" className="p-2 bg-blue-500 rounded-r">
+                  <FaSearch />
+                </button>
+              </form>
+            </div>
+
+            {/* Mobile Menu Items */}
+            <ul className="space-y-2">
+              {menus.map((menu, menuKey) => (
+                <li key={menuKey}>
+                  <Link
+                    to={menu.path}
+                    className="block py-2 px-4 hover:bg-gray-800 rounded"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {menu.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            {/* Mobile Account */}
+            <div className="mt-4 pt-4 border-t border-gray-700">
+              {isLoggedIn ? (
+                <div className="space-y-2">
+                  <a
+                    href="my-account"
+                    className="block py-2 px-4 hover:bg-gray-800 rounded flex items-center space-x-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <FaRegUserCircle size={20} />
+                    <span>Tài khoản</span>
+                  </a>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left py-2 px-4 hover:bg-gray-800 rounded flex items-center space-x-2"
+                  >
+                    <IoLogIn size={20} />
+                    <span>Đăng xuất</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <a
+                    href="/login"
+                    className="block py-2 px-4 hover:bg-gray-800 rounded flex items-center space-x-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <IoLogIn size={20} />
+                    <span>Đăng nhập</span>
+                  </a>
+                  <a
+                    href="/register"
+                    className="block py-2 px-4 hover:bg-gray-800 rounded flex items-center space-x-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <FaUserPlus size={20} />
+                    <span>Đăng ký</span>
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Quick Links */}
+            <div className="mt-4 pt-4 border-t border-gray-700 space-y-2">
+              <a
+                href="tel:0981218999"
+                className="block py-2 px-4 hover:bg-gray-800 rounded flex items-center space-x-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <FiPhone size={20} />
+                <span>Hotline: 0981218999</span>
+              </a>
+              <a
+                href="/cart"
+                className="block py-2 px-4 hover:bg-gray-800 rounded flex items-center space-x-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <PiHandbag size={20} />
+                <span>Giỏ hàng ({totalQuantity})</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

@@ -14,6 +14,7 @@ class Category extends BaseModel
     protected $fillable = [
         'name',
         'status',
+        'parent_id',
     ];
     protected $hidden = [
         'created_at',
