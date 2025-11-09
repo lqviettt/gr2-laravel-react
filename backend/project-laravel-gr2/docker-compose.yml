@@ -24,8 +24,8 @@ services:
         ports:
             -   3307:3306
         environment:
-            - MYSQL_DATABASE=example-app
-            - MYSQL_USER=laravel
+            - MYSQL_DATABASE=gr2
+            - MYSQL_USER=lqviettt
             - MYSQL_PASSWORD=secret
             - MYSQL_ROOT_PASSWORD=secret
         volumes:
