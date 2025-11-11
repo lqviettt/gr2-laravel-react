@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { FaSortAmountDown } from "react-icons/fa";
 import "./style.scss";
 import ProductItem from "../../../component/user/ProductItem";
+import { LoadingSpinner, ErrorMessage, NoSearchResults, Button } from "../../../components";
 import Pagination from "../../../components/Pagination";
 
 const ProductList = () => {
@@ -16,11 +17,6 @@ const ProductList = () => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
-  const getButtonClass = (isActive) => {
-    if (isActive) return 'bg-blue-500 text-white';
-    return 'bg-gray-200 text-gray-700 hover:bg-blue-100';
-  };
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -98,26 +94,28 @@ const ProductList = () => {
   }, [currentPage, totalPages]);
 
   if (loading) {
-    return <div>Đang tải...</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <LoadingSpinner size="large" text="Đang tải sản phẩm..." />
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Lỗi: {error}</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <ErrorMessage message={error} />
+      </div>
+    );
   }
 
   if (!products.length) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center text-gray-500">
-          <div className="text-6xl mb-4">�</div>
-          <h3 className="text-lg font-medium">
-            {searchQuery
-              ? `Không tìm thấy sản phẩm nào cho "${searchQuery}".`
-              : "Không có sản phẩm nào trong danh mục này."
-            }
-          </h3>
-          <p className="mt-2">Hãy thử tìm kiếm với từ khóa khác.</p>
-        </div>
+        <NoSearchResults
+          title={searchQuery ? `Không tìm thấy sản phẩm nào cho "${searchQuery}"` : "Không có sản phẩm nào trong danh mục này"}
+          description="Hãy thử tìm kiếm với từ khóa khác hoặc chọn danh mục khác."
+        />
       </div>
     );
   }
@@ -183,20 +181,22 @@ const ProductList = () => {
         <div className="mb-6">
           <h3 className="text-lg font-medium mb-3">Lọc theo Series iPhone:</h3>
           <div className="flex flex-wrap gap-2">
-            <button
+            <Button
               onClick={() => handleSeriesFilter(null)}
-              className={`px-4 py-2 text-sm rounded transition-colors ${getButtonClass(!searchQuery)}`}
+              variant={!searchQuery ? "primary" : "outline"}
+              size="small"
             >
               Tất cả
-            </button>
+            </Button>
             {iphoneSeries.map((series) => (
-              <button
+              <Button
                 key={series.id}
                 onClick={() => handleSeriesFilter(series.searchTerm)}
-                className={`px-4 py-2 text-sm rounded transition-colors ${getButtonClass(searchQuery === series.searchTerm)}`}
+                variant={searchQuery === series.searchTerm ? "primary" : "outline"}
+                size="small"
               >
                 {series.name}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -205,14 +205,22 @@ const ProductList = () => {
           <span className="ml-2 text-xl">Sắp xếp theo giá:</span>
         </h2>
         <div className="flex gap-2 mb-10">
-          <button onClick={() => handleSort("asc")} className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-blue-600 hover:text-white transition">
-            <FaSortAmountDown />
-            <span>Giá thấp đến cao</span>
-          </button>
-          <button onClick={() => handleSort("desc")} className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-blue-600 hover:text-white transition">
-            <FaSortAmountDown />
-            <span>Giá cao xuống thấp</span>
-          </button>
+          <Button
+            onClick={() => handleSort("asc")}
+            variant="outline"
+            size="small"
+            leftIcon={<FaSortAmountDown />}
+          >
+            Giá thấp đến cao
+          </Button>
+          <Button
+            onClick={() => handleSort("desc")}
+            variant="outline"
+            size="small"
+            leftIcon={<FaSortAmountDown />}
+          >
+            Giá cao xuống thấp
+          </Button>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
           {sortedProducts.length > 0 ? (
@@ -224,14 +232,11 @@ const ProductList = () => {
               />
             ))
           ) : (
-            <div className="col-span-full text-center text-gray-500 py-8">
-              <div className="text-4xl mb-4">📦</div>
-              <p className="text-lg">
-                {searchQuery
-                  ? `Không tìm thấy sản phẩm nào cho "${searchQuery}".`
-                  : "Không có sản phẩm nào trong danh mục này."
-                }
-              </p>
+            <div className="col-span-full">
+              <NoSearchResults
+                title={searchQuery ? `Không tìm thấy sản phẩm nào cho "${searchQuery}"` : "Không có sản phẩm nào trong danh mục này"}
+                description="Hãy thử tìm kiếm với từ khóa khác hoặc chọn danh mục khác."
+              />
             </div>
           )}
         </div>

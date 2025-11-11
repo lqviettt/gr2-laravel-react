@@ -1,5 +1,6 @@
 import React, { useEffect, useState, memo } from "react";
 import { Section, LoadingSpinner, ErrorMessage } from "../../../component/user";
+import { UserAvatar, InfoCard, Button } from "../../../components";
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -66,11 +67,11 @@ const ProfilePage = () => {
 
             <div className="p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row items-center gap-6 mb-8">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-2xl sm:text-3xl font-bold text-white">
-                    {user.name?.charAt(0).toUpperCase()}
-                  </span>
-                </div>
+                <UserAvatar
+                  name={user.name}
+                  size="xl"
+                  className="ring-4 ring-white shadow-lg"
+                />
                 <div className="text-center sm:text-left">
                   <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
                     {user.name}
@@ -80,10 +81,7 @@ const ProfilePage = () => {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
-                    Thông tin cá nhân
-                  </h3>
+                <InfoCard title="Thông tin cá nhân">
                   <div className="space-y-3">
                     <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
                       <span className="text-gray-600 font-medium">Họ tên:</span>
@@ -98,12 +96,9 @@ const ProfilePage = () => {
                       <span className="font-medium text-gray-800">{user.user_name || 'N/A'}</span>
                     </div>
                   </div>
-                </div>
+                </InfoCard>
 
-                <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
-                    Tài khoản
-                  </h3>
+                <InfoCard title="Tài khoản">
                   <div className="space-y-3">
                     <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
                       <span className="text-gray-600 font-medium">Trạng thái:</span>
@@ -116,16 +111,16 @@ const ProfilePage = () => {
                       </span>
                     </div>
                   </div>
-                </div>
+                </InfoCard>
               </div>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-medium transition-colors shadow-sm hover:shadow-md">
+                <Button variant="primary" className="flex-1">
                   Chỉnh sửa thông tin
-                </button>
-                <button className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-3 px-6 rounded-lg font-medium transition-colors shadow-sm hover:shadow-md">
+                </Button>
+                <Button variant="secondary" className="flex-1">
                   Đổi mật khẩu
-                </button>
+                </Button>
               </div>
             </div>
           </div>

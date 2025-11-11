@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaBox, FaTruck, FaCheckCircle, FaTimesCircle, FaEye } from "react-icons/fa";
 import Section from "../../../component/user/Section";
 import { formatCurrency } from "../../../utils/common";
+import { StatusBadge, Button, NoData } from "../../../components";
 
 const OrderHistoryPage = () => {
   const [orders, setOrders] = useState([]);
@@ -24,7 +25,7 @@ const OrderHistoryPage = () => {
         {
           id: "ORD001",
           code: "DH20241111001",
-          status: "completed",
+          status: "delivered",
           total_price: 25000000,
           shipping_fee: 30000,
           created_at: "2024-11-11T10:00:00Z",
@@ -76,57 +77,6 @@ const OrderHistoryPage = () => {
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "pending":
-        return <FaBox className="text-yellow-500" />;
-      case "processing":
-        return <FaBox className="text-blue-500" />;
-      case "shipping":
-        return <FaTruck className="text-orange-500" />;
-      case "completed":
-        return <FaCheckCircle className="text-green-500" />;
-      case "cancelled":
-        return <FaTimesCircle className="text-red-500" />;
-      default:
-        return <FaBox className="text-gray-500" />;
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case "pending":
-        return "Chờ xử lý";
-      case "processing":
-        return "Đang xử lý";
-      case "shipping":
-        return "Đang giao hàng";
-      case "completed":
-        return "Hoàn thành";
-      case "cancelled":
-        return "Đã hủy";
-      default:
-        return "Không xác định";
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "pending":
-        return "text-yellow-600 bg-yellow-50";
-      case "processing":
-        return "text-blue-600 bg-blue-50";
-      case "shipping":
-        return "text-orange-600 bg-orange-50";
-      case "completed":
-        return "text-green-600 bg-green-50";
-      case "cancelled":
-        return "text-red-600 bg-red-50";
-      default:
-        return "text-gray-600 bg-gray-50";
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -149,21 +99,18 @@ const OrderHistoryPage = () => {
               </h1>
 
               {orders.length === 0 ? (
-                <div className="text-center py-12 lg:py-16">
-                  <FaBox size={64} className="text-gray-400 mx-auto mb-6" />
-                  <h3 className="text-xl lg:text-2xl font-semibold text-gray-600 mb-4">
-                    Bạn chưa có đơn hàng nào
-                  </h3>
-                  <p className="text-gray-500 mb-6">
-                    Hãy bắt đầu mua sắm để tạo đơn hàng đầu tiên!
-                  </p>
-                  <button
-                    onClick={() => window.location.href = "/"}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-                  >
-                    Tiếp tục mua sắm
-                  </button>
-                </div>
+                <NoData
+                  title="Bạn chưa có đơn hàng nào"
+                  description="Hãy bắt đầu mua sắm để tạo đơn hàng đầu tiên!"
+                  action={
+                    <Button
+                      onClick={() => window.location.href = "/"}
+                      variant="primary"
+                    >
+                      Tiếp tục mua sắm
+                    </Button>
+                  }
+                />
               ) : (
                 <div className="space-y-4 lg:space-y-6">
                   {orders.map((order) => (
@@ -174,7 +121,11 @@ const OrderHistoryPage = () => {
                       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div className="flex items-center gap-4">
                           <div className="flex-shrink-0">
-                            {getStatusIcon(order.status)}
+                            {order.status === "pending" && <FaBox className="text-yellow-500" />}
+                            {order.status === "processing" && <FaBox className="text-blue-500" />}
+                            {order.status === "shipping" && <FaTruck className="text-orange-500" />}
+                            {order.status === "completed" && <FaCheckCircle className="text-green-500" />}
+                            {order.status === "cancelled" && <FaTimesCircle className="text-red-500" />}
                           </div>
                           <div>
                             <h3 className="text-lg font-semibold text-gray-800">
@@ -187,9 +138,7 @@ const OrderHistoryPage = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 lg:gap-4">
-                          <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                            {getStatusText(order.status)}
-                          </div>
+                          <StatusBadge status={order.status} />
                           <div className="text-right">
                             <p className="text-lg font-bold text-blue-600">
                               {formatCurrency(order.total_price)}
@@ -198,13 +147,14 @@ const OrderHistoryPage = () => {
                               {order.items.length} sản phẩm
                             </p>
                           </div>
-                          <button
+                          <Button
                             onClick={() => setSelectedOrder(selectedOrder?.id === order.id ? null : order)}
-                            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+                            variant="outline"
+                            size="small"
+                            leftIcon={<FaEye />}
                           >
-                            <FaEye size={16} />
-                            <span className="text-sm font-medium">Chi tiết</span>
-                          </button>
+                            Chi tiết
+                          </Button>
                         </div>
                       </div>
 

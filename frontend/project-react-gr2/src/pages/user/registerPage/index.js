@@ -4,6 +4,7 @@ import register from "../../../assets/images/register.png";
 import axiosClient from "../../../utils/axiosClient";
 import { toast } from "react-toastify";
 import { Section, ErrorMessage } from "../../../component/user";
+import { InputField, Button, AuthForm } from "../../../components";
 
 const initialFormData = {
   name: "",
@@ -25,6 +26,7 @@ const Register = () => {
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState(initialErrors);
   const [agreed, setAgreed] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = useCallback(() => {
     navigate("/login");
@@ -63,15 +65,16 @@ const Register = () => {
         return;
       }
 
+      setLoading(true);
       try {
-        const response = await axiosClient.post("/auth/register", 
+        const response = await axiosClient.post("/auth/register",
           { name, user_name, email, password }
         );
         const msg = response.data.message || "Đăng ký thành công!";
         localStorage.setItem("email", response.data.data.email);
         toast.success(msg);
         setTimeout(() => {
-            navigate("/verify-account"); 
+            navigate("/verify-account");
         }, 2000);
       } catch (err) {
         const apiErrors = err.response?.data?.error;
@@ -82,6 +85,8 @@ const Register = () => {
         } else {
           toast.error(err.response?.data?.message || "Đăng ký thất bại, vui lòng thử lại.");
         }
+      } finally {
+        setLoading(false);
       }
     },
     [formData, agreed, navigate]
@@ -104,16 +109,16 @@ const Register = () => {
 
               {/* Form Section */}
               <div className="p-6 sm:p-8">
-                <div className="mb-8">
-                  <h3 className="text-gray-800 text-2xl sm:text-3xl font-bold text-center lg:text-left">
-                    Đăng ký tài khoản
-                  </h3>
-                  <p className="text-gray-600 text-sm mt-2 text-center lg:text-left">
-                    Tạo tài khoản để trải nghiệm tốt hơn
-                  </p>
-                </div>
-
-                <form className="space-y-6" onSubmit={handleCreateAccount} autoComplete="off">
+                <AuthForm
+                  title="Đăng ký tài khoản"
+                  subtitle="Tạo tài khoản để trải nghiệm tốt hơn"
+                  onSubmit={handleCreateAccount}
+                  submitButtonText="Đăng ký"
+                  submitButtonLoading={loading}
+                  className="max-w-none"
+                  formClassName="space-y-6"
+                  bodyClassName="p-0"
+                >
                   <InputField
                     label="Họ và tên"
                     name="name"
@@ -151,6 +156,7 @@ const Register = () => {
                     value={formData.password}
                     onChange={handleChange}
                     required
+                    showPasswordToggle
                   />
 
                   <div className="flex items-start">
@@ -182,14 +188,15 @@ const Register = () => {
                     </label>
                   </div>
 
-                  <div>
-                    <button
-                      type="submit"
-                      className="w-full py-3 px-4 text-sm font-semibold tracking-wide rounded-lg bg-blue-600 hover:bg-blue-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-                    >
-                      Đăng ký
-                    </button>
-                  </div>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    className="w-full"
+                    loading={loading}
+                    loadingText="Đang đăng ký..."
+                  >
+                    Đăng ký
+                  </Button>
 
                   <p className="text-gray-800 text-sm text-center">
                     Bạn đã có tài khoản?{" "}
@@ -201,7 +208,7 @@ const Register = () => {
                       Đăng nhập ngay
                     </button>
                   </p>
-                </form>
+                </AuthForm>
               </div>
             </div>
           </div>
@@ -210,35 +217,5 @@ const Register = () => {
     </div>
   );
 };
-
-const InputField = ({
-  label,
-  name,
-  type,
-  placeholder,
-  value,
-  onChange,
-  required,
-  error,
-}) => (
-  <div>
-    <label className="text-gray-800 text-sm mb-2 block">
-      {label} {required && <span className="text-red-500">*</span>}
-    </label>
-    <div className="relative flex items-center">
-      <input
-        name={name}
-        type={type}
-        required={required}
-        className="bg-white border border-gray-300 w-full text-sm text-gray-800 pl-4 pr-10 py-2.5 rounded-md outline-blue-500"
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        autoComplete="off"
-      />
-    </div>
-    {error && <p className="text-red-500 text-sm">{error}</p>}
-  </div>
-);
 
 export default Register;

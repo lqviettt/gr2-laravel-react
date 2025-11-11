@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { FaSortAmountDown } from "react-icons/fa";
 import "./style.scss";
 import ProductItem from "../../../component/user/ProductItem";
+import { LoadingSpinner, ErrorMessage, NoSearchResults, Button } from '../../../components';
 import Pagination from "../../../components/Pagination";
 
 const ProductsPage = () => {
@@ -14,6 +15,8 @@ const ProductsPage = () => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [categoryName, setCategoryName] = useState("");
   const [selectedSeries, setSelectedSeries] = useState(null); // Track selected iPhone series
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -26,14 +29,14 @@ const ProductsPage = () => {
       try {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/category/${categoryId}`);
         const data = await response.json();
-        if (data && data.data) {
+        if (data?.data) {
           const category = data.data;
           
           if (category.parent_id) {
             try {
               const parentResponse = await fetch(`${process.env.REACT_APP_API_URL}/category/${category.parent_id}`);
               const parentData = await parentResponse.json();
-              if (parentData && parentData.data) {
+              if (parentData?.data) {
                 setCategoryName(parentData.data.name);
               } else {
                 setCategoryName(category.name);
@@ -55,6 +58,9 @@ const ProductsPage = () => {
   useEffect(() => {
     const fetchProducts = async (page = 1) => {
       try {
+        setLoading(true);
+        setError(null);
+
         let apiUrl = `${process.env.REACT_APP_API_URL}/product?perPage=15&page=${page}`;
 
         // Build category filter
@@ -80,14 +86,14 @@ const ProductsPage = () => {
           const categoryResponse = await fetch(`${process.env.REACT_APP_API_URL}/category/${categoryIds}`);
           const categoryData = await categoryResponse.json();
 
-          if (categoryData && categoryData.data && !categoryData.data.parent_id) {
+          if (categoryData?.data && !categoryData.data.parent_id) {
             // Nếu là category cha (không có parent_id), lấy tất cả category con
             const allCategoriesResponse = await fetch(`${process.env.REACT_APP_API_URL}/category`);
             const allCategoriesData = await allCategoriesResponse.json();
 
-            if (allCategoriesData && allCategoriesData.data && Array.isArray(allCategoriesData.data.data)) {
+            if (allCategoriesData?.data && Array.isArray(allCategoriesData.data.data)) {
               // Lọc ra tất cả category con của category cha này
-              const childCategories = allCategoriesData.data.data.filter(cat => cat.parent_id === parseInt(categoryIds));
+              const childCategories = allCategoriesData.data.data.filter(cat => cat.parent_id === Number.parseInt(categoryIds));
               categoryIds = childCategories.map(cat => cat.id);
 
               console.log('Child categories found:', childCategories);
@@ -119,7 +125,10 @@ const ProductsPage = () => {
 
       } catch (error) {
         console.error("Error fetching products:", error);
+        setError(error.message || "Có lỗi xảy ra khi tải sản phẩm");
         setProducts([]);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -160,6 +169,32 @@ const ProductsPage = () => {
     { id: 6, name: "iPhone 17 Series" },
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <LoadingSpinner />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <ErrorMessage message={error} />
+        </div>
+      </div>
+    );
+  }
+
+  const getSeriesButtonVariant = (seriesId) => {
+    if (categoryId) return 'disabled';
+    if (selectedSeries === seriesId) return 'primary';
+    return 'secondary';
+  };
+
   return (
     <div className="content mt-5">
       <div className="featured-categories">
@@ -171,57 +206,28 @@ const ProductsPage = () => {
           </span>
         </h1>
 
-        {/* iPhone Series Filter - luôn hiển thị */}
-        <div className="mb-6">
-          <h3 className="text-lg font-medium mb-3">
-            Lọc theo Series iPhone:
-            {categoryId && <span className="text-sm text-gray-500 ml-2">(Không khả dụng khi đang lọc theo danh mục)</span>}
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => handleSeriesFilter(null)}
-              disabled={!!categoryId}
-              className={`px-4 py-2 text-sm rounded transition-colors ${
-                categoryId
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : selectedSeries === null
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-blue-100'
-              }`}
-            >
-              Tất cả
-            </button>
-            {iphoneSeries.map((series) => (
-              <button
-                key={series.id}
-                onClick={() => handleSeriesFilter(series.id)}
-                disabled={!!categoryId}
-                className={`px-4 py-2 text-sm rounded transition-colors ${
-                  categoryId
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : selectedSeries === series.id
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-blue-100'
-                }`}
-              >
-                {series.name}
-              </button>
-            ))}
-          </div>
-        </div>
+        
 
         <h2 className="flex items-center text-sm font-medium mb-4">
           <span className="ml-2 text-xl">Xếp theo:</span>
         </h2>
         <div className="flex gap-2 mb-10">
-          <button onClick={() => handleSort("asc")} className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-blue-600 hover:text-white transition">
-            <FaSortAmountDown />
-            <span>Giá thấp đến cao</span>
-          </button>
-          <button onClick={() => handleSort("desc")} className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-blue-600 hover:text-white transition">
-            <FaSortAmountDown />
-            <span>Giá cao xuống thấp</span>
-          </button>
+          <Button
+            onClick={() => handleSort("asc")}
+            variant="outline"
+            size="small"
+            leftIcon={<FaSortAmountDown />}
+          >
+            Giá thấp đến cao
+          </Button>
+          <Button
+            onClick={() => handleSort("desc")}
+            variant="outline"
+            size="small"
+            leftIcon={<FaSortAmountDown />}
+          >
+            Giá cao xuống thấp
+          </Button>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
           {sortedProducts.length > 0 ? (
@@ -233,7 +239,12 @@ const ProductsPage = () => {
               />
             ))
           ) : (
-            <p>Không có danh mục nào.</p>
+            <div className="col-span-full">
+              <NoSearchResults
+                title="Không có sản phẩm"
+                message="Không tìm thấy sản phẩm nào trong danh mục này."
+              />
+            </div>
           )}
         </div>
         <Pagination
