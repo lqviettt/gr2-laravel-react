@@ -1,4 +1,5 @@
 import React from 'react';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   const handlePageChange = (page) => {
@@ -68,9 +69,9 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
       <button
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
       >
-        Trước
+        <FaChevronLeft className="w-4 h-4" />
       </button>
       
       {renderPageNumbers()}
@@ -78,9 +79,9 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
       <button
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
       >
-        Sau
+        <FaChevronRight className="w-4 h-4" />
       </button>
     </div>
   );

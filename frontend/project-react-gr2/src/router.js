@@ -23,6 +23,7 @@ import ProductManageList from "./pages/admin/productManage/productList.js";
 import VerifyAccount from "./pages/user/registerPage/verify.js";
 import AdminDashboard from "./pages/admin/dashboard/index.js";
 import UploadDemo from "./pages/UploadDemo";
+import OrderHistoryPage from "./pages/user/orderHistoryPage/index.js";
 
 const renderUserRouter = () => {
   const userRouters = [
@@ -86,6 +87,12 @@ const renderUserRouter = () => {
       path: ROUTERS.USER.PAYMENT_INFO,
       component: <PaymentInfo />,
       layout: MasterLayout,
+    },
+    {
+      path: ROUTERS.USER.ORDER_HISTORY,
+      component: <OrderHistoryPage />,
+      layout: MasterLayout,
+      protected: true,
     },
     {
       path: ROUTERS.USER.VERIFY_ACCOUNT,

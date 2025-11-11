@@ -2,138 +2,125 @@ import { memo } from "react";
 
 const Footer = () => {
   return (
-    <footer class="bg-[#000000] px-4 sm:px-6 pt-12 pb-6 font-[sans-serif]">
-      <div class="max-w-screen-xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        <div class="space-y-4">
-          <h6 class="text-xl text-white font-medium">CHÍNH SÁCH</h6>
-          <ul class="space-y-2.5">
+    <footer className="bg-black px-4 py-4 font-sans">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="space-y-2">
+          <h6 className="text-lg md:text-xl text-white font-medium">CHÍNH SÁCH</h6>
+          <ul className="space-y-1">
             <li>
-              <a
-                href="javascript:void(0)"
-                class="text-[15px] text-gray-400 hover:text-white"
+              <button
+                className="text-sm md:text-base text-gray-400 hover:text-white block text-left"
               >
                 Chính sách đổi trả, lên đời
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="javascript:void(0)"
-                class="text-[15px] text-gray-400 hover:text-white"
+              <button
+                className="text-sm md:text-base text-gray-400 hover:text-white block text-left"
               >
                 Chính sách bảo hành 12 tháng 1 đổi 1
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="javascript:void(0)"
-                class="text-[15px] text-gray-400 hover:text-white"
+              <button
+                className="text-sm md:text-base text-gray-400 hover:text-white block text-left"
               >
                 Cam kết chất lượng
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="javascript:void(0)"
-                class="text-[15px] text-gray-400 hover:text-white"
+              <button
+                className="text-sm md:text-base text-gray-400 hover:text-white block text-left"
               >
                 Chính sách bảo mật
-              </a>
+              </button>
             </li>
           </ul>
         </div>
 
-        <div class="space-y-4">
-          <h6 class="text-xl text-white font-medium">MUA HÀNG</h6>
-          <ul class="space-y-2.5">
+        <div className="space-y-2">
+          <h6 className="text-lg md:text-xl text-white font-medium">MUA HÀNG</h6>
+          <ul className="space-y-1">
             <li>
-              <a
-                href="javascript:void(0)"
-                class="text-[15px] text-gray-400 hover:text-white"
+              <button
+                className="text-sm md:text-base text-gray-400 hover:text-white block text-left"
               >
                 Hướng dẫn mua hàng
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="javascript:void(0)"
-                class="text-[15px] text-gray-400 hover:text-white"
+              <button
+                className="text-sm md:text-base text-gray-400 hover:text-white block text-left"
               >
                 Quy định vận chuyển, giao nhận
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="javascript:void(0)"
-                class="text-[15px] text-gray-400 hover:text-white"
+              <button
+                className="text-sm md:text-base text-gray-400 hover:text-white block text-left"
               >
                 Hướng dẫn thanh toán
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="javascript:void(0)"
-                class="text-[15px] text-gray-400 hover:text-white"
+              <button
+                className="text-sm md:text-base text-gray-400 hover:text-white block text-left"
               >
                 Phương thức trả góp
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="javascript:void(0)"
-                class="text-[15px] text-gray-400 hover:text-white"
+              <button
+                className="text-sm md:text-base text-gray-400 hover:text-white block text-left"
               >
                 Phương thức thanh toán
-              </a>
+              </button>
             </li>
           </ul>
         </div>
 
-        <div class="space-y-4">
-          <h6 class="text-xl text-white font-medium">ĐIỀU KHOẢN DỊCH VỤ</h6>
-          <ul class="space-y-2.5">
+        <div className="space-y-2">
+          <h6 className="text-lg md:text-xl text-white font-medium">ĐIỀU KHOẢN DỊCH VỤ</h6>
+          <ul className="space-y-1">
             <li>
-              <a
-                href="javascript:void(0)"
-                class="text-[15px] text-gray-400 hover:text-white"
+              <button
+                className="text-sm md:text-base text-gray-400 hover:text-white block text-left"
               >
                 Điểu khoản sử dụng dịch vụ
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="javascript:void(0)"
-                class="text-[15px] text-gray-400 hover:text-white"
+              <button
+                className="text-sm md:text-base text-gray-400 hover:text-white block text-left"
               >
                 Cam kết chất lượng sản phẩm
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="javascript:void(0)"
-                class="text-[15px] text-gray-400 hover:text-white"
+              <button
+                className="text-sm md:text-base text-gray-400 hover:text-white block text-left"
               >
                 Giới thiệu
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="javascript:void(0)"
-                class="text-[15px] text-gray-400 hover:text-white"
+              <button
+                className="text-sm md:text-base text-gray-400 hover:text-white block text-left"
               >
                 Liên hệ với chúng tôi
-              </a>
+              </button>
             </li>
           </ul>
         </div>
 
-        <div class="space-y-4">
-          <h6 class="text-xl text-white font-medium">LIÊN HỆ</h6>
-          <ul class="flex space-x-4">
+        <div className="space-y-2">
+          <h6 className="text-lg md:text-xl text-white font-medium">LIÊN HỆ</h6>
+          <ul className="flex space-x-2">
             <li>
-              <a href="javascript:void(0)">
+              <button className="block">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="fill-blue-600 w-8 h-8"
+                  className="fill-blue-600 w-6 md:w-8 h-6 md:h-8"
                   viewBox="0 0 49.652 49.652"
                 >
                   <path
@@ -141,13 +128,13 @@ const Footer = () => {
                     data-original="#000000"
                   />
                 </svg>
-              </a>
+              </button>
             </li>
             <li>
-              <a href="javascript:void(0)">
+              <button className="block">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="w-8 h-8"
+                  className="w-6 md:w-8 h-6 md:h-8"
                   viewBox="0 0 112.196 112.196"
                 >
                   <circle
@@ -163,13 +150,13 @@ const Footer = () => {
                     data-original="#f1f2f2"
                   />
                 </svg>
-              </a>
+              </button>
             </li>
             <li>
-              <a href="javascript:void(0)">
+              <button className="block">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="w-8 h-8"
+                  className="w-6 md:w-8 h-6 md:h-8"
                   viewBox="0 0 152 152"
                 >
                   <linearGradient
@@ -180,11 +167,11 @@ const Footer = () => {
                     y2="129.74"
                     gradientUnits="userSpaceOnUse"
                   >
-                    <stop offset="0" stop-color="#fae100" />
-                    <stop offset=".15" stop-color="#fcb720" />
-                    <stop offset=".3" stop-color="#ff7950" />
-                    <stop offset=".5" stop-color="#ff1c74" />
-                    <stop offset="1" stop-color="#6c1cd1" />
+                    <stop offset="0" stopColor="#fae100" />
+                    <stop offset=".15" stopColor="#fcb720" />
+                    <stop offset=".3" stopColor="#ff7950" />
+                    <stop offset=".5" stopColor="#ff1c74" />
+                    <stop offset="1" stopColor="#6c1cd1" />
                   </linearGradient>
                   <g data-name="Layer 2">
                     <g data-name="03.Instagram">
@@ -213,16 +200,16 @@ const Footer = () => {
                     </g>
                   </g>
                 </svg>
-              </a>
+              </button>
             </li>
           </ul>
         </div>
       </div>
 
-      <hr class="my-6 border-gray-600" />
+      <hr className="my-2 border-gray-600" />
 
-      <div class="max-w-screen-xl mx-auto text-center">
-        <p class="text-gray-400 text-[13px]">
+      <div className="max-w-7xl mx-auto text-center">
+        <p className="text-gray-400 text-xs md:text-sm">
           QuocViet Copyright © 2024. All rights reserved.
         </p>
       </div>

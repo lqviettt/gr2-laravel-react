@@ -59,7 +59,7 @@ const Cart = () => {
             ) : (
               <>
                 <h2 className="text-xl lg:text-2xl font-bold text-gray-800 mb-6">
-                  Giỏ hàng của bạn ({cartItems.length} sản phẩm)
+                  Giỏ hàng của bạn ({cartItems.reduce((total, item) => total + item.quantity, 0)} sản phẩm)
                 </h2>
 
                 {/* Desktop Table View */}
@@ -89,7 +89,13 @@ const Cart = () => {
                               <div className="w-20 h-20 flex-shrink-0">
                                 {item.category?.name && (
                                   <img
-                                    src={item.image || "/placeholder-image.jpg"}
+                                    src={
+                                      item.selectedVariant?.image
+                                        ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${item.selectedVariant.image}`
+                                        : item.image
+                                        ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${item.image}`
+                                        : "/placeholder-image.jpg"
+                                    }
                                     alt={item.name}
                                     className="w-full h-full object-contain rounded-lg"
                                   />
@@ -178,7 +184,13 @@ const Cart = () => {
                       <div className="flex gap-4">
                         <div className="w-20 h-20 flex-shrink-0">
                           <img
-                            src={item.image || "/placeholder-image.jpg"}
+                            src={
+                              item.selectedVariant?.image
+                                ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${item.selectedVariant.image}`
+                                : item.image
+                                ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${item.image}`
+                                : "/placeholder-image.jpg"
+                            }
                             alt={item.name}
                             className="w-full h-full object-contain rounded-lg"
                           />

@@ -26,7 +26,7 @@ class CategoryController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->input('perPage', 15);
+        $perPage = $request->input('perPage', 100);
         $this->authorize('view', Category::class);
         $query = $this->categoryRepository
             ->builderQuery()
@@ -93,5 +93,17 @@ class CategoryController extends Controller
         $category->delete($category);
 
         return $this->deteled();
+    }
+
+    /**
+     * getCategoriesWithChildren
+     *
+     * @return JsonResponse
+     */
+    public function getCategoriesWithChildren(): JsonResponse
+    {
+        $categories = $this->categoryRepository->builderQuery()->whereNull('parent_id')->get();
+
+        return $this->sendSuccess($categories);
     }
 }

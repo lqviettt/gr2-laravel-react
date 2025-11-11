@@ -91,44 +91,29 @@
     cursor: not-allowed;
 }
 
-.sort-buttons {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 40px;
-}
-
-.sort-buttons button {
-    font-size: 18px;
-    padding: 10px 20px;
-    border: 1px solid #cccccc;
-    background-color: #ffffff;
-    color: black;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-}
-
-.sort-buttons button:hover {
-    border: 1px solid #2974c4;
-    color: #2974c4;
-}
-
-.title-page {
-    margin-bottom: 20px;
-    font-size: 40px;
-    display: block;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-.title-page span {
-    padding-left: 10px;
-    border-left: 7px solid #00adf0;
-}
-
 .sort-title span {
     margin-bottom: 10px;
+}
+
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pagination button {
+    padding: 10px;
+    font-size: 14px;
+    margin: 0 5px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+.pagination button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }

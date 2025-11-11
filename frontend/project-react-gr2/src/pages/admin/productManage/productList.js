@@ -261,6 +261,7 @@ const ProductList = () => {
               const variant = variants.find(v => v.id === editingProductId);
               const productId = variant.product_id;
 
+              // Cập nhật thông tin product (không bao gồm ảnh)
               const productData = {
                 code: newProduct.code,
                 name: newProduct.name,
@@ -270,23 +271,24 @@ const ProductList = () => {
                 weight: parseFloat(newProduct.weight),
                 category_id: parseInt(newProduct.category_id, 10),
                 description: newProduct.description,
-                image: base64Image,
               };
 
-              console.log('Updating product for variant edit with image:', productData);
+              console.log('Updating product for variant edit:', productData);
 
               await axios.put(
                 `${process.env.REACT_APP_API_URL}/product/${productId}`,
                 productData
               );
 
+              // Cập nhật ảnh vào variant
               const variantData = {
                 value: newProduct.color,
                 quantity: parseInt(newProduct.quantity, 10),
                 price: parseFloat(newProduct.price),
+                image: base64Image, // Ảnh được cập nhật vào variant
               };
 
-              console.log('Updating variant:', variantData);
+              console.log('Updating variant with image:', variantData);
 
               await axios.put(
                 `${process.env.REACT_APP_API_URL}/product-variant/${editingProductId.replace('variant_', '')}`,
@@ -377,7 +379,7 @@ const ProductList = () => {
               console.log('Updating product with base64 image:', productData);
 
               try {
-                const response = await axios.put(
+                await axios.put(
                   `${process.env.REACT_APP_API_URL}/product/${editingProductId}`,
                   productData
                 );
@@ -444,7 +446,7 @@ const ProductList = () => {
 
             console.log('Updating product without image change:', productData);
 
-            const response = await axios.put(
+            await axios.put(
               `${process.env.REACT_APP_API_URL}/product/${editingProductId}`,
               productData
             );
@@ -477,7 +479,7 @@ const ProductList = () => {
             console.log('Creating product with image:', productData);
 
             try {
-              const response = await axios.post(
+              await axios.post(
                 `${process.env.REACT_APP_API_URL}/product`,
                 productData
               );
@@ -543,7 +545,7 @@ const ProductList = () => {
               productData.weight = parseFloat(newProduct.weight);
             }          console.log('Creating product without image:', productData);
 
-          const response = await axios.post(
+          await axios.post(
             `${process.env.REACT_APP_API_URL}/product`,
             productData
           );
@@ -792,7 +794,7 @@ const ProductList = () => {
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Đang hoạt động</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {Array.isArray(variants) ? variants.filter(variant => variant.status == '1').length : 0}
+                        {Array.isArray(variants) ? variants.filter(variant => variant.status === '1').length : 0}
                       </p>
                     </div>
                   </div>
@@ -805,7 +807,7 @@ const ProductList = () => {
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Không hoạt động</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {Array.isArray(variants) ? variants.filter(variant => variant.status != '1').length : 0}
+                        {Array.isArray(variants) ? variants.filter(variant => variant.status !== '1').length : 0}
                       </p>
                     </div>
                   </div>

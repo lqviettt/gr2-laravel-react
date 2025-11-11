@@ -88,7 +88,7 @@ const Register = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-4 sm:py-6 lg:py-8">
+    <div className="bg-gray-50 flex items-center justify-center py-4 sm:py-6 lg:py-8">
       <Section>
         <div className="w-full max-w-6xl">
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -147,7 +147,7 @@ const Register = () => {
                     label="Mật khẩu"
                     name="password"
                     type="password"
-                    placeholder="Nhập mật khẩu - ít nhất 6 ký tự"
+                    placeholder="Ít nhất 6 ký tự"
                     value={formData.password}
                     onChange={handleChange}
                     required
@@ -222,7 +222,9 @@ const InputField = ({
   error,
 }) => (
   <div>
-    <label className="text-gray-800 text-sm mb-2 block">{label}</label>
+    <label className="text-gray-800 text-sm mb-2 block">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
     <div className="relative flex items-center">
       <input
         name={name}

@@ -411,7 +411,7 @@ const CheckoutPage = () => {
             <div className="p-4 sm:p-6 lg:p-8">
               <div className="flex flex-col xl:flex-row gap-6 lg:gap-8">
                 {/* Order Information */}
-                <div className="flex-1 order-2 xl:order-1">
+                <div className="flex-1 order-1 xl:order-1">
                   <h2 className="border-l-[5px] pl-3 border-blue-500 text-xl sm:text-2xl font-bold text-gray-800 mb-6 lg:mb-8">
                     Thông tin đặt hàng
                   </h2>
@@ -634,7 +634,7 @@ const CheckoutPage = () => {
                 </div>
 
                 {/* Order Summary */}
-                <div className="xl:w-96 order-1 xl:order-2">
+                <div className="xl:w-96 order-2 xl:order-2">
                   <div className="bg-gray-50 rounded-lg p-4 lg:p-6 xl:sticky xl:top-4">
                     <h2 className="text-base lg:text-lg border-l-[5px] border-blue-500 pl-3 font-semibold text-gray-800 mb-4 lg:mb-6">
                       Thông tin sản phẩm

@@ -122,7 +122,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-500">Mã Phản Hồi</p>
-                                <p class="text-lg font-semibold text-gray-900">{{ $data['vnp_ResponseCode'] }}</p>
+                                <p class="text-lg font-semibold text-gray-900">{{ $data['vnp_ResponseCode'] ?? 'N/A' }}</p>
                             </div>
                         </div>
 

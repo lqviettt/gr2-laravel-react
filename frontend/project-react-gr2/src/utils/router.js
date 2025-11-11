@@ -10,6 +10,7 @@ export const ROUTERS = {
     CART: "cart",
     CHECKOUT: "checkout",
     ORDER: "order",
+    ORDER_HISTORY: "order-history",
     RESETPASSWORD: "reset-password",
     MY_ACCOUNT: "my-account",
     PAYMENT_INFO: "payment-info",

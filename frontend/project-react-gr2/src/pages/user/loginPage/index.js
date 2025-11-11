@@ -45,7 +45,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-4 sm:py-6 lg:py-8">
+    <div className="bg-gray-50 flex items-center justify-center py-2 sm:py-6 lg:py-8">
       <Section>
         <div className="max-w-md w-full">
           <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">

@@ -60,7 +60,15 @@ const ProductDetail = () => {
           setCategoryId(result.data.category_id);
           const categoryName = result.data.category?.name || "";
           const images = getProductImage(categoryName) || [];
-          if (images.length > 0) {
+          if (result.data.image) {
+            setSelectedImage(
+              `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${result.data.image}`
+            );
+          } else if (result.data.variants && result.data.variants.length > 0 && result.data.variants[0].image) {
+            setSelectedImage(
+              `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${result.data.variants[0].image}`
+            );
+          } else if (images.length > 0) {
             setSelectedImage(images[0].src);
           }
         } else {
@@ -126,22 +134,46 @@ const ProductDetail = () => {
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                 <img
-                  src={selectedImage}
+                  src={
+                    selectedImage ||
+                    (product.image
+                      ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}`
+                      : (getProductImage(product.category?.name) || [])[0]?.src || "")
+                  }
                   alt="Ảnh sản phẩm lớn"
-                  className="w-full max-w-md mx-auto lg:max-w-none rounded-lg shadow-lg"
+                  className="w-full max-w-sm mx-auto lg:max-w-none rounded-lg shadow-lg"
                 />
+
                 <div className="product-thumbnails flex gap-2 mt-4 overflow-x-auto pb-2">
-                  {(getProductImage(product.category?.name) || []).map((image) => (
+                  {/* Render thumbnails from product.image and product variants */}
+                  {([
+                    ...(product.image
+                      ? [{ id: 'main', src: `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}`, alt: product.name }]
+                      : []),
+                    ...product.variants
+                      .filter((variant) => variant.image)
+                      .map((variant) => ({
+                        id: variant.id,
+                        src: `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${variant.image}`,
+                        alt: variant.value,
+                      })),
+                  ]).map((image) => (
                     <button
                       key={image.id}
-                      onClick={() => setSelectedImage(image.src)}
-                      className={`w-16 h-16 rounded-md border-2 flex-shrink-0 p-1 ${
+                      onClick={() => {
+                        setSelectedImage(image.src);
+                        const matchingVariant = product.variants.find(v => v.value === image.alt);
+                        if (matchingVariant) {
+                          setSelectedVariant(matchingVariant);
+                        }
+                      }}
+                      className={`w-20 h-20 rounded-md border-2 flex-shrink-0 p-1 ${
                         selectedImage === image.src ? "border-blue-500" : "border-gray-300"
                       }`}
                     >
                       <img
                         src={image.src}
-                        alt={image.alt}
+                        alt={image.alt || product.name}
                         className="w-full h-full object-contain rounded"
                       />
                     </button>
@@ -210,13 +242,12 @@ const ProductDetail = () => {
                         }`}
                         onClick={() => {
                           setSelectedVariant(variant);
-                          const images = getProductImage(product.category.name) || [];
-                          for (const image of images) {
-                            if (image.alt.includes(variant.value)) {
-                              setSelectedImage(image.src);
-                              break;
-                            }
-                          }
+                          const imageSrc = variant.image
+                            ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${variant.image}`
+                            : product.image
+                            ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}`
+                            : selectedImage;
+                          setSelectedImage(imageSrc);
                         }}
                       >
                         {variant.value}

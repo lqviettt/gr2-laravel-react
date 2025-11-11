@@ -13,12 +13,22 @@ import { GrPrevious } from "react-icons/gr";
 import LoadingSpinner from "../../../component/user/LoadingSpinner";
 import ErrorMessage from "../../../component/user/ErrorMessage";
 import ProductGrid from "../../../component/user/ProductGrid";
+import ProductItem from "../../../component/user/ProductItem";
 import Section from "../../../component/user/Section";
 import "./style1.scss";
 
 const HomePage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [iphoneCurrentIndex, setIphoneCurrentIndex] = useState(0);
   const productsPerPage = 4;
+  const iphoneProductsPerSlide = 1; // Dịch chuyển 1 sản phẩm mỗi lần
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  };
 
   const handleNext = () => {
     if (currentIndex < Math.floor(products.length / productsPerPage)) {
@@ -32,9 +42,45 @@ const HomePage = () => {
     }
   };
 
+  const handleIphoneNext = () => {
+    const iphoneProducts = products.filter(product => 
+      product.name.toLowerCase().includes('iphone') || 
+      product.name.toLowerCase().includes('ip ')
+    );
+    if (iphoneCurrentIndex < iphoneProducts.length - sliderConfig.itemsPerView) {
+      setIphoneCurrentIndex(iphoneCurrentIndex + iphoneProductsPerSlide);
+    }
+  };
+
+  const handleIphonePrev = () => {
+    if (iphoneCurrentIndex > 0) {
+      setIphoneCurrentIndex(iphoneCurrentIndex - iphoneProductsPerSlide);
+    }
+  };
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Tính toán số items hiển thị và width dựa trên screen size
+  const getSliderConfig = () => {
+    if (windowWidth >= 1024) { // lg: 4 items
+      return { itemsPerView: 4, gap: '1.5rem', totalGaps: '4.5rem' }; // 3 * 1.5rem
+    } else if (windowWidth >= 768) { // md: 3 items
+      return { itemsPerView: 3, gap: '1rem', totalGaps: '2rem' }; // 2 * 1rem
+    } else { // mobile: 2 items
+      return { itemsPerView: 2, gap: '1rem', totalGaps: '1rem' }; // 1 * 1rem
+    }
+  };
+
+  const sliderConfig = getSliderConfig();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -60,11 +106,6 @@ const HomePage = () => {
 
     fetchProducts();
   }, []);
-
-  const displayedProducts = products.slice(
-    currentIndex * productsPerPage,
-    (currentIndex + 1) * productsPerPage
-  );
 
   if (loading) {
     return <LoadingSpinner message="Đang tải sản phẩm..." />;
@@ -99,14 +140,18 @@ const HomePage = () => {
 
       {/* Featured Categories */}
       <Section
-        title="DANH MỤC NỔI BẬT"
         className="relative -mt-8 lg:-mt-12"
-        titleClassName="text-xl sm:text-2xl lg:text-3xl"
       >
+        <div className="flex items-start gap-4 mb-8 lg:mb-12">
+          <div className="w-1 bg-blue-600 h-10"></div>
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+            DANH MỤC NỔI BẬT
+          </h2>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
           <div className="group">
             <a
-              href={`/product?search=GB&perPage=16`}
+              href={`/product?category_id=103`}
               className="category-item block transition-transform duration-200 hover:scale-105"
             >
               <img src={product14} alt="iPhone" className="mx-auto w-full h-auto rounded-lg shadow-sm group-hover:shadow-md" />
@@ -162,34 +207,66 @@ const HomePage = () => {
 
       {/* iPhone Products Section */}
       <Section
-        title="iPhone"
         className="relative -mt-8 lg:-mt-12"
-        titleClassName="text-xl sm:text-2xl lg:text-3xl"
       >
-        <div className="relative">
+        <div className="flex items-start gap-4 mb-8 lg:mb-12">
+          <div className="w-1 bg-blue-600 h-10"></div>
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+            iPhone
+          </h2>
+        </div>
+        <div className="relative overflow-hidden">
           {/* Navigation Buttons */}
-          {currentIndex > 0 && (
+          {iphoneCurrentIndex > 0 && (
             <button
-              onClick={handlePrev}
-              className="absolute -left-4 lg:-left-12 top-1/2 transform -translate-y-1/2 bg-white hover:bg-blue-50 text-blue-600 rounded-full h-10 w-10 lg:h-12 lg:w-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 z-10 border border-blue-200"
+              onClick={handleIphonePrev}
+              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white hover:bg-blue-50 text-blue-600 rounded-full h-10 w-10 lg:h-12 lg:w-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 z-10 border border-blue-200"
+              style={{ marginLeft: '-20px' }} // Đẩy nửa nút ra ngoài
             >
               <GrPrevious className="text-lg lg:text-xl" />
             </button>
           )}
 
-          {/* Products Grid */}
-          <div className="px-12 lg:px-16">
-            <ProductGrid
-              products={displayedProducts}
-              columns={{ default: 2, sm: 2, md: 3, lg: 4 }}
-              className="gap-4 lg:gap-6"
-            />
-          </div>
-
-          <button
-            onClick={handleNext}
-            disabled={currentIndex >= Math.floor(products.length / productsPerPage)}
-            className="absolute -right-4 lg:-right-12 top-1/2 transform -translate-y-1/2 bg-white hover:bg-blue-50 text-blue-600 rounded-full h-10 w-10 lg:h-12 lg:w-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 z-10 border border-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          {/* Products Slider Container */}
+          <div className="overflow-hidden px-12 lg:px-16">
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{
+                transform: `translateX(-${iphoneCurrentIndex * (100 / sliderConfig.itemsPerView)}%)`,
+                width: '100%',
+                justifyContent: 'flex-start',
+                gap: sliderConfig.gap
+              }}
+            >
+              {products
+                .filter(product =>
+                  product.name.toLowerCase().includes('iphone') ||
+                  product.name.toLowerCase().includes('ip ')
+                )
+                .map((product) => (
+                  <div
+                    key={product.id}
+                    className="flex-shrink-0"
+                    style={{
+                      width: `calc((100% - ${sliderConfig.totalGaps}) / ${sliderConfig.itemsPerView})`,
+                      minWidth: `calc((100% - ${sliderConfig.totalGaps}) / ${sliderConfig.itemsPerView})`
+                    }}
+                  >
+                    <ProductItem
+                      product={product}
+                      formatCurrency={formatCurrency}
+                    />
+                  </div>
+                ))}
+            </div>
+          </div>          <button
+            onClick={handleIphoneNext}
+            disabled={iphoneCurrentIndex >= products.filter(product => 
+              product.name.toLowerCase().includes('iphone') || 
+              product.name.toLowerCase().includes('ip ')
+            ).length - sliderConfig.itemsPerView}
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white hover:bg-blue-50 text-blue-600 rounded-full h-10 w-10 lg:h-12 lg:w-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 z-10 border border-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ marginRight: '-20px' }} // Đẩy nửa nút ra ngoài
           >
             <GrNext className="text-lg lg:text-xl" />
           </button>
@@ -199,11 +276,11 @@ const HomePage = () => {
         <div className="text-center mt-8 lg:mt-12">
           <button
             onClick={() =>
-              (window.location.href = "/product?search=iphone&perPage=16")
+              (window.location.href = "/product-list")
             }
             className="inline-flex items-center gap-2 px-6 lg:px-8 py-3 lg:py-4 text-sm lg:text-base font-medium text-blue-600 border-2 border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm hover:shadow-md"
           >
-            Xem toàn bộ sản phẩm
+            Xem toàn bộ sản phẩm iPhone
             <GrFormNextLink className="text-lg lg:text-xl" />
           </button>
         </div>

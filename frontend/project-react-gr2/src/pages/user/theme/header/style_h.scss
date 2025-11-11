@@ -228,15 +228,20 @@
     .dropdown_columns {
         display: flex;
         gap: 10px;
+        max-width: 1200px; // Giới hạn width để không quá rộng
+        
+        @media (max-width: 1024px) {
+            flex-wrap: wrap;
+        }
     }
 
     .dropdown_column {
-        min-width: 300px;
+        min-width: 200px;
     }
 
     .dropdown_column h4 {
-        margin: 0 0 10px;
-        font-size: 27px;
+        margin: 0 0 8px;
+        font-size: 20px;
         font-weight: 700;
         color: #007bff;
     }
@@ -247,12 +252,17 @@
         list-style: none;
         margin: 0;
         padding: 0;
-        gap: 10px;
+        gap: 5px;
 
         li {
             a {
-                font-size: 20px;
+                font-size: 16px;
             }
+        }
+        
+        // Giới hạn tối đa 3 items mỗi cột (4 hàng: 1 header + 3 items)
+        li:nth-child(n+4) {
+            display: none;
         }
     }
 
@@ -267,7 +277,7 @@
         border-radius: 4px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         z-index: 9999;
-        padding: 30px;
+        padding: 15px;
         flex-direction: row;
     }
 
