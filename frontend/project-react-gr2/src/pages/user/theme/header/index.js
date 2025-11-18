@@ -243,15 +243,15 @@ const Header = () => {
 
   return (
     <header className="font-[sans-serif] min-h-[65px] tracking-wide relative z-50">
-      <div className="flex justify-between lg:justify-between items-center w-full bg-[#000000] text-white px-4 sm:px-8 lg:px-32 py-4">
-        <div className="h_top">
+      <div className="flex justify-between lg:justify-between items-center w-full bg-[#000000] text-white px-4 sm:px-8 lg:px-32 py-4 gap-2">
+        <div className="h_top flex-shrink-0">
           <Link to="/">
             <h1 className="text-xl sm:text-2xl font-bold">QuocViet</h1>
           </Link>
         </div>
 
         {/* Mobile Search - visible on mobile */}
-        <div className="lg:hidden flex-1 mx-4 relative search-container">
+        <div className="lg:hidden mx-2 relative search-container max-w-xs sm:max-w-sm z-40">
           <form onSubmit={handleSearchSubmit} className="flex rounded-full overflow-hidden border border-gray-300">
             <input
               type="text"
@@ -261,14 +261,14 @@ const Header = () => {
               value={searchQuery}
               onChange={handleSearchChange}
               onFocus={handleSearchFocus}
-              className="flex-1 px-3 py-1 border-0 text-black text-sm focus:outline-none bg-white"
+              className="flex-1 px-2 sm:px-3 py-1 sm:py-2 border-0 text-black text-xs sm:text-sm focus:outline-none bg-white"
             />
-            <button type="submit" className="pr-3 rounded-r bg-white">
-              <FaSearch color="black" />
+            <button type="submit" className="pr-2 sm:pr-3 rounded-r bg-white flex-shrink-0">
+              <FaSearch color="black" size={14} className="sm:text-base" />
             </button>
           </form>
           {showSearchDropdown && (
-            <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded shadow-lg z-[60] max-h-60 overflow-y-auto mt-1">
+            <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded shadow-lg z-[100] max-h-60 overflow-y-auto mt-1">
               {/* Trends Section */}
               <div className="p-2 border-b border-gray-100">
                 <h4 className="text-xs font-medium text-gray-700 mb-2">Xu hướng tìm kiếm</h4>
@@ -319,7 +319,7 @@ const Header = () => {
 
         {/* Mobile menu button */}
         <button
-          className="lg:hidden text-white p-2"
+          className="lg:hidden text-white p-2 flex-shrink-0"
           onClick={toggleMobileMenu}
         >
           {isMobileMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
