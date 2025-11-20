@@ -79,7 +79,16 @@ import { toast } from "react-toastify";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { cartItems, getTotalPrice, removeAllFromCart } = useCart();
+  const { cartItems, getTotalPrice, removeAllFromCart, buyNowItems, clearBuyNowItems, getTotalPriceForItems } = useCart();
+  
+  // Sử dụng buyNowItems nếu có (khi bấm Mua ngay), nếu không dùng cartItems
+  const itemsToCheckout = buyNowItems || cartItems;
+  
+  // Tính tổng giá cho items được checkout
+  const getTotalCheckoutPrice = () => {
+    return getTotalPriceForItems(itemsToCheckout);
+  };
+  
   const [selectedFee, setSelectedFee] = useState(0);
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -101,7 +110,7 @@ const CheckoutPage = () => {
     setOrder({
       ...order,
       shipping_fee: fee,
-      total_price: getTotalPrice() * 1000 + fee,
+      total_price: getTotalCheckoutPrice() * 1000 + fee,
     });
     document.getElementById(key).click();
   };
@@ -125,6 +134,7 @@ const CheckoutPage = () => {
   const handleConfirm = () => {
     setOrderSuccess(false);
     removeAllFromCart();
+    clearBuyNowItems();
     navigate("/");
   };
 
@@ -265,7 +275,7 @@ const CheckoutPage = () => {
     shipping_fee: "",
     total_price: "",
     payment_method: "",
-    order_item: cartItems.map((item) => ({
+    order_item: itemsToCheckout.map((item) => ({
       product_id: item.id,
       product_variant_id: item.selectedVariant ? item.selectedVariant.id : "",
       quantity: item.quantity,
@@ -346,7 +356,7 @@ const CheckoutPage = () => {
           ward: order.shipping_ward,
           address: order.shipping_address_detail,
           weight: 300,
-          value: getTotalPrice(),
+          value: getTotalCheckoutPrice(),
         }
       );
       setShippingUnits(response.data);
@@ -640,7 +650,7 @@ const CheckoutPage = () => {
                       Thông tin sản phẩm
                     </h2>
 
-                    {cartItems.length === 0 ? (
+                    {itemsToCheckout.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-8 lg:py-12">
                         <BsMinecartLoaded size={48} className="text-gray-400 mb-4" />
                         <h3 className="text-base lg:text-lg font-semibold text-gray-600 text-center">
@@ -649,49 +659,38 @@ const CheckoutPage = () => {
                       </div>
                     ) : (
                       <div className="space-y-3 lg:space-y-4 mb-4 lg:mb-6">
-                        {cartItems.map((item, index) => (
+                        {itemsToCheckout.map((item, index) => (
                           <div
                             key={index}
                             className="flex gap-3 lg:gap-4 p-3 lg:p-4 bg-white rounded-lg border shadow-sm"
                           >
                             <div className="w-12 h-12 lg:w-16 lg:h-16 flex-shrink-0">
-                              {productImages[item.category.name]?.map(
-                                (image) => {
-                                  if (
-                                    item.selectedVariant &&
-                                    image.alt.includes(
-                                      item.selectedVariant.value
-                                    )
-                                  ) {
-                                    return (
-                                      <img
-                                        key={image.id}
-                                        src={image.src}
-                                        alt={image.alt}
-                                        className="w-full h-full object-contain rounded"
-                                      />
-                                    );
-                                  } else if (
-                                    !item.selectedVariant &&
-                                    image.id === 1
-                                  ) {
-                                    return (
-                                      <img
-                                        key={image.id}
-                                        src={
-                                          productImages[item.category.name][0]
-                                            .src
-                                        }
-                                        alt={
-                                          productImages[item.category.name][0]
-                                            .alt
-                                        }
-                                        className="w-full h-full object-contain rounded"
-                                      />
-                                    );
-                                  }
-                                  return null;
-                                }
+                              {item.image ? (
+                                // Hiển thị ảnh từ API nếu có
+                                <img
+                                  src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${item.image}`}
+                                  alt={item.name}
+                                  className="w-full h-full object-contain rounded"
+                                />
+                              ) : item.selectedVariant?.image ? (
+                                // Hoặc ảnh từ variant
+                                <img
+                                  src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${item.selectedVariant.image}`}
+                                  alt={item.selectedVariant.value}
+                                  className="w-full h-full object-contain rounded"
+                                />
+                              ) : productImages[item.category?.name]?.[0] ? (
+                                // Nếu không có, lấy ảnh placeholder từ mock data
+                                <img
+                                  src={productImages[item.category.name][0].src}
+                                  alt={item.name}
+                                  className="w-full h-full object-contain rounded"
+                                />
+                              ) : (
+                                // Placeholder nếu không có ảnh
+                                <div className="w-full h-full bg-gray-200 rounded flex items-center justify-center">
+                                  <span className="text-gray-400">No Image</span>
+                                </div>
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -711,7 +710,7 @@ const CheckoutPage = () => {
                     <div className="border-t border-gray-200 pt-4 space-y-2 lg:space-y-3">
                       <div className="flex justify-between text-sm text-gray-600">
                         <span>Tạm tính:</span>
-                        <span>{formatCurrency(getTotalPrice() * 1000)}</span>
+                        <span>{formatCurrency(getTotalCheckoutPrice() * 1000)}</span>
                       </div>
                       <div className="flex justify-between text-sm text-gray-600">
                         <span>Phí vận chuyển:</span>
@@ -720,7 +719,7 @@ const CheckoutPage = () => {
                       <div className="flex justify-between text-base lg:text-lg font-semibold text-gray-800 border-t border-gray-200 pt-2 lg:pt-3">
                         <span>Tổng cộng:</span>
                         <span className="text-blue-600">
-                          {formatCurrency(getTotalPrice() * 1000 + selectedFee)}
+                          {formatCurrency(getTotalCheckoutPrice() * 1000 + selectedFee)}
                         </span>
                       </div>
                     </div>

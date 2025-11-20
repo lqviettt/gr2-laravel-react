@@ -4,6 +4,9 @@ import "./style.scss";
 import { GiCheckMark } from "react-icons/gi";
 import { IoBookmarksOutline } from "react-icons/io5";
 import { TiFlashOutline } from "react-icons/ti";
+import { MdLocalShipping, MdAssignment } from "react-icons/md";
+import { FaCreditCard } from "react-icons/fa";
+import { FiShoppingCart } from "react-icons/fi";
 import { toast } from "react-toastify";
 
 import { useCart } from "../../../component/CartContext";
@@ -12,7 +15,7 @@ import { LoadingSpinner, ErrorMessage, Section } from "../../../component/user";
 
 const ProductDetail = () => {
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, setBuyNowItem } = useCart();
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -38,6 +41,27 @@ const ProductDetail = () => {
     toast.success("Cập nhật giỏ hàng thành công!");
   };
 
+  const handleBuyNow = () => {
+    const cartItem = {
+      ...product,
+      selectedVariant,
+      quantity,
+    };
+    
+    setBuyNowItem(cartItem);
+    navigate("/checkout");
+  };
+
+  const getProductPrice = () => {
+    if (selectedVariant?.price) {
+      return formatCurrency(selectedVariant.price * 1000);
+    }
+    if (product?.price) {
+      return formatCurrency(product.price * 1000);
+    }
+    return "Liên hệ";
+  };
+
   const handleQuantityChange = (newQuantity) => {
     if (newQuantity < 1) {
       setQuantity(1);
@@ -56,7 +80,8 @@ const ProductDetail = () => {
         const result = await response.json();
         if (result?.data) {
           setProduct(result.data);
-          setSelectedVariant(result.data.variants[0]);
+          setSelectedProductId(result.data.id);
+          setSelectedVariant(result.data.variants && result.data.variants.length > 0 ? result.data.variants[0] : null);
           setCategoryId(result.data.category_id);
           const categoryName = result.data.category?.name || "";
           const images = getProductImage(categoryName) || [];
@@ -90,7 +115,7 @@ const ProductDetail = () => {
       if (!categoryId) return;
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/product?category_id=${categoryId}`
+          `${process.env.REACT_APP_API_URL}/product?category_id=${categoryId}&perPage=6`
         );
         const result = await response.json();
         setProductByCategory(result.data.data);
@@ -122,16 +147,45 @@ const ProductDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-24 lg:pb-0">
+      {/* Mobile Sticky Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-white border-t border-gray-200 shadow-lg z-50">
+        <div className="flex items-center justify-between gap-2 py-4 px-3 sm:p-4">
+          <div className="flex items-center gap-2">
+            <div className="text-center">
+              <p className="text-xs text-gray-600">Giá:</p>
+              <p className="text-lg sm:text-xl font-bold text-red-600">
+                {getProductPrice()}
+              </p>
+            </div>
+          </div>
+          
+          <button
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-bold text-sm sm:text-base transition-colors shadow-md"
+            onClick={handleBuyNow}
+          >
+            🛍️ Mua ngay
+          </button>
+
+          <button
+            className="flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-bold text-sm sm:text-base transition-colors shadow-md"
+            onClick={handleAddToCart}
+            title="Giỏ hàng"
+          >
+            <FiShoppingCart size={20} />
+          </button>
+        </div>
+      </div>
+
       <Section>
         <div className="max-w-7xl mx-auto">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-6 lg:mb-8">
             {product.name}
           </h1>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
             {/* Product Image Section */}
-            <div className="lg:col-span-2">
+            <div className="col-span-1 lg:col-span-3">
               <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                 <img
                   src={
@@ -141,7 +195,7 @@ const ProductDetail = () => {
                       : (getProductImage(product.category?.name) || [])[0]?.src || "")
                   }
                   alt="Ảnh sản phẩm lớn"
-                  className="w-full max-w-sm mx-auto lg:max-w-none rounded-lg shadow-lg"
+                  className="w-full max-w-xs mx-auto rounded-lg shadow-lg"
                 />
 
                 <div className="product-thumbnails flex gap-2 mt-4 overflow-x-auto pb-2">
@@ -167,7 +221,7 @@ const ProductDetail = () => {
                           setSelectedVariant(matchingVariant);
                         }
                       }}
-                      className={`w-20 h-20 rounded-md border-2 flex-shrink-0 p-1 ${
+                      className={`w-16 h-16 rounded-md border-2 flex-shrink-0 p-1 ${
                         selectedImage === image.src ? "border-blue-500" : "border-gray-300"
                       }`}
                     >
@@ -179,27 +233,136 @@ const ProductDetail = () => {
                     </button>
                   ))}
                 </div>
+
+                {/* Product Description */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <h3 className="text-lg font-semibold mb-3">Mô tả sản phẩm</h3>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    {product.description || "Không có mô tả sản phẩm"}
+                  </p>
+                </div>
               </div>
+              {/* Warranty and Status Info */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+
+                  <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <h2 className="flex bg-blue-600 p-4 text-white text-lg font-bold">
+                      <IoBookmarksOutline size={24} className="mr-3" />
+                      Cam kết bán hàng
+                    </h2>
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Bảo hành 12 tháng lỗi 1 đổi 1</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Lên đời thu 100% giá web</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Bảo hành rơi vỡ vào nước sửa chữa miễn phí không giới hạn</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Tặng kèm cáp sạc nhanh zin + Cường lực full màn</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <h2 className="flex bg-blue-600 p-4 text-white text-lg font-bold">
+                      <TiFlashOutline size={24} className="mr-2" />
+                      Tình trạng máy
+                    </h2>
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Máy 98% là các máy cấn móp, xước sâu nhiều</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Máy 99% là các máy gần như mới, có vài vết xước nhẹ nhỏ</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Máy New 100% là các máy mới chưa Active (không box)</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <h2 className="flex bg-blue-600 p-4 text-white text-lg font-bold">
+                      <MdLocalShipping size={24} className="mr-2" />
+                      Hình thức giao hàng
+                    </h2>
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Giao hàng toàn quốc nhanh chóng</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Đóng gói an toàn, bảo vệ sản phẩm tối đa</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Hỗ trợ 24/7 trong quá trình vận chuyển</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <h2 className="flex bg-blue-600 p-4 text-white text-lg font-semibold">
+                      <MdAssignment size={24} className="mr-2" />
+                      Chính sách đổi trả
+                    </h2>
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm">Đổi trả miễn phí trong 3 ngày</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm">Sản phẩm phải còn nguyên vẹn, không có vết xước</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm">Không bao gồm các phụ kiện tặng kèm</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
             </div>
 
             {/* Product Details Section */}
-            <div className="space-y-6">
+            <div className="col-span-1 lg:col-span-2 space-y-4 lg:space-y-6">
               <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                 <div className="text-lg sm:text-xl lg:text-2xl font-semibold mb-4">
                   Loại: <span className="text-blue-600">{product.category?.name || "Không có"}</span>
                 </div>
 
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-6">
-                  Giá bán: <br />
+                <div className="text-lg sm:text-xl font-bold mb-2">
+                  Giá bán:
+                </div>
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6">
                   <span className="text-red-500">
-                    {selectedVariant?.price ? formatCurrency(selectedVariant.price * 1000) : "Liên hệ"}
+                    {getProductPrice()}
                   </span>
                 </div>
 
                 {/* Product Variants by Category */}
                 {Array.isArray(productByCategory) && productByCategory.length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold mb-3">Chọn dung lượng:</h3>
+                  <div className="mb-6 pb-6 border-b border-gray-200">
+                    <h3 className="text-lg font-semibold mb-3">Phiên bản khác</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {productByCategory.map((productItem) => {
                         const storage = productItem.name.split(" ").pop();
@@ -219,6 +382,8 @@ const ProductDetail = () => {
                             <p className="text-xs sm:text-sm font-semibold text-red-600 mt-1">
                               {productItem.price
                                 ? formatCurrency(productItem.price * 1000)
+                                : productItem.variants && productItem.variants.length > 0
+                                ? formatCurrency(productItem.variants[0].price * 1000)
                                 : "Liên hệ"}
                             </p>
                           </button>
@@ -229,36 +394,38 @@ const ProductDetail = () => {
                 )}
 
                 {/* Color Variants */}
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3">Màu sắc:</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {product.variants.map((variant) => (
-                      <button
-                        key={variant.id}
-                        className={`px-3 py-2 rounded-lg border text-sm sm:text-base transition-colors ${
-                          selectedVariant?.id === variant.id
-                            ? "border-blue-500 bg-blue-50 text-blue-700"
-                            : "border-gray-300 hover:border-blue-300"
-                        }`}
-                        onClick={() => {
-                          setSelectedVariant(variant);
-                          const imageSrc = variant.image
-                            ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${variant.image}`
-                            : product.image
-                            ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}`
-                            : selectedImage;
-                          setSelectedImage(imageSrc);
-                        }}
-                      >
-                        {variant.value}
-                      </button>
-                    ))}
+                {product.variants && product.variants.length > 0 && (
+                  <div className="mb-6 pb-6 border-b border-gray-200">
+                    <h3 className="text-lg font-semibold mb-3">Màu sắc:</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {product.variants.map((variant) => (
+                        <button
+                          key={variant.id}
+                          className={`px-3 py-2 rounded-lg border text-sm sm:text-base transition-colors ${
+                            selectedVariant?.id === variant.id
+                              ? "border-blue-500 bg-blue-50 text-blue-700"
+                              : "border-gray-300 hover:border-blue-300"
+                          }`}
+                          onClick={() => {
+                            setSelectedVariant(variant);
+                            const imageSrc = variant.image
+                              ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${variant.image}`
+                              : product.image
+                              ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}`
+                              : selectedImage;
+                            setSelectedImage(imageSrc);
+                          }}
+                        >
+                          {variant.value}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Quantity Selector */}
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3">Số lượng:</h3>
+                <div className="mb-6 pb-6">
+                  <h3 className="text-lg font-semibold mb-3">Số lượng</h3>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => handleQuantityChange(quantity - 1)}
@@ -278,73 +445,74 @@ const ProductDetail = () => {
                   </div>
                 </div>
 
-                {/* Status */}
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold">Tình trạng:</h3>
-                  <span className="text-blue-600 font-medium">Máy LikeNew 99%</span>
-                </div>
-
                 {/* Add to Cart Button */}
-                <button
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors shadow-sm hover:shadow-md"
-                  onClick={handleAddToCart}
-                >
-                  Thêm vào giỏ hàng
-                </button>
+                <div className="space-y-3 mb-4">
+                  <button
+                    className="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-4 rounded-lg font-bold text-lg sm:text-xl transition-colors shadow-md hover:shadow-lg"
+                    onClick={handleBuyNow}
+                  >
+                    🛍️ Mua ngay
+                  </button>
+                  <button
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold text-base sm:text-lg transition-colors shadow-sm hover:shadow-md"
+                    onClick={handleAddToCart}
+                  >
+                    Thêm vào giỏ hàng
+                  </button>
+                </div>
               </div>
-
-              {/* Warranty and Status Info */}
-              <div className="space-y-4">
-                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                  <h2 className="flex bg-blue-600 p-4 text-white text-lg font-semibold">
-                    <IoBookmarksOutline size={24} className="mr-3" />
-                    Cam kết bán hàng
+              {/* Payment Offers */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden mt-6">
+                  <h2 className="flex bg-green-600 p-4 text-white text-xl font-bold">
+                    <FaCreditCard size={24} className="mr-3" />
+                    Ưu đãi thanh toán
                   </h2>
                   <div className="p-4">
+                    <div className="mb-4 pb-4 border-b border-gray-200">
+                      <p className="text-sm font-semibold text-gray-700">
+                        Xem chính sách ưu đãi dành cho thành viên Smember
+                      </p>
+                    </div>
                     <ul className="space-y-3">
-                      <li className="flex items-start">
-                        <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">Bảo hành 12 tháng lỗi 1 đổi 1</span>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span><strong>Kredivo</strong> - Giảm đến 5.000.000đ khi thanh toán qua Kredivo</span>
                       </li>
-                      <li className="flex items-start">
-                        <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">Lên đời thu 100% giá web</span>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Hoàn tiền đến 2 triệu khi mở thẻ tín dụng <strong>HSBC</strong></span>
                       </li>
-                      <li className="flex items-start">
-                        <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">Bảo hành rơi vỡ vào nước sửa chữa miễn phí không giới hạn</span>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Mở thẻ <strong>VIB</strong> nhận E-Voucher đến 600K</span>
                       </li>
-                      <li className="flex items-start">
-                        <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">Tặng kèm cáp sạc nhanh zin + Cường lực full màn</span>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Giảm 500K khi thanh toán bằng thẻ tín dụng <strong>HDBank</strong></span>
+                      </li>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Trả góp 0 lãi, phí + tặng 500k khi mở thẻ <strong>TPBANK EVO</strong></span>
+                      </li>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Giảm 400K khi thanh toán bằng thẻ tín dụng <strong>Home Credit</strong></span>
+                      </li>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Giảm đến 300K khi thanh toán qua <strong>VNPAY-QR</strong></span>
+                      </li>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Giảm 2% tối đa 200K khi thanh toán qua <strong>MOMO</strong></span>
+                      </li>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Liên hệ <strong>B2B</strong> để được tư vấn giá tốt nhất cho khách hàng doanh nghiệp khi mua số lượng nhiều</span>
                       </li>
                     </ul>
                   </div>
                 </div>
-
-                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                  <h2 className="flex bg-blue-600 p-4 text-white text-lg font-semibold">
-                    <TiFlashOutline size={24} className="mr-2" />
-                    Tình trạng máy
-                  </h2>
-                  <div className="p-4">
-                    <ul className="space-y-3">
-                      <li className="flex items-start">
-                        <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">Máy 98% là các máy cấn móp, xước sâu nhiều</span>
-                      </li>
-                      <li className="flex items-start">
-                        <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">Máy 99% là các máy gần như mới, có vài vết xước nhẹ nhỏ</span>
-                      </li>
-                      <li className="flex items-start">
-                        <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">Máy New 100% là các máy mới chưa Active (không box)</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
