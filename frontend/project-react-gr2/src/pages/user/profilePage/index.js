@@ -1,6 +1,7 @@
 import React, { useEffect, useState, memo } from "react";
 import { Section, LoadingSpinner, ErrorMessage } from "../../../component/user";
 import { UserAvatar, InfoCard, Button } from "../../../components";
+import { api } from "../../../utils/apiClient";
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -8,23 +9,11 @@ const ProfilePage = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
     const userData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/profile`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Không thể tải thông tin tài khoản");
-        }
-
-        const data = await response.json();
+        const response = await api.get('/profile');
+        const data = response.data;
         setUser(data);
         setError(null);
       } catch (error) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, memo } from "react";
-import axios from "axios";
+import { api } from "../../../utils/apiClient";
 import { toast } from "react-toastify";
 import CommonTable from "../../../components/CommonTable";
 import ConfirmDialog from "../../../components/ConfirmDialog";
@@ -79,8 +79,7 @@ const ProductList = () => {
       });
       queryParams.append('page', page);
 
-      const url = `${process.env.REACT_APP_API_URL}/product${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-      const response = await axios.get(url);
+      const response = await api.get(`/product${queryParams.toString() ? `?${queryParams.toString()}` : ''}`);
 
       const products = response.data.data.data || [];
       const paginationData = response.data.data;
@@ -138,7 +137,7 @@ const ProductList = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/category`);
+      const response = await api.get('/category');
       setCategories(response.data.data?.data || response.data.data || []);
       console.log("Fetched categories:", response.data.data?.data || response.data.data || []);
     } catch (error) {
@@ -193,7 +192,7 @@ const ProductList = () => {
   const fetchProductDetails = async (productId) => {
     try {
       console.log('Fetching product details for ID:', productId);
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/product/${productId}`);
+      const response = await api.get(`/product/${productId}`);
       const product = response.data.data;
       console.log('Fetched product:', product);
 
@@ -275,10 +274,7 @@ const ProductList = () => {
 
               console.log('Updating product for variant edit:', productData);
 
-              await axios.put(
-                `${process.env.REACT_APP_API_URL}/product/${productId}`,
-                productData
-              );
+              await api.put(`/product/${productId}`, productData);
 
               // Cập nhật ảnh vào variant
               const variantData = {
@@ -290,10 +286,7 @@ const ProductList = () => {
 
               console.log('Updating variant with image:', variantData);
 
-              await axios.put(
-                `${process.env.REACT_APP_API_URL}/product-variant/${editingProductId.replace('variant_', '')}`,
-                variantData
-              );
+              await api.put(`/product-variant/${editingProductId.replace('variant_', '')}`, variantData);
               await fetchProducts();
               toast.success("Cập nhật thành công!");
               setIsModalOpen(false);
@@ -339,10 +332,7 @@ const ProductList = () => {
 
             console.log('Updating product for variant edit:', productData);
 
-            await axios.put(
-              `${process.env.REACT_APP_API_URL}/product/${productId}`,
-              productData
-            );
+            await api.put(`/product/${productId}`, productData);
 
             const variantData = {
               value: newProduct.color,
@@ -352,10 +342,7 @@ const ProductList = () => {
 
             console.log('Updating variant without image change:', variantData);
 
-            await axios.put(
-              `${process.env.REACT_APP_API_URL}/product-variant/${editingProductId.replace('variant_', '')}`,
-              variantData
-            );
+            await api.put(`/product-variant/${editingProductId.replace('variant_', '')}`, variantData);
             await fetchProducts();
             toast.success("Cập nhật thành công!");
           }
@@ -379,10 +366,7 @@ const ProductList = () => {
               console.log('Updating product with base64 image:', productData);
 
               try {
-                await axios.put(
-                  `${process.env.REACT_APP_API_URL}/product/${editingProductId}`,
-                  productData
-                );
+                await api.put(`/product/${editingProductId}`, productData);
                 await fetchProducts();
                 toast.success("Cập nhật sản phẩm thành công!");
                 setIsModalOpen(false);
@@ -446,10 +430,7 @@ const ProductList = () => {
 
             console.log('Updating product without image change:', productData);
 
-            await axios.put(
-              `${process.env.REACT_APP_API_URL}/product/${editingProductId}`,
-              productData
-            );
+            await api.put(`/product/${editingProductId}`, productData);
             await fetchProducts();
             toast.success("Cập nhật sản phẩm thành công!");
           }
@@ -479,10 +460,7 @@ const ProductList = () => {
             console.log('Creating product with image:', productData);
 
             try {
-              await axios.post(
-                `${process.env.REACT_APP_API_URL}/product`,
-                productData
-              );
+              await api.post('/product', productData);
               await fetchProducts();
               toast.success("Thêm sản phẩm thành công!");
               setIsModalOpen(false);
@@ -545,10 +523,7 @@ const ProductList = () => {
               productData.weight = parseFloat(newProduct.weight);
             }          console.log('Creating product without image:', productData);
 
-          await axios.post(
-            `${process.env.REACT_APP_API_URL}/product`,
-            productData
-          );
+          await api.post('/product', productData);
           await fetchProducts();
           toast.success("Thêm sản phẩm thành công!");
         }
@@ -616,7 +591,7 @@ const ProductList = () => {
 
   const handleConfirmDelete = async () => {
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/product/${confirmDialog.productId}`);
+      await api.delete(`/product/${confirmDialog.productId}`);
       if (Array.isArray(variants)) {
         await fetchProducts();
       }

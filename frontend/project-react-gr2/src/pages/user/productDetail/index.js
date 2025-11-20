@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import { useCart } from "../../../component/CartContext";
 import { getProductImage, formatCurrency } from "../../../utils/common";
 import { LoadingSpinner, ErrorMessage, Section } from "../../../component/user";
+import { api } from "../../../utils/apiClient";
 
 const ProductDetail = () => {
   const navigate = useNavigate();
@@ -49,11 +50,8 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProductDetail = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/product/${id}`);
-        if (!response.ok) {
-          throw new Error("Không thể tải dữ liệu từ API");
-        }
-        const result = await response.json();
+        const response = await api.get(`/product/${id}`);
+        const result = response.data;
         if (result?.data) {
           setProduct(result.data);
           setSelectedVariant(result.data.variants[0]);
@@ -89,11 +87,9 @@ const ProductDetail = () => {
     const fetchProductByCategory = async () => {
       if (!categoryId) return;
       try {
-        const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/product?category_id=${categoryId}`
-        );
-        const result = await response.json();
-        setProductByCategory(result.data.data);
+        const response = await api.get(`/product?category_id=${categoryId}`);
+        const result = response.data;
+        setProductByCategory(result.data);
       } catch (error) {
         console.error(
           "Error fetching product by category:",

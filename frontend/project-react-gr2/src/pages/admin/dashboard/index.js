@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "../../../utils/apiClient";
 import { FaShoppingCart, FaUsers, FaDollarSign, FaClipboardList } from "react-icons/fa";
 
 const AdminDashboard = () => {
@@ -21,7 +21,7 @@ const AdminDashboard = () => {
         // Fetch all orders (assuming API supports large per_page or we fetch multiple pages)
         const queryParams = new URLSearchParams();
         queryParams.append('per_page', '1000'); // Fetch up to 1000 orders
-        const ordersResponse = await axios.get(`${process.env.REACT_APP_API_URL}/order?${queryParams.toString()}`);
+        const ordersResponse = await api.get(`/order?${queryParams.toString()}`);
         
         let orders = [];
         if (ordersResponse.data && typeof ordersResponse.data === 'object' && 'data' in ordersResponse.data) {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext, createContext } from 'react';
 import { toast } from 'react-toastify';
+import { api } from '../utils/apiClient';
 
 // Create Auth Context
 const AuthContext = createContext();
@@ -24,23 +25,10 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Verify token with backend
-      const response = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-        setIsAuthenticated(true);
-      } else {
-        // Token invalid, remove it
-        localStorage.removeItem('auth_token');
-        setUser(null);
-        setIsAuthenticated(false);
-      }
+      const response = await api.get('/auth/me');
+      const userData = response.data;
+      setUser(userData);
+      setIsAuthenticated(true);
     } catch (error) {
       console.error('Auth check failed:', error);
       localStorage.removeItem('auth_token');
@@ -54,30 +42,19 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setLoading(true);
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
+      const response = await api.post('/auth/login', credentials);
+      const data = response.data;
 
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('auth_token', data.token);
-        setUser(data.user);
-        setIsAuthenticated(true);
-        toast.success('Đăng nhập thành công!');
-        return { success: true };
-      } else {
-        toast.error(data.message || 'Đăng nhập thất bại');
-        return { success: false, error: data.message };
-      }
+      localStorage.setItem('auth_token', data.token);
+      setUser(data.user);
+      setIsAuthenticated(true);
+      toast.success('Đăng nhập thành công!');
+      return { success: true };
     } catch (error) {
       console.error('Login error:', error);
-      toast.error('Có lỗi xảy ra khi đăng nhập');
-      return { success: false, error: 'Network error' };
+      const errorMessage = error.response?.data?.message || 'Đăng nhập thất bại';
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -86,30 +63,19 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       setLoading(true);
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
+      const response = await api.post('/auth/register', userData);
+      const data = response.data;
 
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('auth_token', data.token);
-        setUser(data.user);
-        setIsAuthenticated(true);
-        toast.success('Đăng ký thành công!');
-        return { success: true };
-      } else {
-        toast.error(data.message || 'Đăng ký thất bại');
-        return { success: false, error: data.message };
-      }
+      localStorage.setItem('auth_token', data.token);
+      setUser(data.user);
+      setIsAuthenticated(true);
+      toast.success('Đăng ký thành công!');
+      return { success: true };
     } catch (error) {
       console.error('Register error:', error);
-      toast.error('Có lỗi xảy ra khi đăng ký');
-      return { success: false, error: 'Network error' };
+      const errorMessage = error.response?.data?.message || 'Đăng ký thất bại';
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -117,15 +83,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        await fetch('/api/auth/logout', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-      }
+      await api.post('/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -138,30 +96,17 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = async (profileData) => {
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/auth/profile', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(profileData),
-      });
+      const response = await api.put('/auth/profile', profileData);
+      const data = response.data;
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setUser(data.user);
-        toast.success('Cập nhật thông tin thành công!');
-        return { success: true };
-      } else {
-        toast.error(data.message || 'Cập nhật thất bại');
-        return { success: false, error: data.message };
-      }
+      setUser(data.user);
+      toast.success('Cập nhật thông tin thành công!');
+      return { success: true };
     } catch (error) {
       console.error('Update profile error:', error);
-      toast.error('Có lỗi xảy ra khi cập nhật');
-      return { success: false, error: 'Network error' };
+      const errorMessage = error.response?.data?.message || 'Cập nhật thất bại';
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
     }
   };
 

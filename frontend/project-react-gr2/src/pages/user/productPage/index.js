@@ -5,6 +5,7 @@ import "./style.scss";
 import ProductItem from "../../../component/user/ProductItem";
 import { LoadingSpinner, ErrorMessage, NoSearchResults, Button } from '../../../components';
 import Pagination from "../../../components/Pagination";
+import { api } from "../../../utils/apiClient";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -27,15 +28,15 @@ const ProductsPage = () => {
   const fetchCategory = useCallback(async () => {
     if (categoryId) {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/category/${categoryId}`);
-        const data = await response.json();
+        const response = await api.get(`/category/${categoryId}`);
+        const data = response.data;
         if (data?.data) {
           const category = data.data;
           
           if (category.parent_id) {
             try {
-              const parentResponse = await fetch(`${process.env.REACT_APP_API_URL}/category/${category.parent_id}`);
-              const parentData = await parentResponse.json();
+              const parentResponse = await api.get(`/category/${category.parent_id}`);
+              const parentData = parentResponse.data;
               if (parentData?.data) {
                 setCategoryName(parentData.data.name);
               } else {
@@ -83,13 +84,13 @@ const ProductsPage = () => {
 
         // If we have category filter, get category details
         if (categoryIds && categoryIds !== 'all') {
-          const categoryResponse = await fetch(`${process.env.REACT_APP_API_URL}/category/${categoryIds}`);
-          const categoryData = await categoryResponse.json();
+          const categoryResponse = await api.get(`/category/${categoryIds}`);
+          const categoryData = categoryResponse.data;
 
           if (categoryData?.data && !categoryData.data.parent_id) {
             // Nếu là category cha (không có parent_id), lấy tất cả category con
-            const allCategoriesResponse = await fetch(`${process.env.REACT_APP_API_URL}/category`);
-            const allCategoriesData = await allCategoriesResponse.json();
+            const allCategoriesResponse = await api.get('/category');
+            const allCategoriesData = allCategoriesResponse.data;
 
             if (allCategoriesData?.data && Array.isArray(allCategoriesData.data.data)) {
               // Lọc ra tất cả category con của category cha này
@@ -110,8 +111,8 @@ const ProductsPage = () => {
         }
 
         console.log('Fetching products from:', apiUrl);
-        const response = await fetch(apiUrl);
-        const result = await response.json();
+        const response = await api.get(apiUrl.replace(process.env.REACT_APP_API_URL, ''));
+        const result = response.data;
 
         if (result && Array.isArray(result.data.data)) {
           setProducts(result.data.data);

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { api } from "../../../utils/apiClient";
 import { toast } from "react-toastify";
 
 const OrderAdd = () => {
@@ -42,10 +42,7 @@ const OrderAdd = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
         try {
-          const response = await axios.post(
-            `${process.env.REACT_APP_API_URL}/order`,
-            order
-          );
+          const response = await api.post('/order', order);
           setOrder([...order, response.data.data]);
           toast.success("Order added successfully!");
         } catch (error) {

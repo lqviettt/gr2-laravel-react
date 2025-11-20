@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from "react";
-import axios from "axios";
+import { api } from "../../../utils/apiClient";
 import { toast } from "react-toastify";
 import CommonTable from "../../../components/CommonTable";
 import ConfirmDialog from "../../../components/ConfirmDialog";
@@ -34,8 +34,7 @@ const CategoryManageList = () => {
       });
       queryParams.append('page', page);
 
-      const url = `${process.env.REACT_APP_API_URL}/category${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-      const response = await axios.get(url);
+      const response = await api.get(`/category${queryParams.toString() ? `?${queryParams.toString()}` : ''}`);
 
       let categoriesData = [];
       if (Array.isArray(response.data.data)) {
@@ -95,16 +94,10 @@ const CategoryManageList = () => {
     console.log('Saving category:', newCategory);
     try {
       if (editingCategoryId) {
-        await axios.put(
-          `${process.env.REACT_APP_API_URL}/category/${editingCategoryId}`,
-          newCategory
-        );
+        await api.put(`/category/${editingCategoryId}`, newCategory);
         toast.success("Cập nhật danh mục thành công!");
       } else {
-        await axios.post(
-          `${process.env.REACT_APP_API_URL}/category`,
-          newCategory
-        );
+        await api.post('/category', newCategory);
         toast.success("Thêm danh mục thành công!");
       }
 
@@ -155,7 +148,7 @@ const CategoryManageList = () => {
 
   const handleConfirmDelete = async () => {
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/category/${confirmDialog.categoryId}`);
+      await api.delete(`/category/${confirmDialog.categoryId}`);
       if (Array.isArray(categories)) {
         setCategories(
           categories.filter((category) => category.id !== confirmDialog.categoryId)
