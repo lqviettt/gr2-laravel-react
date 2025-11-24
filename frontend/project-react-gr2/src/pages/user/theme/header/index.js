@@ -37,15 +37,10 @@ const Header = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        console.log('Fetching categories...');
-        console.log('Fetching categories from API:', `${process.env.REACT_APP_API_URL}/category`);
         const response = await api.get('/category');
-        console.log('Categories response status:', response.status);
         const data = response.data;
-        console.log('Categories data:', data);
         if (data) {
           setCategories(data.data?.data || []);
-          console.log('Categories set to:', data.data?.data || []);
         }
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -196,7 +191,7 @@ const Header = () => {
             child.children.forEach(subChild => {
               allItems.push({
                 name: subChild.name,
-                path: `/product?category_id=${subChild.id}`,
+                path: `/product?category_id=${subChild.id}&parent_id=${child.id}&grandparent_id=${cat.id}`,
                 group: child.name // Group theo tên parent
               });
             });
@@ -204,7 +199,7 @@ const Header = () => {
             // Nếu không có sub-children, thêm child item
             allItems.push({
               name: child.name,
-              path: `/product?category_id=${child.id}`,
+              path: `/product?category_id=${child.id}&parent_id=${cat.id}`,
               group: cat.name // Group theo tên grandparent
             });
           }
@@ -218,7 +213,7 @@ const Header = () => {
       
       return {
         name: cat.name,
-        path: `/product?category_id=${cat.id}`,
+        path: cat.parent_id ? `/product?category_id=${cat.id}&parent_id=${cat.parent_id}` : `/product?category_id=${cat.id}`,
         columns: groupedColumns // Thay child bằng columns
       };
     });
@@ -348,11 +343,6 @@ const Header = () => {
               </form>
               {showSearchDropdown && (
                 <div className="absolute top-full left-0 bg-white border border-gray-300 rounded-b shadow-lg z-[60] max-h-80 overflow-y-auto mt-1 min-w-[600px]">
-                  {(() => {
-                    console.log('Dropdown render:', { searchQuery, searchResults });
-                    return null;
-                  })()}
-
                   {/* Trends Section */}
                   <div className="p-4 border-b border-gray-100">
                     <h4 className="text-sm font-medium text-gray-700 mb-3">Xu hướng tìm kiếm</h4>

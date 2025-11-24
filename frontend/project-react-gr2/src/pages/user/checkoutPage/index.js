@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../../component/CartContext";
+import { useBreadcrumb } from "../../../component/BreadcrumbContext";
 import { BsMinecartLoaded } from "react-icons/bs";
 import { GiCheckMark } from "react-icons/gi";
 import axios from "axios";
@@ -79,6 +80,7 @@ import { toast } from "react-toastify";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
+  const { setBreadcrumbTrail } = useBreadcrumb();
   const { cartItems, getTotalPrice, removeAllFromCart, buyNowItems, clearBuyNowItems, getTotalPriceForItems } = useCart();
   
   // Sử dụng buyNowItems nếu có (khi bấm Mua ngay), nếu không dùng cartItems
@@ -88,6 +90,21 @@ const CheckoutPage = () => {
   const getTotalCheckoutPrice = () => {
     return getTotalPriceForItems(itemsToCheckout);
   };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (isMounted) {
+      setBreadcrumbTrail([
+        { name: "Giỏ hàng", path: "/cart" },
+        { name: "Thanh toán", path: "/checkout" },
+      ]);
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   
   const [selectedFee, setSelectedFee] = useState(0);
   const [provinces, setProvinces] = useState([]);

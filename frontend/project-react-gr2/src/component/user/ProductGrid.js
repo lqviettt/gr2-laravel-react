@@ -7,25 +7,24 @@ const ProductGrid = ({
   className = "",
   itemClassName = ""
 }) => {
-  const gridClasses = `grid gap-3 sm:gap-4 lg:gap-6 grid-cols-${columns.default} ${
-    columns.sm ? `sm:grid-cols-${columns.sm}` : ''
-  } ${
-    columns.md ? `md:grid-cols-${columns.md}` : ''
-  } ${
-    columns.lg ? `lg:grid-cols-${columns.lg}` : ''
-  } ${
-    columns.xl ? `xl:grid-cols-${columns.xl}` : ''
-  }`;
+  // Static class names - TailwindCSS requires static strings at compile time
+  const gridClasses = `grid gap-3 sm:gap-4 lg:gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6`;
 
   return (
     <div className={`${gridClasses} ${className}`}>
-      {products.map((product) => (
-        <ProductCard
-          key={product.id}
-          product={product}
-          className={itemClassName}
-        />
-      ))}
+      {products && products.length > 0 ? (
+        products.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            className={itemClassName}
+          />
+        ))
+      ) : (
+        <div className="col-span-full text-center py-12">
+          <p className="text-gray-500">Không có sản phẩm nào</p>
+        </div>
+      )}
     </div>
   );
 };

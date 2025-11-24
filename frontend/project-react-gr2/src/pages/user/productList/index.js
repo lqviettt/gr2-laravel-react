@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { FaSortAmountDown } from "react-icons/fa";
 import "./style.scss";
 import ProductItem from "../../../component/user/ProductItem";
+import { useBreadcrumb } from "../../../component/BreadcrumbContext";
 import { LoadingSpinner, ErrorMessage, NoSearchResults, Button } from "../../../components";
 import Pagination from "../../../components/Pagination";
 import { api } from "../../../utils/apiClient";
@@ -10,6 +11,7 @@ import { api } from "../../../utils/apiClient";
 const ProductList = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { setBreadcrumbTrail } = useBreadcrumb();
   const categoryId = new URLSearchParams(location.search).get("category_id");
   const searchQuery = new URLSearchParams(location.search).get("search");
   const [products, setProducts] = useState([]);
@@ -18,6 +20,7 @@ const ProductList = () => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [categoryName, setCategoryName] = useState("Danh mục");
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -27,6 +30,8 @@ const ProductList = () => {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchProducts = async () => {
       try {
         let apiUrl = `${process.env.REACT_APP_API_URL}/product`;
@@ -48,6 +53,9 @@ const ProductList = () => {
 
         console.log('Fetching products from:', apiUrl);
         const response = await api.get(`/product?${params.toString()}`);
+        
+        if (!isMounted) return;
+        
         const result = response.data;
         console.log('API response:', result);
 
@@ -67,17 +75,39 @@ const ProductList = () => {
 
         setProducts(productsData);
         setTotalPages(totalPagesData);
+
+        // Set breadcrumb
+        if (searchQuery) {
+          setBreadcrumbTrail([
+            { name: `Kết quả tìm kiếm: "${searchQuery}"`, path: `/product-list?search=${searchQuery}` },
+          ]);
+        } else if (categoryId) {
+          setBreadcrumbTrail([
+            { name: categoryName, path: `/product-list?category_id=${categoryId}` },
+          ]);
+        } else {
+          setBreadcrumbTrail([
+            { name: "Tất cả sản phẩm", path: "/product-list" },
+          ]);
+        }
       } catch (err) {
+        if (!isMounted) return;
         setError(err.message);
         console.error("Lỗi khi gọi API:", err);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     // Always fetch products, with or without parameters
     fetchProducts();
-  }, [categoryId, searchQuery, currentPage]);
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [categoryId, searchQuery, currentPage, categoryName]);
 
   // Reset currentPage when categoryId or searchQuery changes
   useEffect(() => {

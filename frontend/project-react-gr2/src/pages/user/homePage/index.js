@@ -75,11 +75,11 @@ const HomePage = () => {
   }, []);
 
   // Tính toán số items hiển thị và width dựa trên screen size
-  const getSliderConfig = () => {
-    if (windowWidth >= 1024) {
+  const getSliderConfig = (width) => {
+    if (width >= 1024) {
       // lg: 4 items
       return { itemsPerView: 4, gap: "1.5rem", totalGaps: "4.5rem" }; // 3 * 1.5rem
-    } else if (windowWidth >= 768) {
+    } else if (width >= 768) {
       // md: 3 items
       return { itemsPerView: 3, gap: "1rem", totalGaps: "2rem" }; // 2 * 1rem
     } else {
@@ -88,14 +88,19 @@ const HomePage = () => {
     }
   };
 
-  const sliderConfig = getSliderConfig();
+  const sliderConfig = getSliderConfig(windowWidth);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchProducts = async () => {
       setLoading(true);
       setError(null);
       try {
         const response = await api.get('/product?page=1&perPage=48');
+        
+        if (!isMounted) return;
+        
         const result = response.data;
         if (result?.data?.data) {
           setProducts(result.data.data);
@@ -103,14 +108,21 @@ const HomePage = () => {
           throw new Error("Dữ liệu không hợp lệ");
         }
       } catch (error) {
+        if (!isMounted) return;
         console.error("Lỗi khi lấy dữ liệu:", error);
         setError(error.message);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProducts();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   if (loading) {

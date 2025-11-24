@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { useCart } from "../../../component/CartContext";
+import { useBreadcrumb } from "../../../component/BreadcrumbContext";
 import { BsMinecartLoaded } from "react-icons/bs";
 import Section from "../../../component/user/Section";
 import { formatCurrency } from "../../../utils/common";
@@ -7,6 +9,21 @@ import { toast } from "react-toastify";
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateCartItem } = useCart();
+  const { setBreadcrumbTrail } = useBreadcrumb();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (isMounted) {
+      setBreadcrumbTrail([
+        { name: "Giỏ hàng", path: "/cart" },
+      ]);
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const getTotalPrice = () => {
     return cartItems.reduce(

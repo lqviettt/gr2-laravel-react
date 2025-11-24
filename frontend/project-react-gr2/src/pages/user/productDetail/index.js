@@ -10,6 +10,7 @@ import { FiShoppingCart } from "react-icons/fi";
 import { toast } from "react-toastify";
 
 import { useCart } from "../../../component/CartContext";
+import { useBreadcrumb } from "../../../component/BreadcrumbContext";
 import { getProductImage, formatCurrency } from "../../../utils/common";
 import { LoadingSpinner, ErrorMessage, Section } from "../../../component/user";
 import { api } from "../../../utils/apiClient";
@@ -17,6 +18,7 @@ import { api } from "../../../utils/apiClient";
 const ProductDetail = () => {
   const navigate = useNavigate();
   const { addToCart, setBuyNowItem } = useCart();
+  const { setBreadcrumbTrail } = useBreadcrumb();
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -72,17 +74,55 @@ const ProductDetail = () => {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchProductDetail = async () => {
       try {
         const response = await api.get(`/product/${id}`);
+        
+        if (!isMounted) return;
+        
         const result = response.data;
         if (result?.data) {
           setProduct(result.data);
           setSelectedProductId(result.data.id);
           setSelectedVariant(result.data.variants && result.data.variants.length > 0 ? result.data.variants[0] : null);
           setCategoryId(result.data.category_id);
-          const categoryName = result.data.category?.name || "";
-          const images = getProductImage(categoryName) || [];
+          
+          // Fetch full category hierarchy for breadcrumb
+          if (result.data.category_id) {
+            try {
+              let trail = [];
+              let currentCatId = result.data.category_id;
+              let depth = 0;
+              
+              while (currentCatId && depth < 10) {
+                try {
+                  const catResponse = await api.get(`/category/${currentCatId}`);
+                  const category = catResponse.data?.data;
+                  if (!category) break;
+                  
+                  let path = `/product?category_id=${category.id}`;
+                  trail.unshift({ name: category.name, path, clickable: true });
+                  currentCatId = category.parent_id;
+                  depth++;
+                } catch (err) {
+                  break;
+                }
+              }
+              
+              // Add product name at the end (not clickable)
+              trail.push({ name: result.data.name, path: `/product-detail/${id}`, clickable: false });
+              
+              if (trail.length > 0) {
+                setBreadcrumbTrail(trail);
+              }
+            } catch (error) {
+            }
+          }
+          
+          const categoryNameForImage = result.data.category?.name || "";
+          const images = getProductImage(categoryNameForImage) || [];
           if (result.data.image) {
             setSelectedImage(
               `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${result.data.image}`
@@ -98,32 +138,45 @@ const ProductDetail = () => {
           throw new Error("Dữ liệu trả về không hợp lệ");
         }
       } catch (err) {
+        if (!isMounted) return;
         setError(err.message);
-        console.error("Lỗi khi gọi API:", err);
       }
     };
 
     if (id) {
       fetchProductDetail();
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchProductByCategory = async () => {
       if (!categoryId) return;
       try {
-        const response = await api.get(`/product?category_id=${categoryId}`);
+        const response = await api.get(`/product?category_id=${categoryId}&perPage=6`);
+        
+        if (!isMounted) return;
+        
         const result = response.data;
-        setProductByCategory(result.data);
+        // API trả về dạng pagination {data: [...], current_page, ...}
+        const products = result.data?.data || result.data || [];
+        setProductByCategory(products);
       } catch (error) {
-        console.error(
-          "Error fetching product by category:",
-          error.response?.data || error.message
-        );
+        if (!isMounted) return;
+        setProductByCategory([]);
       }
     };
 
     fetchProductByCategory();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [categoryId]);
 
   if (error) {
@@ -147,9 +200,9 @@ const ProductDetail = () => {
       {/* Mobile Sticky Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-white border-t border-gray-200 shadow-lg z-50">
         <div className="flex items-center justify-between gap-2 py-4 px-3 sm:p-4">
-          <div className="flex items-center gap-2">
-            <div className="text-center">
-              <p className="text-xs text-gray-600">Giá:</p>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="text-left flex-1 min-w-0">
+              <p className="text-xs text-gray-600 truncate">{product.name}</p>
               <p className="text-lg sm:text-xl font-bold text-red-600">
                 {getProductPrice()}
               </p>
@@ -356,7 +409,7 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Product Variants by Category */}
-                {Array.isArray(productByCategory) && productByCategory.length > 0 && (
+                {productByCategory && Array.isArray(productByCategory) && productByCategory.length > 0 && (
                   <div className="mb-6 pb-6 border-b border-gray-200">
                     <h3 className="text-lg font-semibold mb-3">Phiên bản khác</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
