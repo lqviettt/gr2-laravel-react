@@ -5,6 +5,7 @@ import "./style.scss";
 import ProductItem from "../../../component/user/ProductItem";
 import { LoadingSpinner, ErrorMessage, NoSearchResults, Button } from "../../../components";
 import Pagination from "../../../components/Pagination";
+import { api } from "../../../utils/apiClient";
 
 const ProductList = () => {
   const location = useLocation();
@@ -46,11 +47,8 @@ const ProductList = () => {
         apiUrl += `?${params.toString()}`;
 
         console.log('Fetching products from:', apiUrl);
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-          throw new Error("Không thể tải dữ liệu từ API");
-        }
-        const result = await response.json();
+        const response = await api.get(`/product?${params.toString()}`);
+        const result = response.data;
         console.log('API response:', result);
 
         // Handle different response formats

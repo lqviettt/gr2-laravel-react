@@ -15,7 +15,11 @@ const Slidebar = () => {
       try {
         setProfileLoading(true);
         setProfileError(null);
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/profile`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/profile`, {
+          headers: {
+            'ngrok-skip-browser-warning': 'true'
+          }
+        });
         setUserProfile(response.data);
       } catch (error) {
         console.error("Error fetching user profile:", error);

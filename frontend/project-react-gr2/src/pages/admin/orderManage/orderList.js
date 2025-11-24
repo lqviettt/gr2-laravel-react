@@ -1,5 +1,5 @@
 import React, { useEffect, useState, memo, useCallback } from "react";
-import axios from "axios";
+import { api } from "../../../utils/apiClient";
 import { toast } from "react-toastify";
 import CommonTable from "../../../components/CommonTable";
 import Pagination from "../../../components/Pagination";
@@ -60,8 +60,7 @@ const OrderList = () => {
       if (filters.status !== undefined && filters.status !== '') queryParams.append('status', filters.status);
       if (filters.start_date) queryParams.append('start_date', filters.start_date);
       if (filters.end_date) queryParams.append('end_date', filters.end_date);
-      const url = `${process.env.REACT_APP_API_URL}/order${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-      const response = await axios.get(url);
+      const response = await api.get(`/order${queryParams.toString() ? `?${queryParams.toString()}` : ''}`);
       console.log('Order data:', response.data);
       let ordersData = [];
       let paginationData = {};
@@ -138,10 +137,7 @@ const OrderList = () => {
 
       console.log("Saving order:", orderToSave);
 
-      const response = await axios.put(
-        `${process.env.REACT_APP_API_URL}/order/${editingOrderId}`,
-        orderToSave
-      );
+      const response = await api.put(`/order/${editingOrderId}`, orderToSave);
 
       console.log("Save response:", response.data);
 
@@ -193,7 +189,7 @@ const OrderList = () => {
   const handleDeleteOrder = async (orderId) => {
     setConfirmAction(() => async () => {
       try {
-        await axios.delete(`${process.env.REACT_APP_API_URL}/order/${orderId}`);
+        await api.delete(`/order/${orderId}`);
         if (Array.isArray(orders)) {
           setOrders(orders.filter((order) => order.id !== orderId));
         }

@@ -14,6 +14,7 @@ const useApi = () => {
 
       const defaultHeaders = {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
         ...(token && { 'Authorization': `Bearer ${token}` }),
       };
 

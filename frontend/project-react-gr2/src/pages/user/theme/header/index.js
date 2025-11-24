@@ -12,6 +12,7 @@ import { FaBars, FaTimes } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { ROUTERS } from "../../../../utils/router";
 import { useCart } from "../../../../component/CartContext";
+import { api } from "../../../../utils/apiClient";
 
 const Header = () => {
   const [activeMenu, setActiveMenu] = useState(null);
@@ -37,9 +38,10 @@ const Header = () => {
     const fetchCategories = async () => {
       try {
         console.log('Fetching categories...');
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/category`);
+        console.log('Fetching categories from API:', `${process.env.REACT_APP_API_URL}/category`);
+        const response = await api.get('/category');
         console.log('Categories response status:', response.status);
-        const data = await response.json();
+        const data = response.data;
         console.log('Categories data:', data);
         if (data) {
           setCategories(data.data?.data || []);
@@ -74,8 +76,8 @@ const Header = () => {
     setSearchQuery(query);
     if (query.length > 2) {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/product?search=${encodeURIComponent(query)}&perPage=10`);
-        const data = await response.json();
+        const response = await api.get(`/product?search=${encodeURIComponent(query)}&perPage=10`);
+        const data = response.data;
         let products = [];
         if (data.data?.data) {
           products = data.data.data;
@@ -243,15 +245,15 @@ const Header = () => {
 
   return (
     <header className="font-[sans-serif] min-h-[65px] tracking-wide relative z-50">
-      <div className="flex justify-between lg:justify-between items-center w-full bg-[#000000] text-white px-4 sm:px-8 lg:px-32 py-4 gap-2">
-        <div className="h_top flex-shrink-0">
+      <div className="flex justify-between lg:justify-between items-center w-full bg-[#000000] text-white px-4 sm:px-8 lg:px-32 py-4">
+        <div className="h_top">
           <Link to="/">
             <h1 className="text-xl sm:text-2xl font-bold">QuocViet</h1>
           </Link>
         </div>
 
         {/* Mobile Search - visible on mobile */}
-        <div className="lg:hidden mx-2 relative search-container max-w-xs sm:max-w-sm z-40">
+        <div className="lg:hidden flex-1 mx-4 relative search-container">
           <form onSubmit={handleSearchSubmit} className="flex rounded-full overflow-hidden border border-gray-300">
             <input
               type="text"
@@ -261,14 +263,14 @@ const Header = () => {
               value={searchQuery}
               onChange={handleSearchChange}
               onFocus={handleSearchFocus}
-              className="flex-1 px-2 sm:px-3 py-1 sm:py-2 border-0 text-black text-xs sm:text-sm focus:outline-none bg-white"
+              className="flex-1 px-3 py-1 border-0 text-black text-sm focus:outline-none bg-white"
             />
-            <button type="submit" className="pr-2 sm:pr-3 rounded-r bg-white flex-shrink-0">
-              <FaSearch color="black" size={14} className="sm:text-base" />
+            <button type="submit" className="pr-3 rounded-r bg-white">
+              <FaSearch color="black" />
             </button>
           </form>
           {showSearchDropdown && (
-            <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded shadow-lg z-[100] max-h-60 overflow-y-auto mt-1">
+            <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded shadow-lg z-[60] max-h-60 overflow-y-auto mt-1">
               {/* Trends Section */}
               <div className="p-2 border-b border-gray-100">
                 <h4 className="text-xs font-medium text-gray-700 mb-2">Xu hướng tìm kiếm</h4>
@@ -319,7 +321,7 @@ const Header = () => {
 
         {/* Mobile menu button */}
         <button
-          className="lg:hidden text-white p-2 flex-shrink-0"
+          className="lg:hidden text-white p-2"
           onClick={toggleMobileMenu}
         >
           {isMobileMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
