@@ -226,12 +226,11 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      <Section>
+      <Section className="py-2 lg:py-6 max-w-7xl mx-auto">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-6 lg:mb-8">
             {product.name}
           </h1>
-
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
             {/* Product Image Section */}
             <div className="col-span-1 lg:col-span-3">
@@ -244,10 +243,10 @@ const ProductDetail = () => {
                       : (getProductImage(product.category?.name) || [])[0]?.src || "")
                   }
                   alt="Ảnh sản phẩm lớn"
-                  className="w-full max-w-xs mx-auto rounded-lg shadow-lg"
+                  className="w-full max-w-xs mx-auto rounded-lg shadow-lg bg-gray-100 object-contain"
                 />
 
-                <div className="product-thumbnails flex gap-2 mt-4 overflow-x-auto pb-2">
+                <div className="product-thumbnails flex gap-4 mt-12 overflow-x-auto pb-2">
                   {/* Render thumbnails from product.image and product variants */}
                   {([
                     ...(product.image

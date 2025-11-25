@@ -241,27 +241,28 @@ const Header = () => {
   return (
     <header className="font-[sans-serif] min-h-[65px] tracking-wide relative z-50">
       <div className="flex justify-between lg:justify-between items-center w-full bg-[#000000] text-white px-4 sm:px-8 lg:px-32 py-4">
+        {/* Logo */}
         <div className="h_top">
           <Link to="/">
-            <h1 className="text-xl sm:text-2xl font-bold">QuocViet</h1>
+            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">QuocViet</h1>
           </Link>
         </div>
 
         {/* Mobile Search - visible on mobile */}
-        <div className="lg:hidden flex-1 mx-4 relative search-container">
+        <div className="lg:hidden flex-1 mx-2 relative search-container max-w-xs">
           <form onSubmit={handleSearchSubmit} className="flex rounded-full overflow-hidden border border-gray-300">
             <input
               type="text"
               name="search"
-              placeholder="Tìm kiếm sản phẩm..."
+              placeholder="Tìm kiếm..."
               required
               value={searchQuery}
               onChange={handleSearchChange}
               onFocus={handleSearchFocus}
-              className="flex-1 px-3 py-1 border-0 text-black text-sm focus:outline-none bg-white"
+              className="flex-1 px-2 py-1 border-0 text-black text-xs focus:outline-none bg-white"
             />
-            <button type="submit" className="pr-3 rounded-r bg-white">
-              <FaSearch color="black" />
+            <button type="submit" className="pr-2 rounded-r bg-white">
+              <FaSearch color="black" size={16} />
             </button>
           </form>
           {showSearchDropdown && (
@@ -316,13 +317,14 @@ const Header = () => {
 
         {/* Mobile menu button */}
         <button
-          className="lg:hidden text-white p-2"
+          className="lg:hidden text-white p-2 flex-shrink-0"
           onClick={toggleMobileMenu}
+          aria-label="Toggle mobile menu"
         >
           {isMobileMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
         </button>
 
-        <div className="hidden lg:flex h_items items-center space-x-4 lg:space-x-11">
+        <div className="hidden lg:flex h_items items-center space-x-6 lg:space-x-11">
           <div className="flex flex-col">
             {/* Search Input */}
             <div className="menu_search relative search-container">
@@ -393,7 +395,7 @@ const Header = () => {
           </div>
           <div className="menu_hotline flex items-center space-x-2 pt-5">
             <div className="icon pb-6">
-              <FiPhone size={35} />
+              <FiPhone size={25} />
             </div>
             <div className="content">
               <a title="0981218999" href="tel:0981218907">
@@ -404,7 +406,7 @@ const Header = () => {
           </div>
           <div className="menu_hotline flex items-center space-x-2 pt-5">
             <div className="icon pb-6">
-              <LuMapPin size={35} />
+              <LuMapPin size={25} />
             </div>
             <div className="content">
               <a title="Hệ thống cửa hàng" href="/">
@@ -415,7 +417,7 @@ const Header = () => {
           </div>
           <div className="menu_hotline flex items-center space-x-2 pt-5">
             <div className="icon pb-6">
-              <BsClipboard2Check size={35} />
+              <BsClipboard2Check size={25} />
             </div>
             <div className="content">
               <a href="/order-history">
@@ -426,7 +428,7 @@ const Header = () => {
           </div>
           <div className="menu_hotline flex items-center pt-5">
             <div className="icon pb-6">
-              <PiHandbag size={35} />
+              <PiHandbag size={25} />
             </div>
             <div className="content">
               <a href="/cart">

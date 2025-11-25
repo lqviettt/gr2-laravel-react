@@ -55,7 +55,7 @@ const Cart = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-6 lg:py-8">
       <Section>
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden max-w-7xl mx-auto">
           <div className="p-4 sm:p-6 lg:p-8">
             {cartItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 lg:py-16">

@@ -1,8 +1,4 @@
 import { memo, useEffect, useState } from "react";
-import banner from "../../../assets/images/banner.webp";
-import banner2 from "../../../assets/images/banner2.webp";
-import slider1 from "../../../assets/images/slider_1.webp";
-import slider2 from "../../../assets/images/slider_2.webp";
 import product14 from "../../../assets/images/14promax256.webp";
 import phukien from "../../../assets/images/phukien.webp";
 import pindlchuan from "../../../assets/images/pineudlchuan.webp";
@@ -139,33 +135,35 @@ const HomePage = () => {
       <div className="relative">
         <img
           className="w-full h-auto shadow-lg"
-          src={banner}
+          src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/banners/banners_1762866247_6913344726f45.webp`}
           alt="QuocViet Banner"
         />
       </div>
 
       {/* Slider Section */}
-      <Section className="relative -mt-16 lg:-mt-20 z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
-          <div className="w-full">
-            <img
-              src={slider1}
-              alt="Slider 1"
-              className="rounded-lg w-full h-auto shadow-lg"
-            />
-          </div>
-          <div className="w-full">
-            <img
-              src={slider2}
-              alt="Slider 2"
-              className="rounded-lg w-full h-auto shadow-lg"
-            />
+      <Section className="relative -mt-20 lg:-mt-40 z-30 py-8 lg:py-12">
+        <div className="max-w-7xl mx-auto p-4 lg:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
+            <div className="w-full">
+              <img
+                src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/banners/banners_1762866265_6913345928561.webp`}
+                alt="Slider 1"
+                className="rounded-lg w-full h-auto shadow-lg"
+              />
+            </div>
+            <div className="w-full">
+              <img
+                src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/banners/banners_1762866273_691334615ff55.webp`}
+                alt="Slider 2"
+                className="rounded-lg w-full h-auto shadow-lg"
+              />
+            </div>
           </div>
         </div>
       </Section>
 
       {/* Featured Categories */}
-      <Section className="relative -mt-8 lg:-mt-12">
+      <Section className="relative -mt-8 lg:-mt-12 py-8 lg:py-12 max-w-7xl mx-auto">
         <div className="flex items-start gap-4 mb-8 lg:mb-12">
           <div className="w-1 bg-blue-600 h-10"></div>
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
@@ -240,10 +238,10 @@ const HomePage = () => {
       </Section>
 
       {/* Second Banner */}
-      <Section className="relative -mt-8 lg:-mt-12">
-        <div className="w-full max-w-6xl mx-auto">
+      <Section className="relative -mt-8 lg:-mt-12 py-8 lg:py-12 max-w-7xl mx-auto">
+        <div className="w-full max-w-7xl mx-auto">
           <img
-            src={banner2}
+          src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/banners/banners_1762866252_6913344cd5885.webp`}
             alt="Banner 2"
             className="rounded-lg w-full h-auto shadow-lg"
           />
@@ -251,7 +249,7 @@ const HomePage = () => {
       </Section>
 
       {/* iPhone Products Section */}
-      <Section className="relative -mt-8 lg:-mt-12">
+      <Section className="relative -mt-8 lg:-mt-12 py-8 lg:py-12 max-w-7xl mx-auto">
         <div className="flex items-start gap-4 mb-8 lg:mb-12">
           <div className="w-1 bg-blue-600 h-10"></div>
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
@@ -270,7 +268,7 @@ const HomePage = () => {
             </button>
           )}
           {/* Products Slider Container */}
-          <div className="overflow-hidden px-12 lg:px-16">
+          <div className="overflow-hidden px-2 lg:px-8">
             <div
               className="flex transition-transform duration-500 ease-in-out"
               style={{
