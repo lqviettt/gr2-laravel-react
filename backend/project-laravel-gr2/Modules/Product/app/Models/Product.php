@@ -27,6 +27,26 @@ class Product extends BaseModel
     protected $hidden = ['created_at', 'updated_at'];
     public $timestamps = false;
 
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(ProductComment::class);
+    }
+
+    public function averageRating()
+    {
+        return $this->reviews()->avg('rating');
+    }
+
+    public function reviewsCount()
+    {
+        return $this->reviews()->count();
+    }
+    
     public function category()
     {
         return $this->belongsTo(Category::class);
