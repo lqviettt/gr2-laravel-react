@@ -452,7 +452,7 @@ const Header = () => {
                   <>
                     <li>
                       <a
-                        href="my-account"
+                        href="/my-account"
                         className="flex items-center space-x-2"
                       >
                         <FaRegUserCircle size={25} className="text-black" />

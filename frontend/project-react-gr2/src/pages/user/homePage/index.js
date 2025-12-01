@@ -189,7 +189,7 @@ const HomePage = () => {
 
           <div className="group">
             <a
-              href={`/product?search=cap%20sac&search=tai%20nghe&perPage=15`}
+              href={`/product?category_id=105`}
               className="category-item block transition-transform duration-200 hover:scale-105"
             >
               <img

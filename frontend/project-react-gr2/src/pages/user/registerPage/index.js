@@ -71,11 +71,32 @@ const Register = () => {
           { name, user_name, email, password }
         );
         const msg = response.data.message || "Đăng ký thành công!";
-        localStorage.setItem("email", response.data.data.email);
         toast.success(msg);
-        setTimeout(() => {
-            navigate("/verify-account");
-        }, 2000);
+
+        // Tự động đăng nhập sau khi đăng ký
+        try {
+          const loginResp = await axiosClient.post('/auth/login', { user_name, password });
+          const token = loginResp.data?.access_token || loginResp.data?.token || null;
+          if (token) {
+            localStorage.setItem('token', token);
+            localStorage.setItem('isLoggedIn', 'true');
+            // redirect to admin if admin user
+            setTimeout(() => {
+              if (user_name === 'admin') {
+                navigate('/admin');
+              } else {
+                navigate('/');
+              }
+            }, 1000);
+          } else {
+            // nếu server không trả token, chuyển tới trang login
+            setTimeout(() => navigate('/login'), 800);
+          }
+        } catch (loginErr) {
+          // Nếu login tự động thất bại, chuyển tới trang login để user đăng nhập thủ công
+          console.error('Auto-login failed', loginErr);
+          setTimeout(() => navigate('/login'), 800);
+        }
       } catch (err) {
         const apiErrors = err.response?.data?.error;
         if (apiErrors) {

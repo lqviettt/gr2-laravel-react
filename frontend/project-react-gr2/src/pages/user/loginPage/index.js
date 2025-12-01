@@ -41,7 +41,7 @@ const Login = () => {
         } else {
           navigate("/");
         }
-      }, 2000);
+      }, 1000);
 
     } catch (err) {
       setError("Thông tin đăng nhập không hợp lệ.");

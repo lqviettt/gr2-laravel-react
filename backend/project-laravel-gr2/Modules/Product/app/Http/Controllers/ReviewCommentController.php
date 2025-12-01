@@ -13,7 +13,7 @@ class ReviewCommentController extends Controller
 {
     public function indexReviews($productId)
     {
-        $reviews = ProductReview::with('user:id,name', 'images')
+        $reviews = ProductReview::with('user:id,name')
             ->where('product_id', $productId)
             ->latest()
             ->paginate(10);
@@ -131,6 +131,32 @@ class ReviewCommentController extends Controller
 
         return $this->sendSuccess([
             'action' => $action,
+            'total_likes' => $totalLikes,
+        ], $message);
+    }
+
+    public function deleteComment($commentId)
+    {
+        $user = auth()->user() ?? null;
+
+        $comment = ProductComment::where('id', $commentId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$comment) {
+            return $this->sendError('Bình luận không tồn tại hoặc bạn không có quyền xóa.', 404);
+        }
+
+        // Delete all replies associated with this comment
+        ProductComment::where('parent_id', $commentId)->delete();
+
+        // Delete the comment itself
+        $comment->delete();
+
+        $message = 'Xóa bình luận thành công.';
+        $totalLikes = CommentLike::where('comment_id', $commentId)->count();
+
+        return $this->sendSuccess([
             'total_likes' => $totalLikes,
         ], $message);
     }

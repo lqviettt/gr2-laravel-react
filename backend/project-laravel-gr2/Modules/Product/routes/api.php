@@ -47,3 +47,5 @@ Route::prefix('product/{productId}')->group(function () {
     Route::post('comments', [ReviewCommentController::class, 'storeComment']);
 });
 
+Route::delete('comments/{commentId}', [ReviewCommentController::class, 'deleteComment']);
+

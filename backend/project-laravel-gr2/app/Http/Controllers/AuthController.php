@@ -38,12 +38,12 @@ class AuthController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $user = auth()->user();
+        // $user = auth()->user();
 
-        if (!$user->is_verified) {
-            auth()->logout();
-            return response()->json(['error' => 'Tài khoản của bạn chưa được xác minh.'], 403);
-        }
+        // if (!$user->is_verified) {
+        //     auth()->logout();
+        //     return response()->json(['error' => 'Tài khoản của bạn chưa được xác minh.'], 403);
+        // }
 
         return $this->respondWithToken($token);
     }

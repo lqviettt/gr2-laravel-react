@@ -7,13 +7,14 @@ import { TiFlashOutline } from "react-icons/ti";
 import { MdLocalShipping, MdAssignment } from "react-icons/md";
 import { FaCreditCard } from "react-icons/fa";
 import { FiShoppingCart } from "react-icons/fi";
+import { FaStar } from "react-icons/fa";
 import { toast } from "react-toastify";
-
 import { useCart } from "../../../component/CartContext";
 import { useBreadcrumb } from "../../../component/BreadcrumbContext";
 import { getProductImage, formatCurrency } from "../../../utils/common";
 import { LoadingSpinner, ErrorMessage, Section } from "../../../component/user";
 import { api } from "../../../utils/apiClient";
+import ReviewsFeed from "./ReviewsFeed";
 
 const ProductDetail = () => {
   const navigate = useNavigate();
@@ -28,6 +29,12 @@ const ProductDetail = () => {
   const [productByCategory, setProductByCategory] = useState(null);
   const [categoryId, setCategoryId] = useState(null);
   const [selectedProductId, setSelectedProductId] = useState(null);
+  const [reviewsData, setReviewsData] = useState(null);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [userRating, setUserRating] = useState(0);
+  const [userComment, setUserComment] = useState("");
+  const [refreshFeed, setRefreshFeed] = useState(0);
 
   const handleClick = (productId) => {
     setSelectedProductId(productId);
@@ -89,7 +96,6 @@ const ProductDetail = () => {
           setSelectedVariant(result.data.variants && result.data.variants.length > 0 ? result.data.variants[0] : null);
           setCategoryId(result.data.category_id);
           
-          // Fetch full category hierarchy for breadcrumb
           if (result.data.category_id) {
             try {
               let trail = [];
@@ -147,6 +153,62 @@ const ProductDetail = () => {
       fetchProductDetail();
     }
     
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  const submitReview = async () => {
+    if (!userRating) {
+      toast.error("Vui lòng chọn số sao cho đánh giá");
+      return;
+    }
+    try {
+      const resp = await api.post(`/product/${id}/reviews`, {
+        rating: userRating,
+        comment: userComment || null,
+      });
+      toast.success(resp.data?.message || "Gửi đánh giá thành công");
+      setUserRating(0);
+      setUserComment("");
+      // refresh reviews
+      const r = await api.get(`/product/${id}/reviews`, { skipCache: true });
+      const p = r.data?.data;
+      if (p) {
+        setReviewsData(p.reviews);
+        setAverageRating(p.meta?.average_rating || 0);
+        setTotalReviews(p.meta?.total_reviews || 0);
+      }
+      // Trigger feed refresh
+      setRefreshFeed((prev) => prev + 1);
+    } catch (err) {
+      toast.error(err.response?.data?.error || err.message || "Gửi đánh giá thất bại");
+    }
+  };
+
+  // Fetch reviews for product
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchReviews = async () => {
+      try {
+        const resp = await api.get(`/product/${id}/reviews`, { skipCache: true });
+        const payload = resp.data?.data;
+        if (!isMounted) return;
+        if (payload) {
+          setReviewsData(payload.reviews);
+          setAverageRating(payload.meta?.average_rating || 0);
+          setTotalReviews(payload.meta?.total_reviews || 0);
+        }
+      } catch (err) {
+        // ignore for now
+      }
+    };
+
+    if (id) {
+      fetchReviews();
+    }
+
     return () => {
       isMounted = false;
     };
@@ -292,7 +354,6 @@ const ProductDetail = () => {
               </div>
               {/* Warranty and Status Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-
                   <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                     <h2 className="flex bg-blue-600 p-4 text-white text-lg font-bold">
                       <IoBookmarksOutline size={24} className="mr-3" />
@@ -386,6 +447,68 @@ const ProductDetail = () => {
                           <span className="text-sm">Không bao gồm các phụ kiện tặng kèm</span>
                         </li>
                       </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden mt-6">
+                  <div className="p-4">
+                    <h2 className="text-lg font-semibold mb-4">Thông số kỹ thuật</h2>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600">Kích thước màn hình</p>
+                          <p className="font-semibold">6.5 inches</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Công nghệ màn hình</p>
+                          <p className="font-semibold">Super Retina XDR</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Camera sau</p>
+                          <p className="font-semibold">48MP Fusion Main f/1.6</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Camera trước</p>
+                          <p className="font-semibold">18MP Center Stage f/1.6</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Chipset</p>
+                          <p className="font-semibold">Chip A19 Pro</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Công nghệ NFC</p>
+                          <p className="font-semibold">Có</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Bộ nhớ trong</p>
+                          <p className="font-semibold">256 GB</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Pin</p>
+                          <p className="font-semibold text-xs">Xem video: 27h | Trực tuyến: 22h</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Thẻ SIM</p>
+                          <p className="font-semibold text-xs">Sim kép (nano-Sim & e-Sim)</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Hệ điều hành</p>
+                          <p className="font-semibold">iOS 26</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Độ phân giải</p>
+                          <p className="font-semibold">2736 x 1260 pixels</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Loại CPU</p>
+                          <p className="font-semibold text-xs">6 lõi (2 hiệu năng + 4 tiết kiệm)</p>
+                        </div>
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <p className="text-sm text-gray-600 mb-2">Tính năng màn hình</p>
+                        <p className="text-sm text-gray-700">Dynamic Island • Màn hình luôn bật • HDR • 460 ppi • True Tone • Dải màu rộng (P3) • Haptic Touch • Tỷ lệ tương phản 2.000.000:1 • Độ sáng 1000 nit (typ) • Đỉnh 1600 nit (HDR) • Đỉnh 3000 nit (ngoài trời) • Lớp phủ chống vân tay</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -562,6 +685,40 @@ const ProductDetail = () => {
                   </div>
                 </div>
             </div>
+          </div>
+        </div>
+        {/* Reviews & Comments Section */}
+        <div className="max-w-7xl mx-auto mt-8">
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h2 className="text-xl font-bold">Đánh giá & Bình luận</h2>
+
+            <div className="mt-4 flex items-center gap-6">
+              <div className="flex items-center">
+                {[1,2,3,4,5].map((i) => (
+                  <FaStar key={i} className={`mr-1 ${i <= Math.round(averageRating) ? 'text-yellow-400' : 'text-gray-300'}`} />
+                ))}
+                <span className="ml-3 text-sm text-gray-600">{averageRating.toFixed(1)} / 5 • {totalReviews} đánh giá</span>
+              </div>
+            </div>
+
+            <div className="mt-6 border-t pt-4">
+              <h3 className="font-semibold mb-2">Viết đánh giá</h3>
+              <div className="flex items-center gap-2 mb-3">
+                {[1,2,3,4,5].map((i) => (
+                  <button key={i} onClick={() => setUserRating(i)} className="focus:outline-none">
+                    <FaStar className={`mr-1 ${i <= userRating ? 'text-yellow-400' : 'text-gray-300'}`} />
+                  </button>
+                ))}
+                <span className="text-sm text-gray-600 ml-2">{userRating ? `${userRating} sao` : 'Chọn số sao'}</span>
+              </div>
+              <textarea value={userComment} onChange={(e) => setUserComment(e.target.value)} placeholder="Viết nhận xét của bạn (tuỳ chọn)" className="w-full border rounded p-2 mb-3" rows={3} />
+              <div>
+                <button onClick={submitReview} className="bg-blue-600 text-white px-4 py-2 rounded">Gửi đánh giá</button>
+              </div>
+            </div>
+
+            {/* Reviews Feed Component */}
+            <ReviewsFeed productId={id} reviewsData={reviewsData} onReviewsChange={() => setRefreshFeed((prev) => prev + 1)} />
           </div>
         </div>
       </Section>
