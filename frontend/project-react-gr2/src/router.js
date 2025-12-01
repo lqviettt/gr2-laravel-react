@@ -92,7 +92,6 @@ const renderUserRouter = () => {
       path: ROUTERS.USER.ORDER_HISTORY,
       component: <OrderHistoryPage />,
       layout: MasterLayout,
-      protected: true,
     },
     {
       path: ROUTERS.USER.VERIFY_ACCOUNT,

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { FaSortAmountDown } from "react-icons/fa";
 import "./style.scss";
 import ProductItem from "../../../component/user/ProductItem";
+import Section from "../../../component/user/Section";
 import { useBreadcrumb } from "../../../component/BreadcrumbContext";
 import { LoadingSpinner, ErrorMessage, NoSearchResults, Button } from "../../../components";
 import Pagination from "../../../components/Pagination";
@@ -199,82 +200,83 @@ const ProductList = () => {
   };
 
   return (
-    <div className="content mt-5">
-      <div className="featured-categories">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center flex items-center uppercase mb-5">
-          <span className="pl-2 border-l-4 border-blue-500">{getPageTitle()}</span>
-        </h1>
-
-        {/* iPhone Series Filter */}
-        <div className="mb-6">
-          <h3 className="text-lg font-medium mb-3">Lọc theo Series iPhone:</h3>
-          <div className="flex flex-wrap gap-2">
+    <Section
+      title={(
+        <span className="pl-2 border-l-4 border-blue-500">{getPageTitle()}</span>
+      )}
+      className="max-w-7xl mx-auto content mt-5"
+      titleClassName="text-2xl sm:text-3xl lg:text-4xl font-bold text-center flex items-center uppercase mb-5"
+      contentClassName="featured-categories"
+    >
+      {/* iPhone Series Filter */}
+      <div className="mb-6">
+        <h3 className="text-lg font-medium mb-3">Lọc theo Series iPhone:</h3>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            onClick={() => handleSeriesFilter(null)}
+            variant={!searchQuery ? "primary" : "outline"}
+            size="small"
+          >
+            Tất cả
+          </Button>
+          {iphoneSeries.map((series) => (
             <Button
-              onClick={() => handleSeriesFilter(null)}
-              variant={!searchQuery ? "primary" : "outline"}
+              key={series.id}
+              onClick={() => handleSeriesFilter(series.searchTerm)}
+              variant={searchQuery === series.searchTerm ? "primary" : "outline"}
               size="small"
             >
-              Tất cả
+              {series.name}
             </Button>
-            {iphoneSeries.map((series) => (
-              <Button
-                key={series.id}
-                onClick={() => handleSeriesFilter(series.searchTerm)}
-                variant={searchQuery === series.searchTerm ? "primary" : "outline"}
-                size="small"
-              >
-                {series.name}
-              </Button>
-            ))}
-          </div>
+          ))}
         </div>
-
-        <h2 className="flex items-center text-sm font-medium mb-4">
-          <span className="ml-2 text-xl">Sắp xếp theo giá:</span>
-        </h2>
-        <div className="flex gap-2 mb-10">
-          <Button
-            onClick={() => handleSort("asc")}
-            variant="outline"
-            size="small"
-            leftIcon={<FaSortAmountDown />}
-          >
-            Giá thấp đến cao
-          </Button>
-          <Button
-            onClick={() => handleSort("desc")}
-            variant="outline"
-            size="small"
-            leftIcon={<FaSortAmountDown />}
-          >
-            Giá cao xuống thấp
-          </Button>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-          {sortedProducts.length > 0 ? (
-            sortedProducts.map((product) => (
-              <ProductItem
-                key={product.id}
-                product={product}
-                formatCurrency={formatCurrency}
-              />
-            ))
-          ) : (
-            <div className="col-span-full">
-              <NoSearchResults
-                title={searchQuery ? `Không tìm thấy sản phẩm nào cho "${searchQuery}"` : "Không có sản phẩm nào trong danh mục này"}
-                description="Hãy thử tìm kiếm với từ khóa khác hoặc chọn danh mục khác."
-              />
-            </div>
-          )}
-        </div>
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
       </div>
-    </div>
+
+      <h2 className="flex items-center text-sm font-medium mb-4">
+        <span className="ml-2 text-xl">Sắp xếp theo giá:</span>
+      </h2>
+      <div className="flex gap-2 mb-10">
+        <Button
+          onClick={() => handleSort("asc")}
+          variant="outline"
+          size="small"
+          leftIcon={<FaSortAmountDown />}
+        >
+          Giá thấp đến cao
+        </Button>
+        <Button
+          onClick={() => handleSort("desc")}
+          variant="outline"
+          size="small"
+          leftIcon={<FaSortAmountDown />}
+        >
+          Giá cao xuống thấp
+        </Button>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+        {sortedProducts.length > 0 ? (
+          sortedProducts.map((product) => (
+            <ProductItem
+              key={product.id}
+              product={product}
+              formatCurrency={formatCurrency}
+            />
+          ))
+        ) : (
+          <div className="col-span-full">
+            <NoSearchResults
+              title={searchQuery ? `Không tìm thấy sản phẩm nào cho "${searchQuery}"` : "Không có sản phẩm nào trong danh mục này"}
+              description="Hãy thử tìm kiếm với từ khóa khác hoặc chọn danh mục khác."
+            />
+          </div>
+        )}
+      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
+    </Section>
   );
 };
 

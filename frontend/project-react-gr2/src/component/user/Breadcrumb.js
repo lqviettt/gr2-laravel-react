@@ -16,7 +16,7 @@ const Breadcrumb = () => {
   };
 
   return (
-    <nav className="breadcrumb-container" aria-label="breadcrumb">
+    <nav className="breadcrumb-container bg-gray-50" aria-label="breadcrumb">
       <div className="breadcrumb-wrapper">
         {breadcrumbs.map((item, index) => {
           const isLast = index === breadcrumbs.length - 1;

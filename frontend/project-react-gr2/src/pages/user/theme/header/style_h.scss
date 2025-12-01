@@ -62,8 +62,8 @@
     }
 
     .menu_hotline {
-        margin-left: 30px;
-        font-size: 19px;
+        margin-left: 18px;
+        font-size: 17px;
         display: flex;
         align-items: center;
 
@@ -75,20 +75,20 @@
         }
 
         .content {
-            margin-left: 7px;
+            margin-left: 4px;
             display: flex;
             flex-direction: column;
             justify-content: center;
 
             .spanChild {
                 position: absolute;
-                height: 18px;
-                width: 18px;
+                height: 14px;
+                width: 14px;
                 border-radius: 50%;
                 background-color: rgb(212, 212, 207);
                 display: inline-block;
                 text-align: center;
-                font-size: 13px;
+                font-size: 10px;
                 color: black;
             }
         }
@@ -103,7 +103,7 @@
         }
 
         svg {
-            font-size: 25px;
+            font-size: 18px;
         }
     }
 
@@ -190,7 +190,7 @@
     position: relative;
     padding: 15px 0;
     background: #ffffff;
-    border-bottom: 1px solid #e9e9e9;
+    // border-bottom: 1px solid #e9e9e9;
 
     ul {
         padding: 0 260px;
@@ -271,7 +271,8 @@
         display: none;
         position: absolute;
         top: 100%;
-        left: -100%;
+        left: 50%;
+        transform: translateX(-30%);
         background-color: #fff;
         border: 1px solid #ddd;
         border-radius: 4px;
@@ -279,6 +280,7 @@
         z-index: 9999;
         padding: 15px;
         flex-direction: row;
+        max-width: 90vw;
     }
 
     .menu_itemss.has-children:hover .header_menu_dropdown,
