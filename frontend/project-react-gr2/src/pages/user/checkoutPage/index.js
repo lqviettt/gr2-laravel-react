@@ -396,9 +396,15 @@ const CheckoutPage = () => {
   }, [order.shipping_province, order.shipping_district, order.shipping_ward, calculateShippingFee]);
 
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Ngăn submit multiple times
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
     try {
       console.log("Thông tin đơn hàng gửi đi", order);
 
@@ -432,6 +438,7 @@ const CheckoutPage = () => {
         error.response?.data || error.message
       );
       toast.error("Đã xảy ra lỗi khi tạo đơn hàng. Vui lòng thử lại sau.");
+      setIsSubmitting(false);
     }
   };
 
@@ -750,15 +757,24 @@ const CheckoutPage = () => {
                       <button
                         type="button"
                         onClick={() => window.history.back()}
-                        className="flex-1 py-3 px-4 text-sm lg:text-base font-medium bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-md transition-colors shadow-sm hover:shadow-md"
+                        disabled={isSubmitting}
+                        className="flex-1 py-3 px-4 text-sm lg:text-base font-medium bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-md transition-colors shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Quay lại giỏ hàng
                       </button>
                       <button
                         type="submit"
-                        className="flex-1 py-3 px-4 text-sm lg:text-base font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm hover:shadow-md"
+                        disabled={isSubmitting}
+                        className="flex-1 py-3 px-4 text-sm lg:text-base font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
-                        Đặt hàng
+                        {isSubmitting ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Đang xử lý...
+                          </>
+                        ) : (
+                          'Đặt hàng'
+                        )}
                       </button>
                     </div>
                   </div>
