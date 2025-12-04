@@ -1,6 +1,5 @@
 services:
     api:
-        user: "${UID}:${GID}"
         container_name: api
         build:
             context: .
