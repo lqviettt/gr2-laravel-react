@@ -452,62 +452,69 @@ const ProductDetail = () => {
                 </div>
 
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden mt-6">
-                  <div className="p-4">
-                    <h2 className="text-lg font-semibold mb-4">Thông số kỹ thuật</h2>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-gray-600">Kích thước màn hình</p>
-                          <p className="font-semibold">6.5 inches</p>
+                  <div>
+                    <div className="p-4 bg-blue-600 rounded-lg">
+                      <h2 className="flex text-white text-xl font-bold">
+                        <MdAssignment size={24} className="mr-3" />
+                        Thông số kỹ thuật
+                      </h2>
+                    </div>
+                    <div className="p-4 bg-white rounded-lg shadow-sm overflow-hidden">
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm text-gray-600">Kích thước màn hình</p>
+                            <p className="font-semibold">6.5 inches</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Công nghệ màn hình</p>
+                            <p className="font-semibold">Super Retina XDR</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Camera sau</p>
+                            <p className="font-semibold">48MP Fusion Main f/1.6</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Camera trước</p>
+                            <p className="font-semibold">18MP Center Stage f/1.6</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Chipset</p>
+                            <p className="font-semibold">Chip A19 Pro</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Công nghệ NFC</p>
+                            <p className="font-semibold">Có</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Bộ nhớ trong</p>
+                            <p className="font-semibold">256 GB</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Pin</p>
+                            <p className="font-semibold text-xs">Xem video: 27h | Trực tuyến: 22h</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Thẻ SIM</p>
+                            <p className="font-semibold text-xs">Sim kép (nano-Sim & e-Sim)</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Hệ điều hành</p>
+                            <p className="font-semibold">iOS 26</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Độ phân giải</p>
+                            <p className="font-semibold">2736 x 1260 pixels</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Loại CPU</p>
+                            <p className="font-semibold text-xs">6 lõi (2 hiệu năng + 4 tiết kiệm)</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Công nghệ màn hình</p>
-                          <p className="font-semibold">Super Retina XDR</p>
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <p className="text-sm text-gray-600 mb-2">Tính năng màn hình</p>
+                          <p className="text-sm text-gray-700">Dynamic Island • Màn hình luôn bật • HDR • 460 ppi • True Tone • Dải màu rộng (P3) • Haptic Touch • Tỷ lệ tương phản 2.000.000:1 • Độ sáng 1000 nit (typ) • Đỉnh 1600 nit (HDR) • Đỉnh 3000 nit (ngoài trời) • Lớp phủ chống vân tay</p>
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Camera sau</p>
-                          <p className="font-semibold">48MP Fusion Main f/1.6</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Camera trước</p>
-                          <p className="font-semibold">18MP Center Stage f/1.6</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Chipset</p>
-                          <p className="font-semibold">Chip A19 Pro</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Công nghệ NFC</p>
-                          <p className="font-semibold">Có</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Bộ nhớ trong</p>
-                          <p className="font-semibold">256 GB</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Pin</p>
-                          <p className="font-semibold text-xs">Xem video: 27h | Trực tuyến: 22h</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Thẻ SIM</p>
-                          <p className="font-semibold text-xs">Sim kép (nano-Sim & e-Sim)</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Hệ điều hành</p>
-                          <p className="font-semibold">iOS 26</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Độ phân giải</p>
-                          <p className="font-semibold">2736 x 1260 pixels</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Loại CPU</p>
-                          <p className="font-semibold text-xs">6 lõi (2 hiệu năng + 4 tiết kiệm)</p>
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <p className="text-sm text-gray-600 mb-2">Tính năng màn hình</p>
-                        <p className="text-sm text-gray-700">Dynamic Island • Màn hình luôn bật • HDR • 460 ppi • True Tone • Dải màu rộng (P3) • Haptic Touch • Tỷ lệ tương phản 2.000.000:1 • Độ sáng 1000 nit (typ) • Đỉnh 1600 nit (HDR) • Đỉnh 3000 nit (ngoài trời) • Lớp phủ chống vân tay</p>
                       </div>
                     </div>
                   </div>
@@ -690,7 +697,7 @@ const ProductDetail = () => {
         {/* Reviews & Comments Section */}
         <div className="max-w-7xl mx-auto mt-8">
           <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h2 className="text-xl font-bold">Đánh giá & Bình luận</h2>
+            <h2 className="text-xl font-bold">Đánh giá {product.name} | Chính hãng</h2>
 
             <div className="mt-4 flex items-center gap-6">
               <div className="flex items-center">
@@ -709,7 +716,7 @@ const ProductDetail = () => {
                     <FaStar className={`mr-1 ${i <= userRating ? 'text-yellow-400' : 'text-gray-300'}`} />
                   </button>
                 ))}
-                <span className="text-sm text-gray-600 ml-2">{userRating ? `${userRating} sao` : 'Chọn số sao'}</span>
+                <span className="text-sm text-gray-600 ml-2">{userRating ? `${userRating} sao` : ''}</span>
               </div>
               <textarea value={userComment} onChange={(e) => setUserComment(e.target.value)} placeholder="Viết nhận xét của bạn (tuỳ chọn)" className="w-full border rounded p-2 mb-3" rows={3} />
               <div>

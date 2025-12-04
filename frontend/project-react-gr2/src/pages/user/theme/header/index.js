@@ -376,7 +376,7 @@ const Header = () => {
                         />
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-medium text-gray-800 truncate">{product.name}</h4>
-                          <p className="text-xs text-gray-600">{product.price ? `${product.price.toLocaleString()} VND` : "Liên hệ"}</p>
+                          <p className="text-xs text-gray-600">{product.price * 1000 ? `${(product.price * 1000).toLocaleString()} VND` : "Liên hệ"}</p>
                         </div>
                       </div>
                     ))
