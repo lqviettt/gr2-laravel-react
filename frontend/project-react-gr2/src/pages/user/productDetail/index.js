@@ -168,6 +168,11 @@ const ProductDetail = () => {
         rating: userRating,
         comment: userComment || null,
       });
+      
+      if(resp.data?.status !== 200) {
+        toast.error(resp.data?.error || "Gửi đánh giá thất bại");
+        return;
+      }
       toast.success(resp.data?.message || "Gửi đánh giá thành công");
       setUserRating(0);
       setUserComment("");

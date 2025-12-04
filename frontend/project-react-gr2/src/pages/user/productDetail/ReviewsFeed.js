@@ -169,6 +169,12 @@ const ReviewsFeed = ({
         content,
         parent_id: parentId,
       });
+
+      if(resp.data?.status !== 200) {
+        toast.error(resp.data?.error || "Gửi đánh giá thất bại");
+        return;
+      }
+      
       toast.success(resp.data?.message || "Gửi bình luận thành công");
 
       // Clear reply input

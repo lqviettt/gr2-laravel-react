@@ -35,6 +35,10 @@ class ReviewCommentController extends Controller
     {
         $user = auth()->user() ?? null;
 
+        if(!$user) {
+            return $this->sendError('Bạn cần đăng nhập để gửi đánh giá.' , 401);
+        }
+
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:2000',
@@ -90,6 +94,10 @@ class ReviewCommentController extends Controller
     public function storeComment(Request $request, $productId)
     {
         $user = auth()->user() ?? null;
+
+        if(!$user) {
+            return $this->sendError('Bạn cần đăng nhập để gửi bình luận.', 401);
+        }
 
         $request->validate([
             'content' => 'required|string|max:1000',
