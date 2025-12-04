@@ -144,3 +144,32 @@
         }
     }
 }
+
+/* Mobile sticky bottom navigation - fixed positioning */
+@media (max-width: 1024px) {
+    /* Đảm bảo bottom nav luôn fixed ở dưới cùng */
+    .fixed.bottom-0.left-0.right-0 {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        background-color: white;
+        border-top: 1px solid #e5e7eb;
+        box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 50;
+        
+        /* Không cho phép overflow */
+        overflow: hidden;
+    }
+    
+    /* Đảm bảo main content không bị che */
+    .min-h-screen {
+        display: flex;
+        flex-direction: column;
+        
+        > * {
+            flex: 1;
+        }
+    }
+}

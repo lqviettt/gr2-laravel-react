@@ -263,7 +263,7 @@ const ProductDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24 lg:pb-0">
+    <div className="min-h-screen bg-gray-50 pb-28 sm:pb-32 lg:pb-0">
       {/* Mobile Sticky Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-white border-t border-gray-200 shadow-lg z-50">
         <div className="flex items-center justify-between gap-2 py-4 px-3 sm:p-4">
