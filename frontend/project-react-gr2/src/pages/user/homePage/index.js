@@ -249,7 +249,7 @@ const HomePage = () => {
       </Section>
 
       {/* iPhone Products Section */}
-      <Section className="relative -mt-8 lg:-mt-12 py-8 lg:py-12 max-w-7xl mx-auto">
+      <Section className="relative -mt-8 lg:-mt-12 py-8 lg:py-12">
         <div className="flex items-start gap-4 mb-8 lg:mb-12">
           <div className="w-1 bg-blue-600 h-10"></div>
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
@@ -315,7 +315,7 @@ const HomePage = () => {
                 sliderConfig.itemsPerView
             }
             className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white hover:bg-blue-50 text-blue-600 rounded-full h-10 w-10 lg:h-12 lg:w-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 z-10 border border-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ marginRight: "-20px" }} // Đẩy nửa nút ra ngoài
+            style={{ marginRight: "-10px" }} // Đẩy nửa nút ra ngoài
           >
             <GrNext className="text-lg lg:text-xl" />
           </button>

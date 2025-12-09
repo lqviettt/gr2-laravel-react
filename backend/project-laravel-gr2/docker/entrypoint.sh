@@ -16,6 +16,7 @@ composer install --no-progress --no-interaction
 
 php artisan key:generate
 php artisan migrate
+php artisan storage:link
 php artisan queue:work --timeout=60 &
 php artisan optimize:clear
 php artisan view:clear
