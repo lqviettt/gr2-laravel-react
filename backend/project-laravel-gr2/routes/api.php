@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
@@ -36,3 +37,10 @@ Route::group([
 Route::post('/upload/image', [UploadController::class, 'uploadImage']);
 Route::post('/upload/images', [UploadController::class, 'uploadImages']);
 Route::delete('/upload/image', [UploadController::class, 'deleteImage']);
+
+Route::group([
+    'middleware' => ['auth:api', 'admin.check'],
+    'prefix' => 'admin'
+], function () {
+    Route::resource('account', AccountController::class);
+});

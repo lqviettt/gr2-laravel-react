@@ -1,10 +1,11 @@
-import { memo, useState, useEffect } from "react";
+import { memo, useState, useEffect, useCallback } from "react";
 import { FaStar, FaThumbsUp, FaChevronDown, FaChevronUp, FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/vi";
 import { api } from "../../../utils/apiClient";
+import ConfirmDialog from "../../../components/ConfirmDialog";
 
 dayjs.extend(relativeTime);
 dayjs.locale("vi");
@@ -21,7 +22,10 @@ const ReviewsFeed = ({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMorePages, setHasMorePages] = useState(true);
   const [expandedReplies, setExpandedReplies] = useState({});
-  const [expandedAllComments, setExpandedAllComments] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    commentId: null,
+  });
 
   // Helper to get current user ID from JWT token
   const getCurrentUserId = () => {
@@ -57,7 +61,7 @@ const ReviewsFeed = ({
   };
 
   // Fetch comments with pagination
-  const fetchComments = async (page = 1) => {
+  const fetchComments = useCallback(async (page = 1) => {
     try {
       const resp = await api.get(`/product/${productId}/comments?page=${page}`, {
         skipCache: true,
@@ -84,7 +88,7 @@ const ReviewsFeed = ({
     } finally {
       setIsLoadingMore(false);
     }
-  };
+  }, [productId]);
 
   // Initial load
   useEffect(() => {
@@ -126,7 +130,7 @@ const ReviewsFeed = ({
         const likesCount = Array.isArray(likesArr) ? likesArr.length : 0;
         const liked = currentUserId
           ? likesArr.some(
-              (l) => (l.user_id || (l.user && l.user.id)) == currentUserId
+              (l) => (l.user_id || (l.user && l.user.id)) === currentUserId
             )
           : false;
 
@@ -170,7 +174,9 @@ const ReviewsFeed = ({
         parent_id: parentId,
       });
 
-      if(resp.data?.status !== 200) {
+      console.log('Submit comment response:', resp);
+
+      if(resp.data?.status !== 201 && resp.data?.status !== 200) {
         toast.error(resp.data?.error || "Gửi đánh giá thất bại");
         return;
       }
@@ -209,16 +215,18 @@ const ReviewsFeed = ({
     }
   };
 
-  const deleteComment = async (commentId) => {
+  const handleDeleteComment = (commentId) => {
     if (!isUserLoggedIn()) {
       toast.error("Vui lòng đăng nhập để xóa bình luận");
       return;
     }
+    setConfirmDialog({
+      isOpen: true,
+      commentId: commentId,
+    });
+  };
 
-    if (!window.confirm("Bạn có chắc muốn xóa bình luận này?")) {
-      return;
-    }
-
+  const deleteComment = async (commentId) => {
     try {
       const resp = await api.delete(`/comments/${commentId}`);
       toast.success(resp.data?.message || "Xóa bình luận thành công");
@@ -279,7 +287,7 @@ const ReviewsFeed = ({
                       </div>
                       {item.user?.id === currentUserId || String(item.user?.id) === String(currentUserId) ? (
                         <button
-                          onClick={() => deleteComment(item.id)}
+                          onClick={() => handleDeleteComment(item.id)}
                           className="p-1"
                           title="Xóa bình luận"
                         >
@@ -459,6 +467,19 @@ const ReviewsFeed = ({
           <div className="text-sm text-gray-600">Chưa có hoạt động nào.</div>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title="Xóa bình luận"
+        message="Bạn có chắc muốn xóa bình luận này?"
+        confirmLabel="Xóa"
+        cancelLabel="Hủy"
+        onConfirm={() => {
+          deleteComment(confirmDialog.commentId);
+          setConfirmDialog({ isOpen: false, commentId: null });
+        }}
+        onCancel={() => setConfirmDialog({ isOpen: false, commentId: null })}
+      />
     </div>
   );
 };
