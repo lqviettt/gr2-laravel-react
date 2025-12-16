@@ -20,6 +20,8 @@ import ProtectedRoute from "./utils/protectedRoute";
 import PaymentInfo from "./pages/user/paymentInfo/index.js";
 import ProductManageAdd from "./pages/admin/productManage/productAdd.js";
 import ProductManageList from "./pages/admin/productManage/productList.js";
+import AccountManageAdd from "./pages/admin/accountManage/accountAdd.js";
+import AccountManageList from "./pages/admin/accountManage/accountList.js";
 import VerifyAccount from "./pages/user/registerPage/verify.js";
 import AdminDashboard from "./pages/admin/dashboard/index.js";
 import UploadDemo from "./pages/UploadDemo";
@@ -149,6 +151,18 @@ const renderUserRouter = () => {
     {
       path: ROUTERS.ADMIN.PRODUCT_MANAGE_LIST,
       component: <ProductManageList />,
+      layout: AdminLayout,
+      protected: true,
+    },
+    {
+      path: ROUTERS.ADMIN.ACCOUNT_MANAGE_ADD,
+      component: <AccountManageAdd />,
+      layout: AdminLayout,
+      protected: true,
+    },
+    {
+      path: ROUTERS.ADMIN.ACCOUNT_MANAGE_LIST,
+      component: <AccountManageList />,
       layout: AdminLayout,
       protected: true,
     },

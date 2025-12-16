@@ -100,14 +100,14 @@ const Slidebar = () => {
       title: "Quản lý danh mục",
       items: [
         { title: "Danh sách danh mục", href: "/admin/category-list" },
-        { title: "Thêm danh mục mới", href: "#" },
+        { title: "Thêm danh mục mới", href: "/admin/category-add" },
       ],
     },
     {
-      title: "Quản lý nhân viên",
+      title: "Quản lý tài khoản",
       items: [
-        { title: "Danh sách nhân viên", href: "#" },
-        { title: "Thêm nhân viên mới", href: "#" },
+        { title: "Danh sách tài khoản", href: "/admin/account-list" },
+        { title: "Thêm tài khoản mới", href: "/admin/account-add" },
       ],
     },
     {

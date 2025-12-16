@@ -680,6 +680,8 @@ const ProductList = () => {
           </button>
         </div>
 
+        {/* Search Input */}
+        <div className="mb-6">
           <SearchInput
             searchFields={[
               {
@@ -718,7 +720,8 @@ const ProductList = () => {
             useSearchButton={true}
             showClearButton={false}
           />
-
+        </div>
+        
         {/* Error Message */}
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">

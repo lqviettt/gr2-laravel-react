@@ -26,6 +26,8 @@ export const ROUTERS = {
     PRODUCT_MANAGE_LIST: "/admin/product-list",
     EMPLOYEE_MANAGE_ADD: "/admin/employee-add",
     EMPLOYEE_MANAGE_LIST: "/admin/employee-list",
+    ACCOUNT_MANAGE_ADD: "/admin/account-add",
+    ACCOUNT_MANAGE_LIST: "/admin/account-list",
     ORDER_MANAGE_ADD: "/admin/order-add",
     ORDER_MANAGE_LIST: "/admin/order-list",
   },

@@ -94,11 +94,21 @@ const CategoryManageList = () => {
     console.log('Saving category:', newCategory);
     try {
       if (editingCategoryId) {
-        await api.put(`/category/${editingCategoryId}`, newCategory);
-        toast.success("Cập nhật danh mục thành công!");
+        const response = await api.put(`/category/${editingCategoryId}`, newCategory);
+        if(response?.data?.status === 200) {
+          const successMessage = response?.data?.message || "Cập nhật danh mục thành công!";
+          toast.success(successMessage);
+        }else {
+          toast.success("Cập nhật danh mục thất bại!");
+        }
       } else {
-        await api.post('/category', newCategory);
-        toast.success("Thêm danh mục thành công!");
+        const response = await api.post('/category', newCategory);
+        if(response?.data?.status === 201) {
+          const successMessage = response?.data?.message || "Thêm danh mục thành công!";
+          toast.success(successMessage);
+        }else {
+          toast.success("Thêm danh mục thất bại!");
+        }
       }
 
       await fetchCategories();
@@ -226,6 +236,7 @@ const CategoryManageList = () => {
           </button>
         </div>
 
+        <div className="mb-6">
           <SearchInput
             searchFields={[
               {
@@ -257,6 +268,7 @@ const CategoryManageList = () => {
             useSearchButton={true}
             showClearButton={false}
           />
+        </div>
 
         {/* Error Message */}
         {error && (
