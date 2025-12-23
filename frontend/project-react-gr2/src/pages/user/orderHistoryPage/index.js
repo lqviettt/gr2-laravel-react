@@ -1,80 +1,76 @@
 import React, { useState, useEffect } from "react";
-import { FaBox, FaTruck, FaCheckCircle, FaTimesCircle, FaEye } from "react-icons/fa";
+import { FaBox, FaTruck, FaCheckCircle, FaTimesCircle, FaEye, FaSearch } from "react-icons/fa";
 import Section from "../../../component/user/Section";
 import { formatCurrency } from "../../../utils/common";
 import { StatusBadge, Button, NoData } from "../../../components";
 
 const OrderHistoryPage = () => {
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [searchCode, setSearchCode] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
-    fetchOrders();
+    // Không tải dữ liệu khi vào trang, chỉ hiện message "Nhập mã để tìm"
   }, []);
 
-  const fetchOrders = async () => {
-    try {
-      // Giả sử API lấy đơn hàng của user hiện tại
-      // const response = await fetch(`${process.env.REACT_APP_API_URL}/user/orders`);
-      // const data = await response.json();
-      // setOrders(data.data || []);
+  const fetchOrders = async (code = "") => {
+    // Nếu không có code, không gọi API
+    if (!code) {
+      setOrders([]);
+      setLoading(false);
+      return;
+    }
 
-      // Mock data cho demo
-      const mockOrders = [
-        {
-          id: "ORD001",
-          code: "DH20241111001",
-          status: "delivered",
-          total_price: 25000000,
-          shipping_fee: 30000,
-          created_at: "2024-11-11T10:00:00Z",
-          customer_name: "Nguyễn Văn A",
-          customer_phone: "0123456789",
-          customer_email: "nguyenvana@example.com",
-          shipping_address: "123 Đường ABC, Quận 1, TP.HCM",
-          payment_method: "COD",
-          items: [
-            {
-              product_id: 1,
-              product_name: "iPhone 15 Pro",
-              variant_name: "Titan Đen",
-              quantity: 1,
-              price: 25000000,
-              image: "/placeholder-image.jpg"
-            }
-          ]
-        },
-        {
-          id: "ORD002",
-          code: "DH20241111002",
-          status: "shipping",
-          total_price: 18000000,
-          shipping_fee: 25000,
-          created_at: "2024-11-10T15:30:00Z",
-          customer_name: "Nguyễn Văn A",
-          customer_phone: "0123456789",
-          customer_email: "nguyenvana@example.com",
-          shipping_address: "123 Đường ABC, Quận 1, TP.HCM",
-          payment_method: "VNBANK",
-          items: [
-            {
-              product_id: 2,
-              product_name: "iPhone 14 Pro",
-              variant_name: "Đen",
-              quantity: 1,
-              price: 18000000,
-              image: "/placeholder-image.jpg"
-            }
-          ]
+    try {
+      setLoading(true);
+      const url = `${process.env.REACT_APP_API_URL}/order?code=${code}`;
+      
+      const response = await fetch(url);
+      const responseData = await response.json();
+      
+      // Xử lý dữ liệu từ API - API trả về { data: { data: [...], current_page, ... }, status, message }
+      let ordersData = [];
+      if (responseData && responseData.data) {
+        const paginatedData = responseData.data;
+        // Nếu data.data là array (pagination)
+        if (paginatedData.data && Array.isArray(paginatedData.data)) {
+          ordersData = paginatedData.data;
+        } 
+        // Nếu data là array trực tiếp
+        else if (Array.isArray(paginatedData)) {
+          ordersData = paginatedData;
         }
-      ];
-      setOrders(mockOrders);
+      }
+      
+      // Lọc ra các order hợp lệ (có status) và transform dữ liệu
+      const validOrders = ordersData
+        .filter(order => order && order.status)
+        .map(order => ({
+          ...order,
+          items: order.order_item || [] // Rename order_item thành items để match với code UI
+        }));
+      
+      setOrders(validOrders);
     } catch (error) {
       console.error("Error fetching orders:", error);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setHasSearched(true);
+    fetchOrders(searchCode);
+  };
+
+  const handleReset = () => {
+    setSearchCode("");
+    setHasSearched(false);
+    fetchOrders();
   };
 
   if (loading) {
@@ -92,23 +88,63 @@ const OrderHistoryPage = () => {
     <div className="min-h-screen bg-gray-50 py-4 sm:py-6 lg:py-8">
       <Section>
         <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+          {/* Breadcrumb */}
+          <div className="mb-6 flex items-center gap-2 text-sm">
+            <a href="/" className="text-blue-600 hover:underline">Trang chủ</a>
+            <span className="text-gray-400">/</span>
+            <span className="text-gray-600">Tra cứu đơn hàng</span>
+          </div>
+
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="p-4 sm:p-6 lg:p-8">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-6 lg:mb-8">
-                Đơn hàng của tôi
+                Tra cứu đơn hàng
               </h1>
+
+              {/* Search Box */}
+              <form onSubmit={handleSearch} className="mb-6">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="flex-1 relative">
+                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Tìm kiếm theo mã đơn hàng..."
+                      value={searchCode}
+                      onChange={(e) => setSearchCode(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="small"
+                  >
+                    Tìm kiếm
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="small"
+                    onClick={handleReset}
+                  >
+                    Xóa
+                  </Button>
+                </div>
+              </form>
 
               {orders.length === 0 ? (
                 <NoData
-                  title="Bạn chưa có đơn hàng nào"
-                  description="Hãy bắt đầu mua sắm để tạo đơn hàng đầu tiên!"
+                  title={hasSearched ? "Không tìm thấy đơn hàng" : "Vui lòng nhập mã đơn hàng để tra cứu"}
+                  description={hasSearched ? "Mã đơn hàng không tồn tại trong hệ thống" : "Nhập mã đơn hàng của bạn và click 'Tìm kiếm' để xem chi tiết"}
                   action={
-                    <Button
-                      onClick={() => window.location.href = "/"}
-                      variant="primary"
-                    >
-                      Tiếp tục mua sắm
-                    </Button>
+                    hasSearched ? (
+                      <Button
+                        onClick={handleReset}
+                        variant="primary"
+                      >
+                        Tìm kiếm lại
+                      </Button>
+                    ) : null
                   }
                 />
               ) : (
@@ -177,17 +213,19 @@ const OrderHistoryPage = () => {
                               <div className="space-y-3">
                                 {order.items.map((item, index) => (
                                   <div key={index} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
-                                    <img
-                                      src={item.image}
-                                      alt={item.product_name}
-                                      className="w-12 h-12 object-contain rounded"
-                                    />
+                                    <div className="w-12 h-12 flex-shrink-0 bg-gray-200 rounded flex items-center justify-center">
+                                      <img
+                                        src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${item.product_variant_image}`}
+                                        alt={item.name}
+                                        className="w-full sm:w-4/5 h-auto mb-2.5"
+                                      />
+                                    </div>
                                     <div className="flex-1 min-w-0">
                                       <h5 className="font-medium text-gray-800 truncate">
                                         {item.product_name}
                                       </h5>
-                                      {item.variant_name && (
-                                        <p className="text-sm text-gray-600">{item.variant_name}</p>
+                                      {item.product_variant_name && (
+                                        <p className="text-sm text-gray-600">{item.product_variant_name}</p>
                                       )}
                                       <p className="text-sm text-gray-600">
                                         SL: {item.quantity} × {formatCurrency(item.price)}

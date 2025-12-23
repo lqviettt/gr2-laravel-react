@@ -41,6 +41,7 @@ class OrderController extends Controller
             ->searchByPhone($request->phone)
             ->searchByCreated($request->created_by)
             ->searchByDate($request->start_date, $request->end_date)
+            ->searchByCode($request->code)
             ->orderBy('created_at', 'desc');
 
         $paginator = $query->paginate($perPage);
@@ -70,7 +71,7 @@ class OrderController extends Controller
             return $order;
         });
 
-        if ($result->payment_method == 'COD') {
+        if ($result->payment_method == 'COD' || $result->payment_method == null) {
             return $this->created($result);
         } else {
             $config = $this->fetchVNPay();

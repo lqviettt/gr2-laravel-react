@@ -52,6 +52,7 @@ class FormatData
                         'weight' => $item->product?->weight ?? null,
                         'product_variant_id' => $item->product_variant?->id ?? null,
                         'product_variant_name' => $item->product_variant?->value ?? null,
+                        'product_variant_image' => $item->product?->image ?? ($item->product_variant?->product?->image ?? null),
                         'quantity' => $item->quantity ?? null,
                         'price' => $item->price ?? null,
                     ];

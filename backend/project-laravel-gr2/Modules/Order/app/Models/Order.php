@@ -35,14 +35,13 @@ class Order extends BaseModel
     protected static function booted()
     {
         static::creating(function ($order) {
-            // $order->created_by = Auth::user()->user_name;
-            $order->created_by = "admin";
+            $order->created_by = auth()->user() ? auth()->user()->user_name : "admin";
         });
 
         static::updating(function ($order) {
             // $order->created_by = Auth::user()->user_name;
-            $order->created_by = "admin";
-
+            $order->created_by = auth()->user() ? auth()->user()->user_name : "admin";
+        
             if ($order->status === 'canceled') {
                 $order->logs()->create([
                     'status' => 'canceled',
@@ -57,10 +56,6 @@ class Order extends BaseModel
         return $this->lastname . ' ' . $this->firstname;
     }
 
-    public function getCodeAttribute($value)
-    {
-        return 'DH-' . $value;
-    }
 
     public function orderItem()
     {
@@ -125,6 +120,13 @@ class Order extends BaseModel
     {
         if (!is_null($status) && $status !== '') {
             $query->where('status', $status);
+        }
+    }
+
+    public function scopeSearchByCode($query, $code)
+    {
+        if (!is_null($code) && $code !== '') {
+            $query->where('code', $code);
         }
     }
 }
