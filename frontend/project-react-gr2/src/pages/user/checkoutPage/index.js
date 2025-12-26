@@ -697,14 +697,14 @@ const CheckoutPage = () => {
                               {item.image ? (
                                 // Hiển thị ảnh từ API nếu có
                                 <img
-                                  src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${item.image}`}
+                                  src={`${process.env.REACT_APP_LARAVEL_APP}/storage/${item.image}`}
                                   alt={item.name}
                                   className="w-full h-full object-contain rounded"
                                 />
                               ) : item.selectedVariant?.image ? (
                                 // Hoặc ảnh từ variant
                                 <img
-                                  src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${item.selectedVariant.image}`}
+                                  src={`${process.env.REACT_APP_LARAVEL_APP}/storage/${item.selectedVariant.image}`}
                                   alt={item.selectedVariant.value}
                                   className="w-full h-full object-contain rounded"
                                 />

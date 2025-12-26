@@ -131,11 +131,11 @@ const ProductDetail = () => {
           const images = getProductImage(categoryNameForImage) || [];
           if (result.data.image) {
             setSelectedImage(
-              `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${result.data.image}`
+              `${process.env.REACT_APP_LARAVEL_APP}/storage/${result.data.image}`
             );
           } else if (result.data.variants && result.data.variants.length > 0 && result.data.variants[0].image) {
             setSelectedImage(
-              `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${result.data.variants[0].image}`
+              `${process.env.REACT_APP_LARAVEL_APP}/storage/${result.data.variants[0].image}`
             );
           } else if (images.length > 0) {
             setSelectedImage(images[0].src);
@@ -306,7 +306,7 @@ const ProductDetail = () => {
                   src={
                     selectedImage ||
                     (product.image
-                      ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}`
+                      ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${product.image}`
                       : (getProductImage(product.category?.name) || [])[0]?.src || "")
                   }
                   alt="Ảnh sản phẩm lớn"
@@ -317,13 +317,13 @@ const ProductDetail = () => {
                   {/* Render thumbnails from product.image and product variants */}
                   {([
                     ...(product.image
-                      ? [{ id: 'main', src: `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}`, alt: product.name }]
+                      ? [{ id: 'main', src: `${process.env.REACT_APP_LARAVEL_APP}/storage/${product.image}`, alt: product.name }]
                       : []),
                     ...product.variants
                       .filter((variant) => variant.image)
                       .map((variant) => ({
                         id: variant.id,
-                        src: `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${variant.image}`,
+                        src: `${process.env.REACT_APP_LARAVEL_APP}/storage/${variant.image}`,
                         alt: variant.value,
                       })),
                   ]).map((image) => (
@@ -592,9 +592,9 @@ const ProductDetail = () => {
                           onClick={() => {
                             setSelectedVariant(variant);
                             const imageSrc = variant.image
-                              ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${variant.image}`
+                              ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${variant.image}`
                               : product.image
-                              ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}`
+                              ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${product.image}`
                               : selectedImage;
                             setSelectedImage(imageSrc);
                           }}

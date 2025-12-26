@@ -8,7 +8,7 @@ const ProductItem = ({ product, formatCurrency }) => {
     >
       {product.image && (
         <img
-          src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}`}
+          src={`${process.env.REACT_APP_LARAVEL_APP}/storage/${product.image}`}
           alt={product.name}
           className="w-full sm:w-4/5 h-auto mb-2.5"
         />

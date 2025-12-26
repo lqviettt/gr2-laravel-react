@@ -108,9 +108,9 @@ const Cart = () => {
                                   <img
                                     src={
                                       item.selectedVariant?.image
-                                        ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${item.selectedVariant.image}`
+                                        ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${item.selectedVariant.image}`
                                         : item.image
-                                        ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${item.image}`
+                                        ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${item.image}`
                                         : "/placeholder-image.jpg"
                                     }
                                     alt={item.name}
@@ -203,9 +203,9 @@ const Cart = () => {
                           <img
                             src={
                               item.selectedVariant?.image
-                                ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${item.selectedVariant.image}`
+                                ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${item.selectedVariant.image}`
                                 : item.image
-                                ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${item.image}`
+                                ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${item.image}`
                                 : "/placeholder-image.jpg"
                             }
                             alt={item.name}

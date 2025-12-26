@@ -215,7 +215,7 @@ const OrderHistoryPage = () => {
                                   <div key={index} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
                                     <div className="w-12 h-12 flex-shrink-0 bg-gray-200 rounded flex items-center justify-center">
                                       <img
-                                        src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${item.product_variant_image}`}
+                                        src={`${process.env.REACT_APP_LARAVEL_APP}/storage/${item.product_variant_image}`}
                                         alt={item.name}
                                         className="w-full sm:w-4/5 h-auto mb-2.5"
                                       />

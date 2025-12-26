@@ -94,6 +94,8 @@ const HomePage = () => {
       setError(null);
       try {
         const response = await api.get('/product?page=1&perPage=48');
+
+        console.log('API Response:', response); // Debug toàn bộ phản hồi từ API
         
         if (!isMounted) return;
         
@@ -135,25 +137,25 @@ const HomePage = () => {
       <div className="relative">
         <img
           className="w-full h-auto shadow-lg"
-          src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/banners/banners_1762866247_6913344726f45.webp`}
+          src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/banners_1762866247_6913344726f45.webp`}
           alt="QuocViet Banner"
         />
       </div>
-
+      
       {/* Slider Section */}
       <Section className="relative -mt-20 lg:-mt-40 z-30 py-8 lg:py-12">
         <div className="max-w-7xl mx-auto p-4 lg:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
           <div className="w-full">
             <img
-              src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/banners/banners_1762866265_6913345928561.webp`}
+              src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/banners_1762866265_6913345928561.webp`}
               alt="Slider 1"
               className="rounded-lg w-full h-auto shadow-lg"
             />
           </div>
           <div className="w-full">
             <img
-              src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/banners/banners_1762866273_691334615ff55.webp`}
+              src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/banners_1762866273_691334615ff55.webp`}
               alt="Slider 2"
               className="rounded-lg w-full h-auto shadow-lg"
             />
@@ -241,7 +243,7 @@ const HomePage = () => {
       <Section className="relative -mt-8 lg:-mt-12 py-8 lg:py-12 max-w-7xl mx-auto">
         <div className="w-full max-w-7xl mx-auto">
           <img
-          src={`${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/banners/banners_1762866252_6913344cd5885.webp`}
+          src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/banners_1762866252_6913344cd5885.webp`}
             alt="Banner 2"
             className="rounded-lg w-full h-auto shadow-lg"
           />

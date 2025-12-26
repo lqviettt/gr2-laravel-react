@@ -13,7 +13,7 @@ const ProductCard = ({
   let imageUrl = null;
   
   if (product.image) {
-    imageUrl = `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}`;
+    imageUrl = `${process.env.REACT_APP_LARAVEL_APP}/storage/${product.image}`;
   } else {
     const mockImages = getProductImage(product.category_id);
     if (mockImages && mockImages.length > 0) {
