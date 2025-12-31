@@ -259,7 +259,7 @@ const Header = () => {
               value={searchQuery}
               onChange={handleSearchChange}
               onFocus={handleSearchFocus}
-              className="flex-1 px-2 py-2 text-black text-xs bg-white rounded-none"
+              className="flex-1 px-2 py-2 text-black text-xs bg-white rounded-none border-0 focus:outline-none"
             />
             <button type="submit" className="pr-2 pl-2 rounded-r bg-white">
               <FaSearch color="black" size={16} />
