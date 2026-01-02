@@ -18,25 +18,30 @@ const AdminDashboard = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        // Fetch all orders (assuming API supports large per_page or we fetch multiple pages)
+        // Fetch only 20 orders for preview (reduced from 1000)
         const queryParams = new URLSearchParams();
-        queryParams.append('per_page', '1000'); // Fetch up to 1000 orders
+        queryParams.append('per_page', '20'); // Changed from 1000 to 20
+        queryParams.append('page', '1');
         const ordersResponse = await api.get(`/order?${queryParams.toString()}`);
         
         let orders = [];
+        let totalOrdersCount = 0;
+        
         if (ordersResponse.data && typeof ordersResponse.data === 'object' && 'data' in ordersResponse.data) {
           if (typeof ordersResponse.data.data === 'object' && 'data' in ordersResponse.data.data && Array.isArray(ordersResponse.data.data.data)) {
             // Paginated response
             orders = ordersResponse.data.data.data;
+            totalOrdersCount = ordersResponse.data.data.total || orders.length;
           } else if (Array.isArray(ordersResponse.data.data)) {
             orders = ordersResponse.data.data;
+            totalOrdersCount = ordersResponse.data.total || orders.length;
           } else if (Array.isArray(ordersResponse.data)) {
             orders = ordersResponse.data;
+            totalOrdersCount = orders.length;
           }
         }
 
-        // Calculate stats
-        const totalOrders = Array.isArray(orders) ? orders.length : 0;
+        // Calculate stats from sample data
         const totalRevenue = Array.isArray(orders) ? orders.reduce((sum, order) => sum + parseFloat(order.total_price || 0), 0) : 0;
         const totalCustomers = Array.isArray(orders) ? new Set(orders.map(order => order.customer_email || order.customer_phone)).size : 0;
         const pendingOrders = Array.isArray(orders) ? orders.filter(order => order.status === 'pending').length : 0;
@@ -44,7 +49,7 @@ const AdminDashboard = () => {
         const deliveredOrders = Array.isArray(orders) ? orders.filter(order => order.status === 'delivered').length : 0;
 
         setStats({
-          totalOrders,
+          totalOrders: totalOrdersCount, // Use total from API response
           totalRevenue,
           totalCustomers,
           pendingOrders,
@@ -52,7 +57,7 @@ const AdminDashboard = () => {
           deliveredOrders,
         });
 
-        // Get recent orders (last 5)
+        // Get recent orders (last 5 from sample)
         const recent = Array.isArray(orders) 
           ? orders
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))

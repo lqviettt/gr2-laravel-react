@@ -61,6 +61,7 @@ const CategoryManageList = () => {
 
   const [newCategory, setNewCategory] = useState({
     name: "",
+    parent_id: null,
     status: "1",
   });
 
@@ -91,10 +92,18 @@ const CategoryManageList = () => {
       toast.error("Tên danh mục không được rỗng");
       return;
     }
-    console.log('Saving category:', newCategory);
+    
+    // Prepare data to send - convert empty string parent_id to null
+    const categoryData = {
+      name: newCategory.name,
+      parent_id: newCategory.parent_id ? parseInt(newCategory.parent_id) : null,
+      status: newCategory.status
+    };
+    
+    console.log('Saving category:', categoryData);
     try {
       if (editingCategoryId) {
-        const response = await api.put(`/category/${editingCategoryId}`, newCategory);
+        const response = await api.put(`/category/${editingCategoryId}`, categoryData);
         if(response?.data?.status === 200) {
           const successMessage = response?.data?.message || "Cập nhật danh mục thành công!";
           toast.success(successMessage);
@@ -102,7 +111,7 @@ const CategoryManageList = () => {
           toast.success("Cập nhật danh mục thất bại!");
         }
       } else {
-        const response = await api.post('/category', newCategory);
+        const response = await api.post('/category', categoryData);
         if(response?.data?.status === 201) {
           const successMessage = response?.data?.message || "Thêm danh mục thành công!";
           toast.success(successMessage);
@@ -114,7 +123,7 @@ const CategoryManageList = () => {
       await fetchCategories();
 
       setIsModalOpen(false);
-      setNewCategory({ name: "", status: "1" });
+      setNewCategory({ name: "", parent_id: null, status: "1" });
       setEditingCategoryId(null);
     } catch (error) {
       console.error(
@@ -202,14 +211,23 @@ const CategoryManageList = () => {
     setNewCategory({ ...newCategory, [name]: value });
   };
 
+  // Helper function to get parent category name by ID
+  const getParentCategoryName = (parentId) => {
+    if (!parentId) return '-';
+    const parentCategory = categories.find(cat => cat.id === parentId);
+    return parentCategory ? parentCategory.name : '-';
+  };
+
   const fields = {
     name: 'name',
+    parent_id: 'parent_id',
     status: 'status',
     actions: 'pattern.modified',
   };
 
   const listTitle = {
     name: 'Tên danh mục',
+    parent_id: 'Danh mục cha',
     status: 'Trạng thái',
     actions: 'Tùy biến',
   };
@@ -225,7 +243,7 @@ const CategoryManageList = () => {
           </div>
           <button
             onClick={() => {
-              setNewCategory({ name: "", status: "1" });
+              setNewCategory({ name: "", parent_id: null, status: "1" });
               setEditingCategoryId(null);
               setIsModalOpen(true);
             }}
@@ -345,7 +363,10 @@ const CategoryManageList = () => {
             <div className="bg-white shadow-sm rounded-lg overflow-hidden">
               <CommonTable
                 fields={fields}
-                items={categories}
+                items={categories.map(cat => ({
+                  ...cat,
+                  parent_id: getParentCategoryName(cat.parent_id)
+                }))}
                 showIndex={true}
                 indexByOrder={true}
                 onEdit={handleEditCategory}
@@ -400,6 +421,31 @@ const CategoryManageList = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Nhập tên danh mục"
                       />
+                    </div>
+
+                    <div>
+                      <label htmlFor="parent_id" className="block text-sm font-medium text-gray-700 mb-1">
+                        Danh mục cha
+                      </label>
+                      <select
+                        name="parent_id"
+                        value={newCategory.parent_id || ""}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">-- Không chọn danh mục cha --</option>
+                        {categories
+                          .filter(cat => {
+                            // Chỉ hiển thị các category không có parent (cha)
+                            // và không phải là category hiện tại khi edit
+                            return !cat.parent_id && cat.id !== editingCategoryId;
+                          })
+                          .map(cat => (
+                            <option key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </option>
+                          ))}
+                      </select>
                     </div>
 
                     <div>

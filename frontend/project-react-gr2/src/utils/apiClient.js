@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // Simple cache for GET requests
 const requestCache = new Map();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes cache for static data
+const CACHE_DURATION_SHORT = 5 * 60 * 1000; // 5 minutes for dynamic data
 
 // Request deduplication - prevent duplicate requests
 const pendingRequests = new Map();

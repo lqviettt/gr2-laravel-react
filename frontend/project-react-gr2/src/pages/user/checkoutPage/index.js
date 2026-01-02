@@ -5,6 +5,7 @@ import { useBreadcrumb } from "../../../component/BreadcrumbContext";
 import { BsMinecartLoaded } from "react-icons/bs";
 import { GiCheckMark } from "react-icons/gi";
 import axios from "axios";
+import { getProvinces, getDistricts, getWards } from "../../../utils/ghnClient";
 import ghn from "../../../assets/images/ghn.png";
 import ghtk from "../../../assets/images/ghtk.png";
 import ordersuccess from "../../../assets/images/ordersuccess.png";
@@ -301,65 +302,44 @@ const CheckoutPage = () => {
   });
 
   useEffect(() => {
-    const fetchProvinces = async () => {
+    const loadProvinces = async () => {
       try {
-        const response = await axios.get(
-          "https://online-gateway.ghn.vn/shiip/public-api/master-data/province",
-          {
-            headers: {
-              Token: "a19da9e8-ad5e-11ef-ba4c-42a0500c1482",
-            },
-          }
-        );
-        setProvinces(response.data.data);
+        const data = await getProvinces(); // ✅ With caching
+        setProvinces(data);
       } catch (error) {
         console.error("Error fetching provinces:", error);
       }
     };
 
-    fetchProvinces();
+    loadProvinces();
   }, []);
 
   useEffect(() => {
-    const fetchDistricts = async () => {
+    const loadDistricts = async () => {
       if (!order.shipping_province_id) return;
       try {
-        const response = await axios.get(
-          `https://online-gateway.ghn.vn/shiip/public-api/master-data/district?province_id=${order.shipping_province_id}`,
-          {
-            headers: {
-              Token: "a19da9e8-ad5e-11ef-ba4c-42a0500c1482",
-            },
-          }
-        );
-        setDistricts(response.data.data);
+        const data = await getDistricts(order.shipping_province_id); // ✅ With caching
+        setDistricts(data);
       } catch (error) {
         console.error("Error fetching districts:", error);
       }
     };
 
-    fetchDistricts();
+    loadDistricts();
   }, [order.shipping_province_id]);
 
   useEffect(() => {
-    const fetchWards = async () => {
+    const loadWards = async () => {
       if (!order.shipping_district_id) return;
       try {
-        const response = await axios.get(
-          `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=${order.shipping_district_id}`,
-          {
-            headers: {
-              Token: "a19da9e8-ad5e-11ef-ba4c-42a0500c1482",
-            },
-          }
-        );
-        setWards(response.data.data);
+        const data = await getWards(order.shipping_district_id); // ✅ With caching
+        setWards(data);
       } catch (error) {
         console.error("Error fetching wards:", error);
       }
     };
 
-    fetchWards();
+    loadWards();
   }, [order.shipping_district_id]);
 
   const calculateShippingFee = useCallback(async () => {

@@ -13,6 +13,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { ROUTERS } from "../../../../utils/router";
 import { useCart } from "../../../../component/CartContext";
 import { api } from "../../../../utils/apiClient";
+import { useDebounce } from "../../../../utils/useDebounce";
+import { useCategoryProductsCache } from "../../../../utils/useCategoryProductsCache";
 
 const Header = () => {
   const [activeMenu, setActiveMenu] = useState(null);
@@ -22,6 +24,9 @@ const Header = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const navigate = useNavigate();
+  
+  // Use centralized cache hook for category products
+  const { categoryProducts, fetchCategoryProducts, clearCache } = useCategoryProductsCache();
 
   const searchTrends = [
     "iPhone 15",
@@ -34,6 +39,10 @@ const Header = () => {
     "Apple Watch"
   ];
 
+  // Initialize category products from localStorage (via hook)
+  // Hook automatically loads from localStorage on mount
+
+  // Fetch categories once
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -49,6 +58,12 @@ const Header = () => {
 
     fetchCategories();
   }, []);
+
+  // Lazy-load products for category on hover - fetch only once per category
+  const handleCategoryHover = useCallback(async (categoryId) => {
+    // Delegate to the hook's fetch function
+    await fetchCategoryProducts(categoryId);
+  }, [fetchCategoryProducts]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -66,32 +81,45 @@ const Header = () => {
     0
   );
 
-  const handleSearchChange = useCallback(async (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    if (query.length > 2) {
-      try {
-        const response = await api.get(`/product?search=${encodeURIComponent(query)}&perPage=10`);
-        const data = response.data;
-        let products = [];
-        if (data.data?.data) {
-          products = data.data.data;
-        } else if (data.data) {
-          products = data.data;
-        } else if (Array.isArray(data)) {
-          products = data;
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
+  useEffect(() => {
+    if (debouncedSearchQuery && debouncedSearchQuery.length > 2) {
+      const performSearch = async () => {
+        try {
+          const response = await api.get(
+            `/product?search=${encodeURIComponent(debouncedSearchQuery)}&perPage=10`,
+            { cacheDuration: 10 * 60 * 1000 } // Cache for 10 min
+          );
+          
+          let products = [];
+          if (response.data?.data?.data) {
+            products = response.data.data.data;
+          } else if (response.data?.data && Array.isArray(response.data.data)) {
+            products = response.data.data;
+          } else if (Array.isArray(response.data)) {
+            products = response.data;
+          }
+          
+          setSearchResults(products);
+          setShowSearchDropdown(products.length > 0);
+        } catch (error) {
+          console.error("Error searching products:", error);
+          setSearchResults([]);
+          setShowSearchDropdown(true);
         }
-        setSearchResults(products);
-        setShowSearchDropdown(products.length > 0);
-      } catch (error) {
-        console.error("Error searching products:", error);
-        setSearchResults([]);
-        setShowSearchDropdown(true);
-      }
+      };
+      
+      performSearch();
     } else {
       setShowSearchDropdown(false);
       setSearchResults([]);
     }
+  }, [debouncedSearchQuery]);
+
+  const handleSearchChange = useCallback((e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
   }, []);
 
   const handleSearchSubmit = (e, trendQuery = null) => {
@@ -114,9 +142,17 @@ const Header = () => {
     setShowSearchDropdown(false);
   };
 
-  const handleMouseEnter = (menuKey) => {
+  const handleMouseEnter = useCallback((menuKey, menu) => {
     setActiveMenu(menuKey);
-  };
+    // Fetch category products on hover if it's a category type menu
+    if (menu && menu.type === 'category' && menu.columns) {
+      menu.columns.forEach(column => {
+        if (column.id && column.items.length === 0) {
+          handleCategoryHover(column.id);
+        }
+      });
+    }
+  }, [handleCategoryHover]);
 
   const handleMouseLeave = () => {
     setActiveMenu(null);
@@ -166,8 +202,20 @@ const Header = () => {
     return result;
   };
 
+  // Group child categories với products (cho phụ kiện, linh kiện)
+  const groupChildCategoriesWithProducts = useCallback((parentCategoryId) => {
+    const childCategories = categories.filter(cat => cat.parent_id === parentCategoryId);
+    
+    return childCategories.map(childCat => ({
+      name: childCat.name,
+      id: childCat.id,
+      items: categoryProducts[childCat.id] || [],
+      link: `/product?category_id=${childCat.id}`
+    }));
+  }, [categories, categoryProducts]);
+
   // Build menus từ categories
-  const buildMenus = () => {
+  const buildMenus = useCallback(() => {
     
     // Helper function để build nested structure
     const buildNestedCategories = (parentId = null) => {
@@ -181,41 +229,52 @@ const Header = () => {
     
     const nestedCategories = buildNestedCategories();
     
-    const dynamicMenus = nestedCategories.map(cat => {      
-      // Thu thập tất cả sub-child items (items lá)
-      const collectAllSubChildren = (children) => {
-        let allItems = [];
-        children.forEach(child => {
-          if (child.children && child.children.length > 0) {
-            // Nếu có sub-children, thêm chúng vào list
-            child.children.forEach(subChild => {
-              allItems.push({
-                name: subChild.name,
-                path: `/product?category_id=${subChild.id}&parent_id=${child.id}&grandparent_id=${cat.id}`,
-                group: child.name // Group theo tên parent
+    const dynamicMenus = nestedCategories.map(cat => {
+      // Logic khác cho điện thoại (103) vs phụ kiện & linh kiện
+      if (cat.id === 103) {
+        // LOGIC CŨ: Điện thoại - Group theo series
+        const collectAllSubChildren = (children) => {
+          let allItems = [];
+          children.forEach(child => {
+            if (child.children && child.children.length > 0) {
+              child.children.forEach(subChild => {
+                allItems.push({
+                  name: subChild.name,
+                  path: `/product?category_id=${subChild.id}&parent_id=${child.id}&grandparent_id=${cat.id}`,
+                  group: child.name
+                });
               });
-            });
-          } else {
-            // Nếu không có sub-children, thêm child item
-            allItems.push({
-              name: child.name,
-              path: `/product?category_id=${child.id}&parent_id=${cat.id}`,
-              group: cat.name // Group theo tên grandparent
-            });
-          }
-        });
-        return allItems;
-      };
-      
-      const allSubChildren = collectAllSubChildren(cat.children || []);
-      
-      const groupedColumns = groupItemsBySeries(allSubChildren);
-      
-      return {
-        name: cat.name,
-        path: cat.parent_id ? `/product?category_id=${cat.id}&parent_id=${cat.parent_id}` : `/product?category_id=${cat.id}`,
-        columns: groupedColumns // Thay child bằng columns
-      };
+            } else {
+              allItems.push({
+                name: child.name,
+                path: `/product?category_id=${child.id}&parent_id=${cat.id}`,
+                group: cat.name
+              });
+            }
+          });
+          return allItems;
+        };
+        
+        const allSubChildren = collectAllSubChildren(cat.children || []);
+        const groupedColumns = groupItemsBySeries(allSubChildren);
+        
+        return {
+          name: cat.name,
+          path: `/product?category_id=${cat.id}`,
+          columns: groupedColumns,
+          type: 'series' // Mark as series type
+        };
+      } else {
+        // LOGIC MỚI: Phụ kiện & Linh kiện - Display child categories with products
+        const childColumnsWithProducts = groupChildCategoriesWithProducts(cat.id);
+        
+        return {
+          name: cat.name,
+          path: `/product?category_id=${cat.id}`,
+          columns: childColumnsWithProducts,
+          type: 'category' // Mark as category type
+        };
+      }
     });
 
     const finalMenus = [
@@ -227,7 +286,7 @@ const Header = () => {
     ];
     
     return finalMenus;
-  };
+  }, [categories, groupChildCategoriesWithProducts]);
 
   const menus = buildMenus();
 
@@ -235,6 +294,8 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.setItem("isLoggedIn", "false");
     localStorage.setItem("token", null);
+    // Clear cached category products on logout
+    clearCache();
     window.location.href = "/";
   };
 
@@ -500,7 +561,7 @@ const Header = () => {
             <li
               key={menuKey}
               className={`menu_itemss ${menu.columns && menu.columns.length > 0 ? "has-children" : ""}`}
-              onMouseEnter={() => handleMouseEnter(menuKey)}
+              onMouseEnter={() => handleMouseEnter(menuKey, menu)}
               onMouseLeave={handleMouseLeave}
             >
               <a href={menu.path} className="block">{menu.name}</a>
@@ -512,19 +573,31 @@ const Header = () => {
                         key={`${menuKey}-${columnKey}`}
                         className="dropdown_column"
                       >
-                        <h4>{column.name}</h4>
+                        <h4>
+                          {menu.type === 'category' ? (
+                            <a href={column.link} className="hover:text-blue-600">
+                              {column.name}
+                            </a>
+                          ) : (
+                            column.name
+                          )}
+                        </h4>
                         <ul className="sub_dropdown_list">
-                          {column.items.map((item, itemKey) => (
-                            <li key={`${menuKey}-${columnKey}-${itemKey}`}>
-                              <a
-                                href={item.path}
-                                onClick={handleLinkClick}
-                                className="block py-1 hover:text-blue-600"
-                              >
-                                {item.name}
-                              </a>
-                            </li>
-                          ))}
+                          {column.items && column.items.length > 0 ? (
+                            column.items.map((item, itemKey) => (
+                              <li key={`${menuKey}-${columnKey}-${itemKey}`}>
+                                <a
+                                  href={`/product-detail/${item.id}`}
+                                  onClick={handleLinkClick}
+                                  className="block py-1 hover:text-blue-600 text-sm"
+                                >
+                                  {item.name}
+                                </a>
+                              </li>
+                            ))
+                          ) : (
+                            <li className="text-gray-400 text-sm py-1">Chưa có sản phẩm</li>
+                          )}
                         </ul>
                       </div>
                     ))}
