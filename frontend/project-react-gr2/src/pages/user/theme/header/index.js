@@ -167,12 +167,9 @@ const Header = () => {
   };
 
 
-  // Group items theo series (12, 13, 14, 17, etc.)
-  // Ví dụ: "iPhone 12" -> "12", "iPhone 17 Pro" -> "17", "Samsung A12" -> "12"
   const groupItemsBySeries = (items) => {
     const groups = {};
     items.forEach(item => {
-      // Tìm số series trong tên (ví dụ: "12" từ "iPhone 12", "iPhone 12 Pro", "iPhone 17")
       const seriesMatch = item.name.match(/(\d+)/);
       const seriesKey = seriesMatch ? seriesMatch[1] : 'Other';
 
@@ -182,25 +179,22 @@ const Header = () => {
       groups[seriesKey].push(item);
     });
 
-    // Convert to array, sort by series number, giới hạn 5 groups
     const sortedGroups = Object.entries(groups)
       .sort(([a], [b]) => {
-        // Sort "Other" to end, numbers ascending
         if (a === 'Other') return 1;
         if (b === 'Other') return -1;
         return parseInt(a) - parseInt(b);
       })
-      .slice(0, 6); // Tối đa 5 cột
+      .slice(0, 6);
 
     const result = sortedGroups.map(([seriesName, items]) => ({
       name: seriesName === 'Other' ? 'Khác' : `iPhone ${seriesName} Series`,
-      items: items.sort((a, b) => a.name.localeCompare(b.name)).slice(0, 3) // Giới hạn 3 items mỗi cột
+      items: items.sort((a, b) => a.name.localeCompare(b.name)).slice(0, 3)
     }));
 
     return result;
   };
 
-  // Group child categories với products (cho phụ kiện, linh kiện)
   const groupChildCategoriesWithProducts = useCallback((parentCategoryId) => {
     const childCategories = categories.filter(cat => cat.parent_id === parentCategoryId);
     
@@ -212,10 +206,8 @@ const Header = () => {
     }));
   }, [categories, categoryProducts]);
 
-  // Build menus từ categories
   const buildMenus = useCallback(() => {
     
-    // Helper function để build nested structure
     const buildNestedCategories = (parentId = null) => {
       return categories
         .filter(cat => cat.parent_id === parentId)
@@ -228,9 +220,7 @@ const Header = () => {
     const nestedCategories = buildNestedCategories();
     
     const dynamicMenus = nestedCategories.map(cat => {
-      // Logic khác cho điện thoại (103) vs phụ kiện & linh kiện
       if (cat.id === 103) {
-        // LOGIC CŨ: Điện thoại - Group theo series
         const collectAllSubChildren = (children) => {
           let allItems = [];
           children.forEach(child => {
@@ -238,7 +228,7 @@ const Header = () => {
               child.children.forEach(subChild => {
                 allItems.push({
                   name: subChild.name,
-                  path: `/product?category_id=${subChild.id}&parent_id=${child.id}&grandparent_id=${cat.id}`,
+                  path: `/product?category_id=${subChild.id}&parent_id=${child.id}`,
                   group: child.name
                 });
               });
@@ -588,7 +578,7 @@ const Header = () => {
                             column.items.map((item, itemKey) => (
                               <li key={`${menuKey}-${columnKey}-${itemKey}`}>
                                 <a
-                                  href={`/product-detail/${item.id}`}
+                                  href={menu.type === 'series' ? item.path : `/product-detail/${item.id}`}
                                   onClick={handleLinkClick}
                                   className="block py-1 hover:text-blue-600 text-sm"
                                 >
