@@ -30,5 +30,6 @@ export const ROUTERS = {
     ACCOUNT_MANAGE_LIST: "/admin/account-list",
     ORDER_MANAGE_ADD: "/admin/order-add",
     ORDER_MANAGE_LIST: "/admin/order-list",
+    PROFILE: "/admin/profile",
   },
 };

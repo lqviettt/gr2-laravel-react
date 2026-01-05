@@ -1,6 +1,7 @@
-import React, { useEffect, useState, memo } from "react";
+import React, { useEffect, useState, memo, useCallback } from "react";
 import { api } from "../../../utils/apiClient";
 import { toast } from "react-toastify";
+import { useFetchData } from "../../../hooks/useFetchData";
 import CommonTable from "../../../components/CommonTable";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import SearchInput from "../../../components/SearchInput";
@@ -9,10 +10,8 @@ import { FaPlus, FaUsers, FaCheckCircle, FaTimesCircle, FaShieldAlt } from "reac
 
 const AccountList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [accounts, setAccounts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchFilters, setSearchFilters] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
   const [newAccount, setNewAccount] = useState({
     name: "",
     user_name: "",
@@ -20,6 +19,28 @@ const AccountList = () => {
     password: "",
     is_admin: false,
   });
+
+  const transformAccountData = useCallback((accounts) => {
+    return accounts.map(account => ({
+      id: account.id,
+      name: account.name || '',
+      user_name: account.user_name || '',
+      email: account.email || '',
+      is_admin: account.is_admin ? 'Admin' : 'Người dùng',
+      is_admin_value: account.is_admin,
+      created_at: new Date(account.created_at).toLocaleDateString('vi-VN'),
+    }));
+  }, []);
+
+  // Custom hook for data fetching with transformation
+  const { data: accounts, loading, error, pagination, refetch } = useFetchData(
+    '/admin/account',
+    searchFilters,
+    currentPage,
+    {
+      transformData: transformAccountData
+    }
+  );
 
   const [editingAccountId, setEditingAccountId] = useState(null);
   const [loadingEdit, setLoadingEdit] = useState(false);
@@ -29,8 +50,6 @@ const AccountList = () => {
     title: '',
     message: ''
   });
-  const [pagination, setPagination] = useState({});
-  const [currentPage, setCurrentPage] = useState(1);
 
   const fields = {
     name: 'name',
@@ -50,62 +69,33 @@ const AccountList = () => {
     actions: 'Tùy biến',
   };
 
-  const fetchAccounts = async (filters = {}, page = currentPage) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const queryParams = new URLSearchParams();
-      const effectiveFilters = { ...filters };
-      Object.entries(effectiveFilters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          queryParams.append(key, value);
-        }
-      });
-      queryParams.append('page', page);
-
-      const response = await api.get(`/admin/account${queryParams.toString() ? `?${queryParams.toString()}` : ''}`);
-
-      const accountsList = response.data.data.data || [];
-      const paginationData = response.data.data;
-      setPagination(paginationData);
-
-      const transformedAccounts = accountsList.map(account => ({
-        id: account.id,
-        name: account.name || '',
-        user_name: account.user_name || '',
-        email: account.email || '',
-        is_admin: account.is_admin ? 'Admin' : 'Người dùng',
-        is_admin_value: account.is_admin,
-        created_at: new Date(account.created_at).toLocaleDateString('vi-VN'),
-      }));
-
-      setAccounts(transformedAccounts);
-    } catch (error) {
-      console.error("Error fetching accounts:", error);
-      setError("Không thể tải danh sách tài khoản");
-      toast.error("Không thể tải danh sách tài khoản");
-    } finally {
-      setLoading(false);
-    }
+  const handleSearch = (filters) => {
+    setSearchFilters(filters);
+    setCurrentPage(1);
   };
-
-  useEffect(() => {
-    fetchAccounts(searchFilters, currentPage);
-  }, [searchFilters, currentPage]);
 
   const handleEditAccount = (accountId) => {
     if (loadingEdit) return;
 
     console.log('Editing accountId:', accountId);
+    // Tìm account trong mảng accounts hiện tại
     const accountToEdit = accounts.find((account) => account.id === accountId);
-    console.log('accountToEdit:', accountToEdit);
+    console.log('accountToEdit from list:', accountToEdit);
 
     if (accountToEdit) {
-      setLoadingEdit(true);
-      fetchAccountDetails(accountId);
+      // Sử dụng dữ liệu từ mảng accounts đã cập nhật
+      setNewAccount({
+        name: accountToEdit.name || "",
+        user_name: accountToEdit.user_name || "",
+        email: accountToEdit.email || "",
+        password: "",
+        is_admin: accountToEdit.is_admin_value !== undefined ? accountToEdit.is_admin_value : accountToEdit.is_admin,
+      });
+      setEditingAccountId(accountId);
+      setIsModalOpen(true);
     } else {
-      console.log('accountId not found in accounts');
+      // Nếu không tìm thấy trong mảng, fetch từ API
+      console.log('accountId not found in accounts, fetching from API');
       setLoadingEdit(true);
       fetchAccountDetails(accountId);
     }
@@ -161,7 +151,16 @@ const AccountList = () => {
         if (updateResponse?.data?.status === 200) {
           const successMessage = updateResponse?.data?.message || "Cập nhật tài khoản thành công!";
           toast.success(successMessage);
-          await fetchAccounts(searchFilters, currentPage);
+          await refetch(true);
+          setIsModalOpen(false);
+          setNewAccount({
+            name: "",
+            user_name: "",
+            email: "",
+            password: "",
+            is_admin: false,
+          });
+          setEditingAccountId(null);
         } else {
           const errorMessage = updateResponse?.data?.error || "Cập nhật tài khoản không thành công!";
           toast.error(errorMessage);
@@ -176,22 +175,21 @@ const AccountList = () => {
         if (createResponse?.data?.status === 201) {
           const successMessage = createResponse?.data?.message || "Thêm tài khoản thành công!";
           toast.success(successMessage);
-          await fetchAccounts(searchFilters, currentPage);
+          await refetch(true);
+          setIsModalOpen(false);
+          setNewAccount({
+            name: "",
+            user_name: "",
+            email: "",
+            password: "",
+            is_admin: false,
+          });
+          setEditingAccountId(null);
         } else {
           const errorMessage = createResponse?.data?.error || "Thêm tài khoản không thành công!";
           toast.error(errorMessage);
         }
       }
-
-      setIsModalOpen(false);
-      setNewAccount({
-        name: "",
-        user_name: "",
-        email: "",
-        password: "",
-        is_admin: false,
-      });
-      setEditingAccountId(null);
     } catch (error) {
       console.error("Error saving account:", error.response?.data || error.message);
       const resp = error.response?.data;
@@ -239,7 +237,7 @@ const AccountList = () => {
       if (deleteResponse?.data?.status === 200) {
         const successMessage = deleteResponse?.data?.message || "Xóa tài khoản thành công!";
         toast.success(successMessage);
-        await fetchAccounts(searchFilters, currentPage);
+        await refetch(true);
         setConfirmDialog({ isOpen: false, accountId: null, title: '', message: '' });
       } else {
         const errorMessage = deleteResponse?.data?.error || "Xóa tài khoản không thành công!";
@@ -335,11 +333,7 @@ const AccountList = () => {
                 ]
               },
             ]}
-            onSearch={(filters) => {
-              const updatedFilters = { ...filters };
-              setCurrentPage(1);
-              setSearchFilters(updatedFilters);
-            }}
+            onSearch={handleSearch}
             size="medium"
             useSearchButton={true}
             showClearButton={false}
@@ -355,7 +349,7 @@ const AccountList = () => {
                 <div className="mt-2 text-sm text-red-700">{error}</div>
                 <div className="mt-4">
                   <button
-                    onClick={() => fetchAccounts(searchFilters, currentPage)}
+                    onClick={() => refetch()}
                     className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded text-sm"
                   >
                     Thử lại

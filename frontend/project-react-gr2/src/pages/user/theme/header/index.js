@@ -29,18 +29,13 @@ const Header = () => {
   const { categoryProducts, fetchCategoryProducts, clearCache } = useCategoryProductsCache();
 
   const searchTrends = [
-    "iPhone 15",
-    "iPhone 14",
-    "iPhone 13",
-    "Samsung Galaxy",
-    "MacBook",
-    "iPad",
+    "iPhone 17 Pro Max",
+    "iPhone 17",
+    "iPhone 15 Pro",
+    "Tai nghe Bluetooth",
     "AirPods",
-    "Apple Watch"
+    "Tai nghe dây"
   ];
-
-  // Initialize category products from localStorage (via hook)
-  // Hook automatically loads from localStorage on mount
 
   // Fetch categories once
   useEffect(() => {
@@ -130,6 +125,9 @@ const Header = () => {
     if (query.trim()) {
       navigate(`/product-list?search=${encodeURIComponent(query)}`);
       setShowSearchDropdown(false);
+    } else {
+      // Toggle dropdown if no query
+      setShowSearchDropdown(!showSearchDropdown);
     }
   };
 
@@ -294,22 +292,25 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.setItem("isLoggedIn", "false");
     localStorage.setItem("token", null);
-    // Clear cached category products on logout
     clearCache();
-    window.location.href = "/";
+    window.location.href = "/login";
   };
 
   return (
     <header className="font-[sans-serif] min-h-[65px] tracking-wide relative z-50">
-      <div className="flex justify-between lg:justify-between items-center w-full bg-[#000000] text-white px-4 sm:px-8 lg:px-32 py-4">
+      <div className="flex justify-between lg:justify-between items-center w-full bg-[#000000] text-white px-4 sm:px-8 lg:pr-32 py-4">
         {/* Logo */}
-        <div className="h_top">
-          <Link to="/">
-            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">QuocViet</h1>
-          </Link>
-        </div>
+          <div className="w-48 lg:w-80">
+            <Link to="/">
+              <img
+                src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/logo-nobg.png`}
+                alt="QuocViet Logo"
+                className="w-full lg:h-32 object-contain"
+              />
+            </Link>
+          </div>
 
-        {/* Mobile Search - visible on mobile */}
+          {/* Mobile Search - visible on mobile */}
         <div className="lg:hidden flex-1 mx-2 relative search-container max-w-xs">
           <form onSubmit={handleSearchSubmit} className="flex rounded-full overflow-hidden border border-gray-300">
             <input
@@ -327,7 +328,7 @@ const Header = () => {
             </button>
           </form>
           {showSearchDropdown && (
-            <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded shadow-lg z-[60] max-h-60 overflow-y-auto mt-1">
+            <div className="absolute top-10 left-0 right-0 bg-white border border-gray-300 rounded shadow-lg z-[60] max-h-60 overflow-y-auto">
               {/* Trends Section */}
               <div className="p-2 border-b border-gray-100">
                 <h4 className="text-xs font-medium text-gray-700 mb-2">Xu hướng tìm kiếm</h4>
@@ -385,7 +386,7 @@ const Header = () => {
           {isMobileMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
         </button>
 
-        <div className="hidden lg:flex h_items items-center space-x-6 lg:space-x-11">
+        <div className="hidden lg:flex h_items items-center space-x-6 lg:space-x-14">
           <div className="flex flex-col">
             {/* Search Input */}
             <div className="menu_search relative search-container">
@@ -405,7 +406,7 @@ const Header = () => {
                 </button>
               </form>
               {showSearchDropdown && (
-                <div className="absolute top-full left-0 bg-white border border-gray-300 rounded-b shadow-lg z-[60] max-h-80 overflow-y-auto mt-1 min-w-[600px]">
+                <div className="absolute top-23 left-0 bg-white border border-gray-300 rounded-b shadow-lg z-[60] max-h-80 overflow-y-auto min-w-[600px]">
                   {/* Trends Section */}
                   <div className="p-4 border-b border-gray-100">
                     <h4 className="text-sm font-medium text-gray-700 mb-3">Xu hướng tìm kiếm</h4>

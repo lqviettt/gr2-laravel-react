@@ -1,4 +1,4 @@
-import React, { useEffect, useState, memo, useCallback } from "react";
+import React, { useState, memo, useCallback, useMemo } from "react";
 import { api } from "../../../utils/apiClient";
 import { toast } from "react-toastify";
 import CommonTable from "../../../components/CommonTable";
@@ -6,13 +6,11 @@ import Pagination from "../../../components/Pagination";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import SearchInput from "../../../components/SearchInput";
 import { FaShoppingCart, FaClock, FaTruck, FaCheckCircle } from "react-icons/fa";
+import useFetchData from "../../../hooks/useFetchData";
 
 const OrderList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [pagination, setPagination] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
 
   const [searchFilters, setSearchFilters] = useState({
@@ -23,7 +21,6 @@ const OrderList = () => {
     end_date: '',
   });
 
-  const [orders, setOrders] = useState([]);
   const [newOrder, setNewOrder] = useState({
     code: "",
     customer_name: "",
@@ -49,62 +46,42 @@ const OrderList = () => {
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
   };
-  const fetchOrders = useCallback(async (page = currentPage, filters = searchFilters) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const queryParams = new URLSearchParams();
-      queryParams.append('page', page);
-      if (filters.customer_name) queryParams.append('search', filters.customer_name);
-      if (filters.customer_phone) queryParams.append('phone', filters.customer_phone);
-      if (filters.status !== undefined && filters.status !== '') queryParams.append('status', filters.status);
-      if (filters.start_date) queryParams.append('start_date', filters.start_date);
-      if (filters.end_date) queryParams.append('end_date', filters.end_date);
-      const response = await api.get(`/order${queryParams.toString() ? `?${queryParams.toString()}` : ''}`);
-      console.log('Order data:', response.data);
-      let ordersData = [];
-      let paginationData = {};
-      if (response.data && typeof response.data === 'object' && 'data' in response.data && typeof response.data.data === 'object' && 'data' in response.data.data && Array.isArray(response.data.data.data)) {
-        // Paginated response
-        ordersData = response.data.data.data.map(order => ({
-          ...order,
-          product_names: order.order_item.map(item => item.product_name || 'N/A').join(', '),
-          variants: order.order_item.map(item => item.product_variant_name || 'N/A').join(', '),
-          combined_products: order.order_item.map(item => `${item.product_name || 'N/A'}(${item.product_variant_name || 'N/A'})`).join(', '),
-          quantities: order.order_item.map(item => item.quantity).join(', '),
-          created_at_formatted: formatDate(order.created_at),
-        }));
-        paginationData = { ...response.data.data };
-        delete paginationData.data;
-      } else if (Array.isArray(response.data)) {
-        ordersData = response.data;
-        paginationData = {};
-      } else {
-        ordersData = [];
-        paginationData = {};
-      }
-      setOrders(ordersData);
-      setPagination(paginationData);
-      console.log('Orders data set:', ordersData);
-      console.log('Pagination set:', paginationData);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-      setError("Không thể tải danh sách đơn hàng");
-      toast.error("Không thể tải danh sách đơn hàng");
-    } finally {
-      setLoading(false);
+
+  const transformOrdersData = useCallback((ordersData) => {
+    return ordersData.map(order => ({
+      ...order,
+      product_names: order.order_item.map(item => item.product_name || 'N/A').join(', '),
+      variants: order.order_item.map(item => item.product_variant_name || 'N/A').join(', '),
+      combined_products: order.order_item.map(item => `${item.product_name || 'N/A'}(${item.product_variant_name || 'N/A'})`).join(', '),
+      quantities: order.order_item.map(item => item.quantity).join(', '),
+      created_at_formatted: formatDate(order.created_at),
+    }));
+  }, []);
+
+  const filters = useMemo(() => ({
+    search: searchFilters.customer_name,
+    phone: searchFilters.customer_phone,
+    status: searchFilters.status || undefined,
+    start_date: searchFilters.start_date,
+    end_date: searchFilters.end_date,
+  }), [searchFilters]);
+
+  const { data: orders, loading, error, pagination, refetch } = useFetchData(
+    '/order',
+    filters,
+    currentPage,
+    {
+      transformData: transformOrdersData,
+      errorMessage: 'Không thể tải danh sách đơn hàng',
+      showErrorToast: true,
+      useSkipCache: false,
     }
-  }, [searchFilters, currentPage]);
+  );
 
   const handleSearch = (filters) => {
     setSearchFilters(filters);
     setCurrentPage(1);
-    fetchOrders(1, filters);
   };
-
-  useEffect(() => {
-    fetchOrders(currentPage);
-  }, [currentPage, fetchOrders]);
 
   const handleEditOrder = (orderId) => {
     const orderToEdit = orders.find((order) => order.id === orderId);
@@ -122,12 +99,13 @@ const OrderList = () => {
   const handleSaveOrder = async (e) => {
     e.preventDefault();
     try {
-      const addressParts = newOrder.shipping_address_detail.split(", ");
+      const addressParts = newOrder.shipping_address_detail.trim().split(", ");
       const orderToSave = {
         ...newOrder,
-        shipping_address: newOrder.shipping_address_detail,
         shipping_province: addressParts[0] || "",
         shipping_district: addressParts[1] || "",
+        shipping_ward: addressParts[2] || "",
+        shipping_address_detail: addressParts[3] || "",
         created_by: newOrder.created_by,
         order_item: newOrder.order_item.map((item) => ({
           ...item,
@@ -136,13 +114,14 @@ const OrderList = () => {
       };
 
       console.log("Saving order:", orderToSave);
-
       const response = await api.put(`/order/${editingOrderId}`, orderToSave);
 
-      console.log("Save response:", response.data);
-
-      await fetchOrders();
-
+      console.log("Order saved successfully:", response.data);
+      
+      toast.success("Order saved successfully!");
+      setIsModalOpen(false);
+      setEditingOrderId(null);
+      
       setSearchFilters({
         customer_name: '',
         customer_phone: '',
@@ -151,10 +130,8 @@ const OrderList = () => {
         end_date: '',
       });
       setCurrentPage(1);
-
-      setEditingOrderId(null);
-      toast.success("Order saved successfully!");
-      setIsModalOpen(false);
+      
+      await refetch(true);
     } catch (error) {
       console.error("Full error:", error);
       let message = "An unexpected error occurred. Please try again.";
@@ -190,11 +167,9 @@ const OrderList = () => {
     setConfirmAction(() => async () => {
       try {
         await api.delete(`/order/${orderId}`);
-        if (Array.isArray(orders)) {
-          setOrders(orders.filter((order) => order.id !== orderId));
-        }
         toast.success("Xóa đơn hàng thành công!");
         setIsConfirmOpen(false);
+        await refetch(true);
       } catch (error) {
         console.error("Error deleting order:", error);
         toast.error("Có lỗi xảy ra khi xóa đơn hàng");
@@ -274,7 +249,7 @@ const OrderList = () => {
                 <div className="mt-2 text-sm text-red-700">{error}</div>
                 <div className="mt-4">
                   <button
-                    onClick={fetchOrders}
+                    onClick={() => refetch(true)}
                     className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded text-sm"
                   >
                     Thử lại

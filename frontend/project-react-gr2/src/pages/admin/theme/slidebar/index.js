@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { FaUser, FaCog, FaSignOutAlt, FaChevronDown } from "react-icons/fa";
 
 const Slidebar = () => {
+  const navigate = useNavigate();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
@@ -15,9 +17,10 @@ const Slidebar = () => {
       try {
         setProfileLoading(true);
         setProfileError(null);
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/profile`, {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/profile`, {
           headers: {
-            'ngrok-skip-browser-warning': 'true'
+            'ngrok-skip-browser-warning': 'true',
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           }
         });
         setUserProfile(response.data);
@@ -43,14 +46,12 @@ const Slidebar = () => {
   };
 
   const handleProfileClick = () => {
-    // TODO: Navigate to profile page
-    console.log('Navigate to profile page');
+    navigate("/admin/profile");
     setIsProfileDropdownOpen(false);
   };
 
   const handleSettingsClick = () => {
-    // TODO: Navigate to settings page
-    console.log('Navigate to settings page');
+    navigate("/admin/profile");
     setIsProfileDropdownOpen(false);
   };
 
@@ -86,28 +87,28 @@ const Slidebar = () => {
       title: "Quản lý đơn hàng",
       items: [
         { title: "Danh sách đơn hàng", href: "/admin/order-list" },
-        { title: "Đơn hàng mới", href: "/admin/order-add" },
+        // { title: "Đơn hàng mới", href: "/admin/order-add" },
       ],
     },
     {
       title: "Quản lý sản phẩm",
       items: [
         { title: "Danh sách sản phẩm", href: "/admin/product-list" },
-        { title: "Thêm sản phẩm mới", href: "/admin/product-add" },
+        // { title: "Thêm sản phẩm mới", href: "/admin/product-add" },
       ],
     },
     {
       title: "Quản lý danh mục",
       items: [
         { title: "Danh sách danh mục", href: "/admin/category-list" },
-        { title: "Thêm danh mục mới", href: "/admin/category-add" },
+        // { title: "Thêm danh mục mới", href: "/admin/category-add" },
       ],
     },
     {
       title: "Quản lý tài khoản",
       items: [
         { title: "Danh sách tài khoản", href: "/admin/account-list" },
-        { title: "Thêm tài khoản mới", href: "/admin/account-add" },
+        // { title: "Thêm tài khoản mới", href: "/admin/account-add" },
       ],
     },
     {

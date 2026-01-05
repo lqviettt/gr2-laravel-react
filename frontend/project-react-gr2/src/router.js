@@ -5,11 +5,13 @@ import { ROUTERS } from "./utils/router";
 import MasterLayout from "./pages/user/theme/masterLayout";
 import AdminLayout from "./pages/admin/theme/adminLayout/index.js";
 import ProfilePage from "./pages/user/profilePage";
+import AdminProfile from "./pages/admin/profileAdmin/index.js";
 import ProductPage from "./pages/user/productPage";
 import ProductDetail from "./pages/user/productDetail";
 import ProductList from "./pages/user/productList/index.js";
 import Login from "./pages/user/loginPage/index.js";
 import Register from "./pages/user/registerPage/index.js";
+import ResetPassword from "./pages/user/resetpwPage/index.js";
 import CategoryManageAdd from "./pages/admin/categoryManage/categoryAdd.js";
 import CategoryManageList from "./pages/admin/categoryManage/categoryList.js";
 import Cart from "./pages/user/cartPage/index.js";
@@ -70,6 +72,11 @@ const renderUserRouter = () => {
       layout: MasterLayout,
     },
     {
+      path: ROUTERS.USER.RESETPASSWORD,
+      component: <ResetPassword />,
+      layout: MasterLayout,
+    },
+    {
       path: ROUTERS.USER.MY_ACCOUNT,
       component: <ProfilePage />,
       layout: MasterLayout,
@@ -115,6 +122,12 @@ const renderUserRouter = () => {
     {
       path: ROUTERS.ADMIN.DASHBOARD,
       component: <AdminDashboard />,
+      layout: AdminLayout,
+      protected: true,
+    },
+    {
+      path: ROUTERS.ADMIN.PROFILE,
+      component: <AdminProfile />,
       layout: AdminLayout,
       protected: true,
     },

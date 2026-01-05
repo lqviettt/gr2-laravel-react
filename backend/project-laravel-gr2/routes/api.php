@@ -26,12 +26,14 @@ Route::group([
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
+
 Route::group([
     'middleware' => 'auth:api'
 ], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
+    Route::put('/profile', [AuthController::class, 'updateProfile']);
 });
 
 Route::post('/upload/image', [UploadController::class, 'uploadImage']);

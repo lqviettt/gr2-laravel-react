@@ -1,6 +1,7 @@
-import React, { useState, useEffect, memo } from "react";
+import React, { useState, memo } from "react";
 import { api } from "../../../utils/apiClient";
 import { toast } from "react-toastify";
+import { useFetchData } from "../../../hooks/useFetchData";
 import CommonTable from "../../../components/CommonTable";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
@@ -8,56 +9,15 @@ import SearchInput from "../../../components/SearchInput";
 import Pagination from "../../../components/Pagination";
 
 const CategoryManageList = () => {
-  const [categories, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchFilters, setSearchFilters] = useState({});
-  const [pagination, setPagination] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    fetchCategories(searchFilters, currentPage);
-  }, [searchFilters, currentPage]);
-
-  const fetchCategories = async (filters = {}, page = currentPage) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const queryParams = new URLSearchParams();
-      const effectiveFilters = { ...filters };
-      Object.entries(effectiveFilters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          queryParams.append(key, value);
-        }
-      });
-      queryParams.append('page', page);
-
-      const response = await api.get(`/category${queryParams.toString() ? `?${queryParams.toString()}` : ''}`);
-
-      let categoriesData = [];
-      if (Array.isArray(response.data.data)) {
-        categoriesData = response.data.data;
-        setPagination({});
-      } else if (Array.isArray(response.data.data?.data)) {
-        categoriesData = response.data.data.data;
-        setPagination(response.data.data);
-      } else if (Array.isArray(response.data)) {
-        categoriesData = response.data;
-        setPagination({});
-      }
-
-      console.log('Final categories data:', categoriesData);
-      setCategories(categoriesData);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      setError("Không thể tải danh sách danh mục");
-      toast.error("Không thể tải danh sách danh mục");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: categories, loading, error, pagination, refetch } = useFetchData(
+    '/category',
+    searchFilters,
+    currentPage
+  );
 
   const [newCategory, setNewCategory] = useState({
     name: "",
@@ -93,7 +53,6 @@ const CategoryManageList = () => {
       return;
     }
     
-    // Prepare data to send - convert empty string parent_id to null
     const categoryData = {
       name: newCategory.name,
       parent_id: newCategory.parent_id ? parseInt(newCategory.parent_id) : null,
@@ -120,8 +79,7 @@ const CategoryManageList = () => {
         }
       }
 
-      await fetchCategories();
-
+      await refetch(true);
       setIsModalOpen(false);
       setNewCategory({ name: "", parent_id: null, status: "1" });
       setEditingCategoryId(null);
@@ -168,13 +126,10 @@ const CategoryManageList = () => {
   const handleConfirmDelete = async () => {
     try {
       await api.delete(`/category/${confirmDialog.categoryId}`);
-      if (Array.isArray(categories)) {
-        setCategories(
-          categories.filter((category) => category.id !== confirmDialog.categoryId)
-        );
-      }
       toast.success("Xóa danh mục thành công!");
       setConfirmDialog({ isOpen: false, categoryId: null, title: '', message: '' });
+  
+      await refetch(true);
     } catch (error) {
       console.error("Error deleting category:", error.response?.data || error.message);
       const resp = error.response?.data;
@@ -211,7 +166,6 @@ const CategoryManageList = () => {
     setNewCategory({ ...newCategory, [name]: value });
   };
 
-  // Helper function to get parent category name by ID
   const getParentCategoryName = (parentId) => {
     if (!parentId) return '-';
     const parentCategory = categories.find(cat => cat.id === parentId);
@@ -297,7 +251,7 @@ const CategoryManageList = () => {
                 <div className="mt-2 text-sm text-red-700">{error}</div>
                 <div className="mt-4">
                   <button
-                    onClick={fetchCategories}
+                    onClick={refetch}
                     className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded text-sm"
                   >
                     Thử lại
@@ -436,8 +390,6 @@ const CategoryManageList = () => {
                         <option value="">-- Không chọn danh mục cha --</option>
                         {categories
                           .filter(cat => {
-                            // Chỉ hiển thị các category không có parent (cha)
-                            // và không phải là category hiện tại khi edit
                             return !cat.parent_id && cat.id !== editingCategoryId;
                           })
                           .map(cat => (

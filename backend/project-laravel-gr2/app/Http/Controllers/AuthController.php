@@ -207,4 +207,42 @@ class AuthController extends Controller
             return response()->json(['error' => 'Mật khẩu cũ không đúng, vui lòng nhập lại.'], 400);
         }
     }
+
+    /**
+     * updateProfile
+     *
+     * @param  mixed $request
+     * @return JsonResponse
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        try {
+            $user = auth()->user();
+            
+            $request->validate([
+                'name' => 'sometimes|required|string|max:255',
+                'email' => 'sometimes|required|email|max:255|unique:users,email,' . $user->id,
+                'user_name' => 'sometimes|required|string|max:255|unique:users,user_name,' . $user->id,
+            ]);
+
+            $user->update($request->only(['name', 'email', 'user_name']));
+
+            return response()->json([
+                'message' => 'Cập nhật thông tin thành công',
+                'data' => $user
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = [];
+            foreach ($e->errors() as $field => $messages) {
+                $errors = array_merge($errors, $messages);
+            }
+            return response()->json([
+                'message' => implode(', ', $errors)
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Có lỗi khi cập nhật thông tin: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

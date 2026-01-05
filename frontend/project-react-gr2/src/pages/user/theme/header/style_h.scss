@@ -1,17 +1,7 @@
-.h_logo {
-    padding: 45px 0;
-    text-align: center;
-    margin: 5px 0 0 200px;
-
-    a {
-        text-decoration: none;
-        color: black;
-    }
-}
-
 .h_items {
     padding: 13px 0;
     margin-top: 5px;
+    margin-left: -150px;
     display: flex;
 
     a {
@@ -110,7 +100,7 @@
 }
 
 .h_account {
-    margin-left: 10px;
+    margin-left: 0;
     display: flex;
     padding: 33px 0;
 

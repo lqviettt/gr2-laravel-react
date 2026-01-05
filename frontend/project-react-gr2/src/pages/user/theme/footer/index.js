@@ -2,7 +2,7 @@ import { memo } from "react";
 
 const Footer = () => {
   return (
-    <footer className="bg-black px-4 py-4 font-sans">
+    <footer className="bg-black px-8 py-8 font-sans">
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <div className="space-y-2">
           <h6 className="text-lg md:text-xl text-white font-medium">CHÍNH SÁCH</h6>

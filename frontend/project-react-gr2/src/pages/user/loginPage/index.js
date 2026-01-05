@@ -13,7 +13,7 @@ const Login = () => {
   };
 
   const handleForgotPassword = () => {
-    navigate("/forgotpassword");
+    navigate("/reset-password");
   };
 
   const [user_name, setUsername] = useState("");
@@ -33,10 +33,17 @@ const Login = () => {
       localStorage.setItem("token", response.data.access_token);
       localStorage.setItem("isLoggedIn", "true");
 
+      const userResponse = await axiosClient.get("/profile", {
+        headers: {
+          Authorization: `Bearer ${response.data.access_token}`,
+        },
+      });
+
+      console.log("User profile:", userResponse.data);
       toast.success("Đăng nhập thành công!");
 
       setTimeout(() => {
-        if (user_name === "admin") {
+        if (userResponse.data && userResponse.data.is_admin) {
           navigate("/admin");
         } else {
           navigate("/");
@@ -44,14 +51,13 @@ const Login = () => {
       }, 1000);
 
     } catch (err) {
-      setError("Thông tin đăng nhập không hợp lệ.");
+      toast.error("Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleSocialLogin = (provider) => {
-    // Handle social login logic here
     console.log(`Login with ${provider}`);
     toast.info(`${provider} login chưa được triển khai`);
   };
