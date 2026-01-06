@@ -37,6 +37,7 @@ Route::delete('/product-variant/{pvariantId}', [ProductVariantController::class,
 Route::resource('/product', ProductController::class);
 Route::resource('/category', CategoryController::class);
 Route::get('/categories-with-children', [CategoryController::class, 'getCategoriesWithChildren']);
+Route::get('/categories-child', [CategoryController::class, 'getChildCategories']);
 Route::resource('/variant', VariantOptionController::class);
 Route::get('/product-variant', [ProductVariantController::class, 'index']);
 

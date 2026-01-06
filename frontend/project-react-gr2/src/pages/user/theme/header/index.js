@@ -14,6 +14,7 @@ import { ROUTERS } from "../../../../utils/router";
 import { useCart } from "../../../../component/CartContext";
 import { api } from "../../../../utils/apiClient";
 import { useDebounce } from "../../../../utils/useDebounce";
+import { toast } from "react-toastify";
 import { useCategoryProductsCache } from "../../../../utils/useCategoryProductsCache";
 
 const Header = () => {
@@ -41,7 +42,7 @@ const Header = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await api.get('/category');
+        const response = await api.get('/category?status=1');
         const data = response.data;
         if (data) {
           setCategories(data.data?.data || []);
@@ -54,9 +55,7 @@ const Header = () => {
     fetchCategories();
   }, []);
 
-  // Lazy-load products for category on hover - fetch only once per category
   const handleCategoryHover = useCallback(async (categoryId) => {
-    // Delegate to the hook's fetch function
     await fetchCategoryProducts(categoryId);
   }, [fetchCategoryProducts]);
 
@@ -189,7 +188,7 @@ const Header = () => {
 
     const result = sortedGroups.map(([seriesName, items]) => ({
       name: seriesName === 'Other' ? 'Khác' : `iPhone ${seriesName} Series`,
-      items: items.sort((a, b) => a.name.localeCompare(b.name)).slice(0, 3)
+      items: items.sort((a, b) => a.name.localeCompare(b.name))
     }));
 
     return result;
@@ -284,6 +283,10 @@ const Header = () => {
     localStorage.setItem("token", null);
     clearCache();
     window.location.href = "/login";
+  };
+
+  const handleSocial = (provider) => {
+    toast.info(`Tính năng ${provider} chưa được triển khai`);
   };
 
   return (
@@ -461,10 +464,12 @@ const Header = () => {
               <LuMapPin size={25} />
             </div>
             <div className="content">
-              <a title="Hệ thống cửa hàng" href="/">
-                Hệ thống <br />
-                <span>cửa hàng</span>
-              </a>
+              <button onClick={() => {handleSocial('Cửa hàng')}}>
+                <a title="Hệ thống cửa hàng">
+                  Hệ thống <br />
+                  <span>cửa hàng</span>
+                </a>
+              </button>
             </div>
           </div>
           <div className="menu_hotline flex items-center space-x-2 pt-5">
@@ -566,7 +571,7 @@ const Header = () => {
                       >
                         <h4>
                           {menu.type === 'category' ? (
-                            <a href={column.link} className="hover:text-blue-600">
+                            <a href={column.link} className="text-blue-600">
                               {column.name}
                             </a>
                           ) : (

@@ -11,14 +11,12 @@ class BaseModel extends Model
 
     public function scopeSearchByStatus($query, $status)
     {
-        if (!is_null($status)) {
-            if ($status === 'all') {
-            } else {
-                $query->where('status', $status);
-            }
-        } else {
-            $query->where('status', 1);
-        }
+        return $query->when(
+            !is_null($status),
+            fn($query) => $status === 'all'
+                ? $query->whereIn('status', [0, 1])
+                : $query->where('status', $status)
+        );
     }
 
     public function scopeSearchByCreated($query, $created_by)

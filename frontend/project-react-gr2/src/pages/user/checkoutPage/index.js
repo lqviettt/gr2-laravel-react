@@ -787,25 +787,62 @@ const CheckoutPage = () => {
 
       {/* Success Modal */}
       {orderSuccess && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-          <div className="bg-white p-6 lg:p-8 rounded-lg shadow-xl text-center max-w-sm lg:max-w-md w-full mx-4">
-            <img
-              src={ordersuccess}
-              alt="Order Success"
-              className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-4"
-            />
-            <h2 className="text-lg lg:text-xl font-bold mb-2 text-gray-800">
-              Đặt hàng thành công!
-            </h2>
-            <p className="text-gray-600 mb-6 text-sm lg:text-base">
-              Mã đơn hàng: <span className="font-semibold text-blue-600">{order.code}</span>
-            </p>
-            <button
-              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-md font-medium transition-colors w-full sm:w-auto"
-              onClick={() => handleConfirm()}
-            >
-              Xác nhận
-            </button>
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-auto overflow-hidden">
+            {/* Success Icon Background */}
+            <div className="bg-gradient-to-br from-green-400 to-green-500 px-6 py-8 flex justify-center">
+              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center animate-bounce">
+                <GiCheckMark className="text-green-500 w-10 h-10" />
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 lg:p-8 text-center">
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
+                Đặt hàng thành công!
+              </h2>
+              <p className="text-gray-600 text-sm lg:text-base mb-6">
+                Cảm ơn bạn đã lựa chọn chúng tôi. Đơn hàng của bạn đã được tiếp nhận.
+              </p>
+
+              {/* Order Info Box */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <p className="text-gray-600 text-sm mb-1">Mã đơn hàng</p>
+                <p className="text-xl lg:text-2xl font-bold text-blue-600">
+                  {order.code}
+                </p>
+              </div>
+
+              {/* Info Items */}
+              <div className="space-y-3 mb-6 text-left">
+                <div className="flex items-start gap-3">
+                  <GiCheckMark className="text-green-500 w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700 text-sm">
+                    Chúng tôi sẽ xác nhận đơn hàng trong 24 giờ
+                  </span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <GiCheckMark className="text-green-500 w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700 text-sm">
+                    Bạn sẽ nhận được email xác nhận tại địa chỉ email đã cung cấp
+                  </span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <GiCheckMark className="text-green-500 w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700 text-sm">
+                    Lưu lại mã đơn hàng và theo dõi đơn hàng của bạn trong "Tra cứu đơn hàng"
+                  </span>
+                </div>
+              </div>
+
+              {/* Button */}
+              <button
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-semibold transition-colors shadow-md hover:shadow-lg"
+                onClick={() => handleConfirm()}
+              >
+                Về trang chủ
+              </button>
+            </div>
           </div>
         </div>
       )}

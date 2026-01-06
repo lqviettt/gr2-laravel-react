@@ -37,7 +37,7 @@ class ProductController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->input('perPage', 2);
+        $perPage = $request->input('perPage', 100);
         $query = $this->productRepository
             ->builderQuery()
             ->searchByNameCode($request->search)
@@ -93,13 +93,20 @@ class ProductController extends Controller
             }
 
             // Create product variant
-            $this->productVariantRepository->createProductVariant([
+            $variantData = [
                 'variant_option_id' => $variantOption->id,
                 'value' => $validateData['color'], // Use color as value
                 'quantity' => $validateData['quantity'] ?? 0,
                 'price' => $validateData['price'] ?? 0,
                 'image' => null,
-            ], $product->id);
+            ];
+
+            // Handle image for variant if provided
+            if (isset($validateData['image']) && is_string($validateData['image'])) {
+                $variantData['image'] = $validateData['image']; // Image already processed above
+            }
+
+            $this->productVariantRepository->createProductVariant($variantData, $product->id);
         }
 
         return $this->created($product);
@@ -145,6 +152,7 @@ class ProductController extends Controller
 
         // Extract color before updating product (don't pass to product update)
         $color = $validateData['color'] ?? null;
+        $image = $validateData['image'] ?? null;
         unset($validateData['color']);
 
         $product = $this->productRepository->update($product, $validateData);
@@ -176,7 +184,7 @@ class ProductController extends Controller
                     'value' => $color,
                     'quantity' => $validateData['quantity'] ?? $existingVariant->quantity,
                     'price' => $validateData['price'] ?? $existingVariant->price,
-                    'image' => $existingVariant->image,
+                    'image' => $image !== null ? $image : $existingVariant->image,
                 ]);
             } else {
                 // Create new variant
@@ -185,7 +193,7 @@ class ProductController extends Controller
                     'value' => $color,
                     'quantity' => $validateData['quantity'] ?? 0,
                     'price' => $validateData['price'] ?? 0,
-                    'image' => null,
+                    'image' => $image,
                 ], $product->id);
             }
         }

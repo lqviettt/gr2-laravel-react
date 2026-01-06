@@ -216,7 +216,7 @@ const SearchInput = ({
           {useSearchButton && (
             <button
               onClick={handleSearchClick}
-              className={`${currentSize.button} bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md px-3 py-2 sm:px-4 text-sm font-medium w-full sm:w-auto`}
+              className={`${currentSize.button} bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md px-3 py-2 mt-5 sm:px-4 text-sm font-medium w-full sm:w-auto`}
               title="Tìm kiếm"
             >
               <FaSearch className="h-4 w-4 mr-2 inline" />

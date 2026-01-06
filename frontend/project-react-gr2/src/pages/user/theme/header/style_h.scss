@@ -217,8 +217,7 @@
 
     .dropdown_columns {
         display: flex;
-        gap: 10px;
-        max-width: 1200px; // Giới hạn width để không quá rộng
+        max-width: 1800px; // Giới hạn width để không quá rộng
         
         @media (max-width: 1024px) {
             flex-wrap: wrap;
@@ -226,7 +225,7 @@
     }
 
     .dropdown_column {
-        min-width: 200px;
+        min-width: 270px;
     }
 
     .dropdown_column h4 {
@@ -234,6 +233,15 @@
         font-size: 20px;
         font-weight: 700;
         color: #007bff;
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+
+            &:hover {
+                color: #0056b3;
+            }
+        }
     }
 
     .sub_dropdown_list {
@@ -248,11 +256,6 @@
             a {
                 font-size: 16px;
             }
-        }
-        
-        // Giới hạn tối đa 3 items mỗi cột (4 hàng: 1 header + 3 items)
-        li:nth-child(n+4) {
-            display: none;
         }
     }
 

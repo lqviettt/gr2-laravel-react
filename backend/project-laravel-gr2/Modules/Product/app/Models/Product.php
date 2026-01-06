@@ -86,7 +86,6 @@ class Product extends BaseModel
             !is_null($categoryId),
             fn($query) => $query->where(function ($query) use ($categoryId) {
                 if (is_string($categoryId) && str_contains($categoryId, ',')) {
-                    // Handle comma-separated string like "1,2,3"
                     $categoryIds = array_map('intval', explode(',', $categoryId));
                     $query->whereIn('category_id', $categoryIds);
                 } elseif (is_array($categoryId)) {

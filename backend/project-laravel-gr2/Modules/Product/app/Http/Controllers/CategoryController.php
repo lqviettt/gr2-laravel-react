@@ -106,4 +106,17 @@ class CategoryController extends Controller
 
         return $this->sendSuccess($categories);
     }
+
+    /**
+     * getChildCategories
+     * Lấy những category là con (parent_id != null)
+     *
+     * @return JsonResponse
+     */
+    public function getChildCategories(): JsonResponse
+    {
+        $categories = $this->categoryRepository->builderQuery()->whereNotNull('parent_id')->get();
+
+        return $this->sendSuccess($categories);
+    }
 }

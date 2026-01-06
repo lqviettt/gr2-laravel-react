@@ -30,26 +30,22 @@ const OrderHistoryPage = () => {
       const response = await fetch(url);
       const responseData = await response.json();
       
-      // Xử lý dữ liệu từ API - API trả về { data: { data: [...], current_page, ... }, status, message }
       let ordersData = [];
       if (responseData && responseData.data) {
         const paginatedData = responseData.data;
-        // Nếu data.data là array (pagination)
         if (paginatedData.data && Array.isArray(paginatedData.data)) {
           ordersData = paginatedData.data;
         } 
-        // Nếu data là array trực tiếp
         else if (Array.isArray(paginatedData)) {
           ordersData = paginatedData;
         }
       }
       
-      // Lọc ra các order hợp lệ (có status) và transform dữ liệu
       const validOrders = ordersData
         .filter(order => order && order.status)
         .map(order => ({
           ...order,
-          items: order.order_item || [] // Rename order_item thành items để match với code UI
+          items: order.order_item || []
         }));
       
       setOrders(validOrders);
@@ -168,7 +164,7 @@ const OrderHistoryPage = () => {
                               Đơn hàng #{order.code}
                             </h3>
                             <p className="text-sm text-gray-600">
-                              {new Date(order.created_at).toLocaleDateString("vi-VN")}
+                              {new Date(order.created_at).toLocaleString("vi-VN")}
                             </p>
                           </div>
                         </div>
