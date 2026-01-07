@@ -562,7 +562,7 @@ const CheckoutPage = () => {
                     <div className="flex flex-col sm:flex-row gap-3 mt-6">
                       <button
                         type="button"
-                        onClick={() => window.history.back()}
+                        onClick={() => window.location.href = '/cart'}
                         disabled={isSubmitting}
                         className="flex-1 py-3 px-4 text-sm lg:text-base font-medium bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-md transition-colors shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                       >

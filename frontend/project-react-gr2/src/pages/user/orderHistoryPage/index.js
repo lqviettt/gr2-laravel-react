@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaBox, FaTruck, FaCheckCircle, FaTimesCircle, FaEye, FaSearch } from "react-icons/fa";
 import Section from "../../../component/user/Section";
 import { formatCurrency } from "../../../utils/common";
 import { StatusBadge, Button, NoData } from "../../../components";
 
 const OrderHistoryPage = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -200,7 +202,7 @@ const OrderHistoryPage = () => {
                                 <p><span className="font-medium">Số điện thoại:</span> {order.customer_phone}</p>
                                 <p><span className="font-medium">Email:</span> {order.customer_email}</p>
                                 <p><span className="font-medium">Địa chỉ:</span> {order.shipping_address}</p>
-                                <p><span className="font-medium">Thanh toán:</span> {order.payment_method === "COD" ? "Thanh toán khi nhận hàng" : "Đã thanh toán online"}</p>
+                                <p><span className="font-medium">Thanh toán:</span> {order.payment_method === "COD" ? "Thanh toán khi nhận hàng" : (order.payment_status == "paid" ? "Đã thanh toán online" : "Chưa thanh toán")}</p>
                               </div>
                             </div>
 

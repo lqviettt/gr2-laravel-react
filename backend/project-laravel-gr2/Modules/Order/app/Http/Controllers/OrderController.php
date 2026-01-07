@@ -8,6 +8,7 @@ use App\Http\Requests\OrderRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Jobs\SendOrderEmailJob;
+use App\Services\VNPayService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +23,10 @@ class OrderController extends Controller
      * @param  OrderRepositoryInterface $orderRepository
      * @return void
      */
-    public function __construct(protected OrderRepositoryInterface $orderRepository) {}
+    public function __construct(
+        protected OrderRepositoryInterface $orderRepository,
+        protected VNPayService $vnpayService
+        ) {}
 
     /**
      * index
@@ -81,8 +85,8 @@ class OrderController extends Controller
         if ($result->payment_method == 'COD' || $result->payment_method == null) {
             return $this->created($result);
         } else {
-            $config = $this->fetchVNPay();
-            $vnpUrl = $this->generateUrlPayment(
+            $config = $this->vnpayService->fetchVNPay();
+            $vnpUrl = $this->vnpayService->generateUrlPayment(
                 $result->payment_method,
                 $result,
                 $config
@@ -91,84 +95,6 @@ class OrderController extends Controller
 
             return $this->created($result);
         }
-    }
-
-    //Doan nay tam thoi de day, sau nay se chuyen vao service
-    private function fetchVNPay(): array
-    {
-        return [
-            'return_url' => config('payment-method.vnpay.return_url'),
-            'refund_url' => config('payment-method.vnpay.refund_url'),
-            'refund_email' => config('payment-method.vnpay.refund_email'),
-            'tmn_code' => config('payment-method.vnpay.tmn_code'),
-            'url' => config('payment-method.vnpay.url'),
-            'secret_key' => config('payment-method.vnpay.secret_key'),
-        ];
-    }
-
-    //Doan nay tam thoi de day, sau nay se chuyen vao service
-    private function generateUrlPayment(string $vnpBankCode, Order $order, array $config)
-    {
-        $vnpHashSecret = $config['secret_key'];
-        $vnpUrl = $config['url'];
-        $vnpIpAddr = request()->ip();
-        $vnpCreateDate = Carbon::now('Asia/Ho_Chi_Minh')->format('YmdHis');
-        $vnpExpireDate = Carbon::now('Asia/Ho_Chi_Minh')->addMinutes(15)->format('YmdHis');
-        $totalPayment = $order->total_price;
-        $txnRef = $order->code;
-
-        $inputData = [
-            "vnp_Version" => "2.1.0",
-            "vnp_TmnCode" => $config['tmn_code'],
-            "vnp_Amount" => $totalPayment * 100,
-            "vnp_Command" => "pay",
-            "vnp_CreateDate" => $vnpCreateDate,
-            "vnp_ExpireDate" => $vnpExpireDate,
-            "vnp_CurrCode" => "VND",
-            "vnp_IpAddr" => $vnpIpAddr,
-            "vnp_Locale" => "vn",
-            "vnp_OrderInfo" => "Thanh toan GD: " . $txnRef,
-            "vnp_OrderType" => "other",
-            "vnp_ReturnUrl" => $config['return_url'],
-            "vnp_TxnRef" => $txnRef,
-        ];
-
-        $filteredData = array_filter(
-            $inputData,
-            function ($key) {
-                return !in_array($key, ['vnp_Version', 'vnp_TmnCode', 'vnp_ReturnUrl', 'vnp_TxnRef']);
-            },
-            ARRAY_FILTER_USE_KEY
-        );
-
-        if (!empty($vnpBankCode)) {
-            $inputData['vnp_BankCode'] = $vnpBankCode;
-        }
-
-        ksort($inputData);
-        $query = "";
-        $index = 0;
-        $hashData = "";
-        foreach ($inputData as $key => $value) {
-            if ($index == 1) {
-                $hashData .= '&' . urlencode($key) . "=" . urlencode($value);
-            } else {
-                $hashData .= urlencode($key) . "=" . urlencode($value);
-                $index = 1;
-            }
-            $query .= urlencode($key) . "=" . urlencode($value) . '&';
-        }
-
-        $vnpUrl = $vnpUrl . "?" . $query;
-        if (isset($vnpHashSecret)) {
-            $vnpSecureHash = hash_hmac('sha512', $hashData, $vnpHashSecret);
-            $vnpUrl .= 'vnp_SecureHash=' . $vnpSecureHash;
-            return array_merge(
-                ['payment_url' => $vnpUrl],
-                $filteredData
-            );
-        }
-        return false;
     }
 
     /**
@@ -181,8 +107,10 @@ class OrderController extends Controller
     {
         // $this->authorize('view', $order);
         $order = $this->orderRepository->find($order);
+        $order->load('orderItem.product', 'orderItem.product_variant.product');
+        $formattedOrder = (new FormatData())->formatData(collect([$order]))->first();
 
-        return $this->sendSuccess($order);
+        return $this->sendSuccess($formattedOrder);
     }
 
     /**
@@ -229,35 +157,5 @@ class OrderController extends Controller
         $order->delete($order);
 
         return $this->deteled();
-    }
-
-    /**
-     * returnPay
-     *
-     * @param  mixed $request
-     * @return void
-     */
-    public function returnPay(Request $request)
-    {
-        $vnp_HashSecret = config('app.vnp_HashSecret');
-        $vnp_SecureHash = $request->input('vnp_SecureHash');
-        $inputData = $request->except('vnp_SecureHash');
-
-        ksort($inputData);
-        $hashData = '';
-        foreach ($inputData as $key => $value) {
-            $hashData .= urlencode($key) . "=" . urlencode($value) . "&";
-        }
-
-        $hashData = rtrim($hashData, "&");
-        $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
-        $isSignatureValid = $secureHash === $vnp_SecureHash;
-        $isSuccess = $request->input('vnp_ResponseCode') === '00';
-
-        return view('payments.return', [
-            'data' => $request->all(),
-            'isSignatureValid' => $isSignatureValid,
-            'isSuccess' => $isSuccess,
-        ]);
     }
 }

@@ -15,3 +15,4 @@ use Modules\Payment\Http\Controllers\PaymentController;
 */
 
 Route::post('/vnpay-payment', [PaymentController::class, 'create']);
+Route::post('/update-data-payment', [PaymentController::class, 'updateDataPayment']);

@@ -17,5 +17,5 @@ use Modules\Payment\Http\Controllers\PaymentController;
 // Route::group([], function () {
 //     Route::resource('payment', PaymentController::class)->names('payment');
 // });
-
-Route::get('/return-vnpay', [PaymentController::class, 'returnPay']);
+Route::get('/vnpay/ipn', [PaymentController::class, 'returnIPN']);
+Route::get('/vnpay/return', [PaymentController::class, 'returnUrl']);

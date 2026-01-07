@@ -36,6 +36,7 @@ class FormatData
                 'shipping_fee' => $order->shipping_fee ?? null,
                 'total_price' => $order->total_price ?? null,
                 'payment_method' => $order->payment_method ?? null,
+                'payment_status' => $order->payment_status ?? null,
                 'created_at' => $order->created_at->format('Y-m-d H:i:s') ?? null,
                 'order_item' => $order->orderItem->map(function ($item) {
                     $productName = $item->product?->name;
@@ -54,6 +55,7 @@ class FormatData
                         'product_variant_image' => $item->product_variant ? $item->product_variant?->image : $item->product?->image ?? null,
                         'quantity' => $item->quantity ?? null,
                         'price' => $item->price ?? null,
+                        'product_variant_price' => $item->product_variant?->price ?? null,
                     ];
                 }) ?? collect(),
             ];

@@ -6,6 +6,7 @@ use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Modules\Payment\Models\Payment;
 use Modules\Product\Models\Product;
 use Modules\Product\Models\ProductVariant;
 
@@ -30,6 +31,7 @@ class Order extends BaseModel
         'shipping_fee',
         'total_price',
         'payment_method',
+        'payment_status',
     ];
 
     protected $appends = ['fullname'];
@@ -74,6 +76,16 @@ class Order extends BaseModel
     public function logs()
     {
         return $this->hasMany(OrderHistory::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'order_id');
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class, 'order_id');
     }
 
     public function scopeSearchByNameCode($query, $search)

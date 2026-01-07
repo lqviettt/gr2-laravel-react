@@ -28,6 +28,7 @@ import VerifyAccount from "./pages/user/registerPage/verify.js";
 import AdminDashboard from "./pages/admin/dashboard/index.js";
 import UploadDemo from "./pages/UploadDemo";
 import OrderHistoryPage from "./pages/user/orderHistoryPage/index.js";
+import OrderDetailPaymentPage from "./pages/user/orderDetailPaymentPage/index.js";
 
 const renderUserRouter = () => {
   const userRouters = [
@@ -100,6 +101,11 @@ const renderUserRouter = () => {
     {
       path: ROUTERS.USER.ORDER_HISTORY,
       component: <OrderHistoryPage />,
+      layout: MasterLayout,
+    },
+    {
+      path: ROUTERS.USER.ORDER_DETAIL_PAYMENT,
+      component: <OrderDetailPaymentPage />,
       layout: MasterLayout,
     },
     {

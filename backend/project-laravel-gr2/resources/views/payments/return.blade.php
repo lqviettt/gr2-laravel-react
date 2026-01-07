@@ -178,15 +178,6 @@
             <p class="text-xs">&copy; {{ date('Y') }} VNPAY. Tất cả quyền được bảo lưu.</p>
         </footer>
     </div>
-
-    <script>
-        // Auto refresh after 5 seconds for success transactions
-        @if ($isSignatureValid && $isSuccess)
-        setTimeout(function() {
-            window.location.href = '{{ url("/admin/order-list") }}';
-        }, 5000);
-        @endif
-    </script>
 </body>
 
 </html>
