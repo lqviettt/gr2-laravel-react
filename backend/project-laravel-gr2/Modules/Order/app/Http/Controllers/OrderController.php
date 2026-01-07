@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Jobs\SendOrderEmailJob;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Modules\Order\Helpers\FormatData;
 use Modules\Order\Models\Order;
 
@@ -61,8 +62,14 @@ class OrderController extends Controller
     {
         // $this->authorize('create', Order::class);
         $result = DB::transaction(function () use ($request) {
+            $orderData = $request->storeOrder();
+
+            if (auth()->user()) {
+                $orderData['created_by'] = auth()->user()->user_name ?? auth()->user()->name;
+            }
+            
             $order = $this->orderRepository
-                ->createOrder($request->storeOrder(), $request->order_item);
+                ->createOrder($orderData, $request->order_item);
 
             if ($order->customer_email) {
                 SendOrderEmailJob::dispatch($order);
@@ -196,7 +203,8 @@ class OrderController extends Controller
 
         try {
             DB::transaction(function () use ($request, $order) {
-                $this->orderRepository->updateOrder($order, $request->updateOrder());
+                $orderData = $request->updateOrder();                
+                $this->orderRepository->updateOrder($order, $orderData);
             });
 
             $order->load('orderItem.product', 'orderItem.product_variant.product');

@@ -7,75 +7,6 @@ import { GiCheckMark } from "react-icons/gi";
 import axios from "axios";
 import ghn from "../../../assets/images/ghn.png";
 import ghtk from "../../../assets/images/ghtk.png";
-import ordersuccess from "../../../assets/images/ordersuccess.png";
-import ip12 from "../../../assets/images/ip12.webp";
-import ip12Black from "../../../assets/images/ip12-black.webp";
-import ip12White from "../../../assets/images/ip12-white.webp";
-import ip12Blue from "../../../assets/images/ip12-blue.webp";
-import ip12Green from "../../../assets/images/ip12-green.webp";
-import ip12Red from "../../../assets/images/ip12do.webp";
-import ip12Tim from "../../../assets/images/ip12tim.webp";
-
-import ip12Pro from "../../../assets/images/ip12-pro.webp";
-import ip12prden from "../../../assets/images/ip12prden.webp";
-import ip12prtrang from "../../../assets/images/ip12prtrang.webp";
-import ip1vang from "../../../assets/images/ip12prvang.webp";
-import ip12prxanh from "../../../assets/images/ip12prxanh.webp";
-
-import ip13 from "../../../assets/images/ip13.webp";
-import ip13do from "../../../assets/images/ip13do.webp";
-import ip13den from "../../../assets/images/ip13den.webp";
-import ip13hong from "../../../assets/images/ip13hong.webp";
-import ip13trang from "../../../assets/images/ip13trang.webp";
-import ip13xanhd from "../../../assets/images/ip13xanhd.webp";
-import ip13xanhl from "../../../assets/images/ip13xanhl.webp";
-
-import ip13Pro from "../../../assets/images/ip13-pro.webp";
-import ip13Proden from "../../../assets/images/ip13prden.webp";
-import ip13Provang from "../../../assets/images/ip13prvang.webp";
-import ip13Protrang from "../../../assets/images/ip13prtrang.webp";
-import ip13Proxanh from "../../../assets/images/ip13prxanh.webp";
-import ip13Progreen from "../../../assets/images/ip13prgreen.webp";
-
-import ip14 from "../../../assets/images/ip14.webp";
-import ip14den from "../../../assets/images/ip14den.webp";
-import ip14trang from "../../../assets/images/ip14trang.webp";
-import ip14do from "../../../assets/images/ip14do.webp";
-import ip14xanhd from "../../../assets/images/ip14xanhd.webp";
-import ip14tim from "../../../assets/images/ip14tim.webp";
-import ip14vang from "../../../assets/images/ip14vang.webp";
-
-import ip14Pro from "../../../assets/images/ip14-pro.webp";
-import ip14Proden from "../../../assets/images/ip14prden.webp";
-import ip14Protrang from "../../../assets/images/ip14prtrang.webp";
-import ip14Provang from "../../../assets/images/ip14prvang.webp";
-import ip14Protim from "../../../assets/images/ip14prtim.webp";
-
-import ip15 from "../../../assets/images/ip15.webp";
-import ip15den from "../../../assets/images/ip15den.webp";
-import ip15hong from "../../../assets/images/ip15hong.webp";
-import ip15vang from "../../../assets/images/ip15vang.webp";
-import ip15xanhd from "../../../assets/images/ip15xanhd.webp";
-import ip15xanhl from "../../../assets/images/ip15xanhl.webp";
-
-import ip15Pro from "../../../assets/images/ip15-pro.webp";
-import ip15prttd from "../../../assets/images/ip15prttd.webp";
-import ip15prttt from "../../../assets/images/ip15prttt.webp";
-import ip15prtttn from "../../../assets/images/ip15prtttn.webp";
-import ip15prttx from "../../../assets/images/ip15prttx.webp";
-
-import ip16 from "../../../assets/images/ip16.webp";
-import ip16den from "../../../assets/images/ip16den.webp";
-import ip16trang from "../../../assets/images/ip16trang.webp";
-import ip16hong from "../../../assets/images/ip16hong.webp";
-import ip16xanh from "../../../assets/images/ip16xanh.webp";
-import ip16luuly from "../../../assets/images/ip16luuly.webp";
-
-import ip16Pro from "../../../assets/images/ip16-pro.webp";
-import ip16prttd from "../../../assets/images/ip16prttd.webp";
-import ip16prttt from "../../../assets/images/ip16prttt.webp";
-import ip16prtttn from "../../../assets/images/ip16prtttn.webp";
-import ip16prttsm from "../../../assets/images/ip16prttsm.webp";
 import { toast } from "react-toastify";
 
 const CheckoutPage = () => {
@@ -152,6 +83,7 @@ const CheckoutPage = () => {
     setOrderSuccess(false);
     removeAllFromCart();
     clearBuyNowItems();
+    setBreadcrumbTrail([]);
     navigate("/");
   };
 
@@ -160,124 +92,6 @@ const CheckoutPage = () => {
       style: "currency",
       currency: "VND",
     }).format(amount);
-  };
-
-  const productImages = {
-    "iPhone 12": [
-      { id: 1, src: ip12, alt: "iPhone 12" },
-      { id: 2, src: ip12Black, alt: "Đen" },
-      { id: 3, src: ip12White, alt: "Trắng" },
-      { id: 4, src: ip12Red, alt: "Đỏ" },
-      { id: 5, src: ip12Tim, alt: "Tím" },
-      { id: 6, src: ip12Blue, alt: "Xanh Dương" },
-      { id: 7, src: ip12Green, alt: "Xanh Lá" },
-    ],
-    "iPhone 12 Pro": [
-      { id: 1, src: ip12Pro, alt: "iPhone 12 Pro" },
-      { id: 2, src: ip12prden, alt: "Đen" },
-      { id: 3, src: ip12prtrang, alt: "Trắng" },
-      { id: 4, src: ip1vang, alt: "Vàng" },
-      { id: 5, src: ip12prxanh, alt: "Xanh" },
-    ],
-    "iPhone 12 Pro Max": [
-      { id: 1, src: ip12Pro, alt: "iPhone 12 Pro Max" },
-      { id: 2, src: ip12prden, alt: "Đen" },
-      { id: 3, src: ip12prtrang, alt: "Trắng" },
-      { id: 4, src: ip1vang, alt: "Vàng" },
-      { id: 5, src: ip12prxanh, alt: "Xanh" },
-    ],
-    "iPhone 13": [
-      { id: 1, src: ip13, alt: "iPhone 13" },
-      { id: 2, src: ip13do, alt: "Đỏ" },
-      { id: 3, src: ip13den, alt: "Đen" },
-      { id: 4, src: ip13hong, alt: "Hồng" },
-      { id: 5, src: ip13trang, alt: "Trắng" },
-      { id: 6, src: ip13xanhd, alt: "Xanh Dương" },
-      { id: 7, src: ip13xanhl, alt: "Xanh Lá" },
-    ],
-    "iPhone 13 Pro": [
-      { id: 1, src: ip13Pro, alt: "iPhone 13 Pro" },
-      { id: 2, src: ip13Proden, alt: "Đen" },
-      { id: 3, src: ip13Protrang, alt: "Trắng" },
-      { id: 4, src: ip13Provang, alt: "Vàng" },
-      { id: 5, src: ip13Proxanh, alt: "Xanh" },
-      { id: 6, src: ip13Progreen, alt: "Xanh Lá" },
-    ],
-    "iPhone 13 Pro Max": [
-      { id: 1, src: ip13Pro, alt: "iPhone 13 Pro Max" },
-      { id: 2, src: ip13Proden, alt: "Đen" },
-      { id: 3, src: ip13Protrang, alt: "Trắng" },
-      { id: 4, src: ip13Provang, alt: "Vàng" },
-      { id: 5, src: ip13Proxanh, alt: "Xanh" },
-      { id: 6, src: ip13Progreen, alt: "Xanh Lá" },
-    ],
-    "iPhone 14": [
-      { id: 1, src: ip14, alt: "iPhone 14" },
-      { id: 2, src: ip14den, alt: "Đen" },
-      { id: 3, src: ip14trang, alt: "Trắng" },
-      { id: 4, src: ip14do, alt: "Đỏ" },
-      { id: 5, src: ip14xanhd, alt: "Xanh Dương" },
-      { id: 6, src: ip14tim, alt: "Tím" },
-      { id: 7, src: ip14vang, alt: "Vàng" },
-    ],
-    "iPhone 14 Pro": [
-      { id: 1, src: ip14Pro, alt: "iPhone 14 Pro" },
-      { id: 2, src: ip14Proden, alt: "Đen" },
-      { id: 3, src: ip14Protrang, alt: "Trắng" },
-      { id: 4, src: ip14Provang, alt: "Vàng" },
-      { id: 5, src: ip14Protim, alt: "Tím" },
-    ],
-    "iPhone 14 Pro Max": [
-      { id: 1, src: ip14Pro, alt: "iPhone 14 Pro Max" },
-      { id: 2, src: ip14Proden, alt: "Đen" },
-      { id: 3, src: ip14Protrang, alt: "Trắng" },
-      { id: 4, src: ip14Provang, alt: "Vàng" },
-      { id: 5, src: ip14Protim, alt: "Tím" },
-    ],
-    "iPhone 15": [
-      { id: 1, src: ip15, alt: "iPhone 15" },
-      { id: 2, src: ip15den, alt: "Đen" },
-      { id: 3, src: ip15hong, alt: "Hồng" },
-      { id: 4, src: ip15vang, alt: "Vàng" },
-      { id: 5, src: ip15xanhd, alt: "Xanh Dương" },
-      { id: 6, src: ip15xanhl, alt: "Xanh Lá" },
-    ],
-    "iPhone 15 Pro": [
-      { id: 1, src: ip15Pro, alt: "iPhone 15 Pro" },
-      { id: 2, src: ip15prttd, alt: "Titan Đen" },
-      { id: 3, src: ip15prttt, alt: "Titan Trắng" },
-      { id: 4, src: ip15prtttn, alt: "Titan Tự Nhiên" },
-      { id: 5, src: ip15prttx, alt: "Titan Xanh" },
-    ],
-    "iPhone 15 Pro Max": [
-      { id: 1, src: ip15Pro, alt: "iPhone 15 Pro Max" },
-      { id: 2, src: ip15prttd, alt: "Titan Đen" },
-      { id: 3, src: ip15prttt, alt: "Titan Trắng" },
-      { id: 4, src: ip15prtttn, alt: "Titan Tự Nhiên" },
-      { id: 5, src: ip15prttx, alt: "Titan Xanh" },
-    ],
-    "iPhone 16": [
-      { id: 1, src: ip16, alt: "iPhone 16" },
-      { id: 2, src: ip16den, alt: "Đen" },
-      { id: 3, src: ip16trang, alt: "Trắng" },
-      { id: 4, src: ip16hong, alt: "Hồng" },
-      { id: 5, src: ip16xanh, alt: "Xanh Mòng Két" },
-      { id: 6, src: ip16luuly, alt: "Xanh Lưu Ly" },
-    ],
-    "iPhone 16 Pro": [
-      { id: 1, src: ip16Pro, alt: "iPhone 16 Pro" },
-      { id: 2, src: ip16prttd, alt: "Titan Đen" },
-      { id: 3, src: ip16prttt, alt: "Titan Trắng" },
-      { id: 4, src: ip16prtttn, alt: "Titan Tự Nhiên" },
-      { id: 5, src: ip16prttsm, alt: "Titan Sa Mạc" },
-    ],
-    "iPhone 16 Pro Max": [
-      { id: 1, src: ip16Pro, alt: "iPhone 16 Pro Max" },
-      { id: 2, src: ip16prttd, alt: "Titan Đen" },
-      { id: 3, src: ip16prttt, alt: "Titan Trắng" },
-      { id: 4, src: ip16prtttn, alt: "Titan Tự Nhiên" },
-      { id: 5, src: ip16prttsm, alt: "Titan Sa Mạc" },
-    ],
   };
 
   const [order, setOrder] = useState({
@@ -401,7 +215,6 @@ const CheckoutPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Ngăn submit multiple times
     if (isSubmitting) return;
     
     setIsSubmitting(true);
@@ -413,7 +226,7 @@ const CheckoutPage = () => {
         order,
         {
           headers: {
-            'ngrok-skip-browser-warning': 'true'
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
           }
         }
       );
@@ -694,29 +507,19 @@ const CheckoutPage = () => {
                             className="flex gap-3 lg:gap-4 p-3 lg:p-4 bg-white rounded-lg border shadow-sm"
                           >
                             <div className="w-12 h-12 lg:w-16 lg:h-16 flex-shrink-0">
-                              {item.image ? (
-                                // Hiển thị ảnh từ API nếu có
+                              {item.image && !item.selectedVariant?.image ? (
                                 <img
                                   src={`${process.env.REACT_APP_LARAVEL_APP}/storage/${item.image}`}
                                   alt={item.name}
                                   className="w-full h-full object-contain rounded"
                                 />
                               ) : item.selectedVariant?.image ? (
-                                // Hoặc ảnh từ variant
                                 <img
                                   src={`${process.env.REACT_APP_LARAVEL_APP}/storage/${item.selectedVariant.image}`}
                                   alt={item.selectedVariant.value}
                                   className="w-full h-full object-contain rounded"
                                 />
-                              ) : productImages[item.category?.name]?.[0] ? (
-                                // Nếu không có, lấy ảnh placeholder từ mock data
-                                <img
-                                  src={productImages[item.category.name][0].src}
-                                  alt={item.name}
-                                  className="w-full h-full object-contain rounded"
-                                />
                               ) : (
-                                // Placeholder nếu không có ảnh
                                 <div className="w-full h-full bg-gray-200 rounded flex items-center justify-center">
                                   <span className="text-gray-400">No Image</span>
                                 </div>
@@ -727,6 +530,9 @@ const CheckoutPage = () => {
                                 {item.name}
                               </h3>
                               <div className="text-xs text-gray-600 mt-1 space-y-1">
+                                {item.selectedVariant && (
+                                  <p>Màu sắc: {item.selectedVariant.value}</p>
+                                )}
                                 <p>Số lượng: {item.quantity}</p>
                                 <p>Giá: {formatCurrency(item.price * 1000)}</p>
                               </div>

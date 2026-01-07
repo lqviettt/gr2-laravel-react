@@ -205,15 +205,16 @@ const OrderHistoryPage = () => {
                             </div>
 
                             <div>
-                              <h4 className="font-semibold text-gray-800 mb-3">Sản phẩm</h4>
+                              <h4 className="font-semibold text-gray-800 mb-2">Sản phẩm</h4>
                               <div className="space-y-3">
                                 {order.items.map((item, index) => (
-                                  <div key={index} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
-                                    <div className="w-12 h-12 flex-shrink-0 bg-gray-200 rounded flex items-center justify-center">
+                                  <div key={index} className="flex gap-3 p-2 bg-gray-100 rounded-lg">
+                                    <div className="w-14 h-14 mt-1 flex-shrink-0 rounded flex items-center justify-center">
                                       <img
                                         src={`${process.env.REACT_APP_LARAVEL_APP}/storage/${item.product_variant_image}`}
-                                        alt={item.name}
-                                        className="w-full sm:w-4/5 h-auto mb-2.5"
+                                        alt={item.product_variant_image}
+                                        className="w-full sm:w-4/5 h-full object-contain rounded-lg"
+                                        title={item.product_variant_image}
                                       />
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -224,7 +225,7 @@ const OrderHistoryPage = () => {
                                         <p className="text-sm text-gray-600">{item.product_variant_name}</p>
                                       )}
                                       <p className="text-sm text-gray-600">
-                                        SL: {item.quantity} × {formatCurrency(item.price)}
+                                        SL: {item.quantity} × {formatCurrency(item.price * 1000)}
                                       </p>
                                     </div>
                                   </div>

@@ -59,6 +59,7 @@ const ProductDetail = () => {
     };
     
     setBuyNowItem(cartItem);
+    addToCart(cartItem);
     navigate("/checkout");
   };
 
@@ -631,7 +632,7 @@ const ProductDetail = () => {
                 {/* Add to Cart Button */}
                 <div className="space-y-3 mb-4">
                   <button
-                    className="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-4 rounded-lg font-bold text-lg sm:text-xl transition-colors shadow-md hover:shadow-lg"
+                    className="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold text-lg sm:text-xl transition-colors shadow-md hover:shadow-lg"
                     onClick={handleBuyNow}
                   >
                     🛍️ Mua ngay

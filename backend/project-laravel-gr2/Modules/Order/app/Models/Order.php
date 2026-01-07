@@ -5,8 +5,10 @@ namespace Modules\Order\Models;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Modules\Product\Models\Product;
 use Modules\Product\Models\ProductVariant;
+
 
 class Order extends BaseModel
 {
@@ -34,10 +36,6 @@ class Order extends BaseModel
 
     protected static function booted()
     {
-        static::creating(function ($order) {
-            $order->created_by = auth()->user() ? auth()->user()->user_name : "admin";
-        });
-
         static::updating(function ($order) {
             // $order->created_by = Auth::user()->user_name;
             $order->created_by = auth()->user() ? auth()->user()->user_name : "admin";
