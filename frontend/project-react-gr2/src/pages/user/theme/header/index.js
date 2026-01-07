@@ -16,6 +16,7 @@ import { api } from "../../../../utils/apiClient";
 import { useDebounce } from "../../../../utils/useDebounce";
 import { toast } from "react-toastify";
 import { useCategoryProductsCache } from "../../../../utils/useCategoryProductsCache";
+import { useBreadcrumb } from "../../../../component/BreadcrumbContext";
 
 const Header = () => {
   const [activeMenu, setActiveMenu] = useState(null);
@@ -24,6 +25,7 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const { setBreadcrumbTrail } = useBreadcrumb();
   const navigate = useNavigate();
   
   // Use centralized cache hook for category products
@@ -289,18 +291,23 @@ const Header = () => {
     toast.info(`Tính năng ${provider} chưa được triển khai`);
   };
 
+  const handleClickLogo = () => {
+    setBreadcrumbTrail([]);
+    navigate('/');
+  };
+
   return (
     <header className="font-[sans-serif] min-h-[65px] tracking-wide relative z-50">
       <div className="flex justify-between lg:justify-between items-center w-full bg-[#000000] text-white px-4 sm:px-8 lg:pr-32 py-4">
         {/* Logo */}
           <div className="w-48 lg:w-80">
-            <Link to="/">
+            <button className="w-full" title="QuocViet Logo" onClick={() => {handleClickLogo()}}>
               <img
                 src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/logo-nobg.png`}
                 alt="QuocViet Logo"
                 className="w-full lg:h-32 object-contain"
               />
-            </Link>
+            </button>
           </div>
 
           {/* Mobile Search - visible on mobile */}
