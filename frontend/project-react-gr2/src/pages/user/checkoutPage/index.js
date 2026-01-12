@@ -246,11 +246,15 @@ const CheckoutPage = () => {
         toast.success("Đơn hàng đã được tạo thành công!");
       }
     } catch (error) {
+      const backendMessage = error.response?.data?.message;
       console.error(
         "Error create order:",
         error.response?.data || error.message
       );
-      toast.error("Đã xảy ra lỗi khi tạo đơn hàng. Vui lòng thử lại sau.");
+      toast.error(
+        backendMessage ||
+          "Đã xảy ra lỗi khi tạo đơn hàng. Vui lòng thử lại."
+      );
       setIsSubmitting(false);
     }
   };

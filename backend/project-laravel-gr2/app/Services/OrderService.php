@@ -78,4 +78,42 @@ class OrderService
                 $oldItem->delete();
             });
     }
+
+    /**
+     * checkInventory
+     *
+     * Kiểm tra tồn kho cho một sản phẩm hoặc biến thể sản phẩm.
+     * Ném ra InvalidArgumentException nếu không đủ số lượng.
+     *
+     * @param  int $productId
+     * @param  int $quantity
+     * @param  int|null $productVariantId
+     * @return void
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function checkInventory(int $productId, int $quantity, ?int $productVariantId = null): void
+    {
+        if ($productVariantId) {
+            $variant = ProductVariant::where('id', $productVariantId)->lockForUpdate()->first();
+
+            if (!$variant) {
+                throw new \InvalidArgumentException('Biến thể sản phẩm không tồn tại.');
+            }
+
+            if ($variant->quantity < $quantity) {
+                throw new \InvalidArgumentException('Số lượng tồn kho không đủ.');
+            }
+        } else {
+            $product = Product::where('id', $productId)->lockForUpdate()->first();
+
+            if (!$product) {
+                throw new \InvalidArgumentException('Sản phẩm không tồn tại.');
+            }
+
+            if ($product->quantity < $quantity) {
+                throw new \InvalidArgumentException('Số lượng tồn kho của sản phẩm không đủ.');
+            }
+        }
+    }
 }

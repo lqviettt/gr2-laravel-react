@@ -52,6 +52,16 @@ class OrderEloquentRepository extends EloquentRepository implements OrderReposit
      */
     public function createOrder(array $orderData, array $orderItems)
     {
+        foreach ($orderItems as $item) {
+            $productId = $item['product_id'] ?? null;
+            $productVariantId = $item['product_variant_id'] ?? null;
+            $quantity = $item['quantity'] ?? 0;
+
+            if ($productId && $quantity > 0) {
+                $this->orderService->checkInventory($productId, $quantity, $productVariantId);
+            }
+        }
+
         $order = $this->_model::create($orderData);
         $order->products()->attach($orderItems);
 

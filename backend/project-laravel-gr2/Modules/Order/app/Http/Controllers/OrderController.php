@@ -65,35 +65,49 @@ class OrderController extends Controller
     public function store(OrderRequest $request): JsonResponse
     {
         // $this->authorize('create', Order::class);
-        $result = DB::transaction(function () use ($request) {
-            $orderData = $request->storeOrder();
+        try {
+            $result = DB::transaction(function () use ($request) {
+                $orderData = $request->storeOrder();
 
-            if (auth()->user()) {
-                $orderData['created_by'] = auth()->user()->user_name ?? auth()->user()->name;
+                if (auth()->user()) {
+                    $orderData['created_by'] = auth()->user()->user_name ?? auth()->user()->name;
+                }
+
+                $order = $this->orderRepository
+                    ->createOrder($orderData, $request->order_item);
+
+                if ($order->customer_email) {
+                    SendOrderEmailJob::dispatch($order);
+                }
+
+                return $order;
+            });
+
+            if ($result->payment_method == 'COD' || $result->payment_method == null) {
+                return $this->created($result);
+            } else {
+                $config = $this->vnpayService->fetchVNPay();
+                $vnpUrl = $this->vnpayService->generateUrlPayment(
+                    $result->payment_method,
+                    $result,
+                    $config
+                );
+                $result->payment = $vnpUrl;
+
+                return $this->created($result);
             }
-            
-            $order = $this->orderRepository
-                ->createOrder($orderData, $request->order_item);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Exception $e) {
+            Log::error('Error creating order', [
+                'message' => $e->getMessage(),
+            ]);
 
-            if ($order->customer_email) {
-                SendOrderEmailJob::dispatch($order);
-            }
-
-            return $order;
-        });
-
-        if ($result->payment_method == 'COD' || $result->payment_method == null) {
-            return $this->created($result);
-        } else {
-            $config = $this->vnpayService->fetchVNPay();
-            $vnpUrl = $this->vnpayService->generateUrlPayment(
-                $result->payment_method,
-                $result,
-                $config
-            );
-            $result->payment = $vnpUrl;
-
-            return $this->created($result);
+            return response()->json([
+                'message' => 'Đã xảy ra lỗi khi tạo đơn hàng.',
+            ], 500);
         }
     }
 
