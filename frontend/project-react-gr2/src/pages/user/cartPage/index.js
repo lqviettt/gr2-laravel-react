@@ -6,10 +6,12 @@ import Section from "../../../component/user/Section";
 import { formatCurrency } from "../../../utils/common";
 import "./stylecart.scss";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateCartItem } = useCart();
   const { setBreadcrumbTrail } = useBreadcrumb();
+  const navigate = useNavigate();
 
   useEffect(() => {
     let isMounted = true;
@@ -67,7 +69,7 @@ const Cart = () => {
                   Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm
                 </p>
                 <button
-                  onClick={() => window.location.href = "/"}
+                onClick={() => navigate("/")}
                   className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   Tiếp tục mua sắm
@@ -302,13 +304,13 @@ const Cart = () => {
 
                 <div className="flex flex-col sm:flex-row gap-3 lg:gap-4">
                   <button
-                    onClick={() => window.history.back()}
+                    onClick={() => navigate("/product-list")}
                     className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                   >
                     Tiếp tục mua sắm
                   </button>
                   <button
-                    onClick={() => window.location.href = "/checkout"}
+                    onClick={() => navigate("/checkout")}
                     className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-semibold shadow-sm hover:shadow-md"
                   >
                     Thanh toán ngay
