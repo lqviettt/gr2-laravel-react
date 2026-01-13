@@ -11,12 +11,17 @@ const Section = ({
   return (
     <section className={`${className}`}>
       <div className={containerClassName}>
+        {/* {title && (
+          <h2 className={`text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-800 mb-8 lg:mb-12 ${titleClassName}`}>
+            {title}
+          </h2>
+        )} */}
+        <div className={contentClassName}>
         {title && (
           <h2 className={`text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-800 mb-8 lg:mb-12 ${titleClassName}`}>
             {title}
           </h2>
         )}
-        <div className={contentClassName}>
           {children}
         </div>
       </div>
