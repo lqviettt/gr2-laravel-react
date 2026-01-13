@@ -137,8 +137,11 @@ const Header = () => {
   };
 
   const handleProductClick = (productId) => {
-    navigate(`/product-detail/${productId}`);
     setShowSearchDropdown(false);
+    setSearchQuery('');
+    setSearchResults([]);
+    console.log('Navigating to product ID:', productId);
+    navigate(`/product-detail/${productId}`);
   };
 
   const handleMouseEnter = useCallback((menuKey, menu) => {
@@ -298,9 +301,9 @@ const Header = () => {
 
   return (
     <header className="font-[sans-serif] min-h-[65px] tracking-wide relative z-50">
-      <div className="flex justify-between lg:justify-between items-center w-full bg-[#000000] text-white px-4 sm:px-8 lg:pr-32 py-4">
+      <div className="flex justify-between lg:justify-between items-center w-full bg-[#000000] text-white sm:px-8 lg:px-12 py-4 hehe">
         {/* Logo */}
-          <div className="w-48 lg:w-80">
+          <div className="w-32 lg:w-32 flex items-center cursor-pointer ">
             <button className="w-full" title="QuocViet Logo" onClick={() => {handleClickLogo()}}>
               <img
                 src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/logo-nobg.png`}
@@ -330,7 +333,7 @@ const Header = () => {
           {showSearchDropdown && (
             <div className="absolute top-10 left-0 right-0 bg-white border border-gray-300 rounded shadow-lg z-[60] max-h-60 overflow-y-auto">
               {/* Trends Section */}
-              <div className="p-2 border-b border-gray-100">
+              {/* <div className="p-2 border-b border-gray-100">
                 <h4 className="text-xs font-medium text-gray-700 mb-2">Xu hướng tìm kiếm</h4>
                 <div className="grid grid-cols-2 gap-1">
                   {searchTrends.map((trend, index) => (
@@ -343,24 +346,28 @@ const Header = () => {
                     </span>
                   ))}
                 </div>
-              </div>
+              </div> */}
 
               {/* Search Results Section */}
               {searchQuery.length > 2 && searchResults.length > 0 ? (
                 searchResults.map((product) => (
                   <div
                     key={product.id}
-                    onClick={() => handleProductClick(product.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleProductClick(product.id);
+                    }}
                     className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
                   >
                     <img
-                      src={product.image ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}` : "/placeholder-image.jpg"}
+                      src={product.image ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${product.image}` : "/placeholder-image.jpg"}
                       alt={product.name}
+                      title={product.name}
                       className="w-8 h-8 object-contain rounded"
                     />
                     <div className="flex-1 min-w-0">
                       <h4 className="text-xs font-medium text-gray-800 truncate">{product.name}</h4>
-                      <p className="text-xs text-gray-600">{product.price ? `${product.price.toLocaleString()} VND` : "Liên hệ"}</p>
+                      <p className="text-xs text-gray-600">{product.price ? `${(product.price * 1000).toLocaleString()} VND` : "Liên hệ"}</p>
                     </div>
                   </div>
                 ))
@@ -386,10 +393,9 @@ const Header = () => {
           {isMobileMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
         </button>
 
-        <div className="hidden lg:flex h_items items-center space-x-6 lg:space-x-14">
           <div className="flex flex-col">
             {/* Search Input */}
-            <div className="menu_search relative search-container">
+            <div className="relative hihi search-container">
               <form onSubmit={handleSearchSubmit} className="flex">
                 <input
                   type="text"
@@ -399,16 +405,16 @@ const Header = () => {
                   value={searchQuery}
                   onChange={handleSearchChange}
                   onFocus={handleSearchFocus}
-                  className="p-4 rounded-l border border-gray-300 text-black bg-white"
+                  className="p-4 rounded-l border-gray-300 text-black text-xs bg-white h-12 focus:outline-none"
                 />
-                <button type="submit" className="p-4 bg-blue-500 rounded-r">
+                <button type="submit" className="p-4 rounded-r bg-white hover:bg-opacity-100 text-black">
                   <FaSearch />
                 </button>
               </form>
               {showSearchDropdown && (
-                <div className="absolute top-23 left-0 bg-white border border-gray-300 rounded-b shadow-lg z-[60] max-h-80 overflow-y-auto min-w-[600px]">
+                <div className="absolute top-23 left-0 bg-white border border-gray-300 rounded-b shadow-lg z-[60] max-h-80 overflow-y-auto min-w-[400px]">
                   {/* Trends Section */}
-                  <div className="p-4 border-b border-gray-100">
+                  {/* <div className="p-4 border-b border-gray-100">
                     <h4 className="text-sm font-medium text-gray-700 mb-3">Xu hướng tìm kiếm</h4>
                     <div className="grid grid-cols-2 gap-3">
                       {searchTrends.map((trend, index) => (
@@ -421,24 +427,27 @@ const Header = () => {
                         </span>
                       ))}
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Search Results Section */}
                   {searchQuery.length > 2 && searchResults.length > 0 ? (
                     searchResults.map((product) => (
                       <div
                         key={product.id}
-                        onClick={() => handleProductClick(product.id)}
-                        className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleProductClick(product.id);
+                        }}
+                        className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer w-full border-b border-gray-100 last:border-b-0"
                       >
                         <img
-                          src={product.image ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}` : "/placeholder-image.jpg"}
+                          src={product.image ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${product.image}` : "/placeholder-image.jpg"}
                           alt={product.name}
                           className="w-10 h-10 object-contain rounded"
                         />
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-medium text-gray-800 truncate">{product.name}</h4>
-                          <p className="text-xs text-gray-600">{product.price * 1000 ? `${(product.price * 1000).toLocaleString()} VND` : "Liên hệ"}</p>
+                          <p className="text-xs text-gray-600">{product.price ? `${(product.price * 1000).toLocaleString()} VND` : "Liên hệ"}</p>
                         </div>
                       </div>
                     ))
@@ -455,6 +464,8 @@ const Header = () => {
               )}
             </div>
           </div>
+
+        <div className="hidden lg:flex h_items items-center space-x-4 lg:space-x-6">
           <div className="menu_hotline flex items-center space-x-2 pt-5">
             <div className="icon pb-6">
               <FiPhone size={25} />
@@ -508,7 +519,7 @@ const Header = () => {
           <ul className="flex items-center space-x-6">
             <li className="menu_items">
               <div className="menu_info flex items-center space-x-2 text-white">
-                <FaRegUserCircle size={27} />
+                <FaRegUserCircle size={20} />
                 <span>Thông tin</span>
               </div>
               <ul className="submenu">
@@ -519,7 +530,7 @@ const Header = () => {
                         href="/my-account"
                         className="flex items-center space-x-2"
                       >
-                        <FaRegUserCircle size={25} className="text-black" />
+                        <FaRegUserCircle size={20} className="text-black" />
                         <span className="mt-2">Tài khoản</span>
                       </a>
                     </li>
@@ -528,7 +539,7 @@ const Header = () => {
                         onClick={handleLogout}
                         className="flex items-center space-x-2"
                       >
-                        <IoLogIn size={25} className="text-black" />
+                        <IoLogIn size={20} className="text-black" />
                         <span className="mt-2">Đăng xuất</span>
                       </button>
                     </li>
@@ -537,7 +548,7 @@ const Header = () => {
                   <>
                     <li>
                       <a href="/login" className="flex items-center space-x-2">
-                        <IoLogIn size={25} className="text-black" />
+                        <IoLogIn size={20} className="text-black text-sm" />
                         <span className="mt-2">Đăng nhập</span>
                       </a>
                     </li>
@@ -546,7 +557,7 @@ const Header = () => {
                         href="/register"
                         className="flex items-center space-x-2"
                       >
-                        <FaUserPlus size={25} className="text-black" />
+                        <FaUserPlus size={20} className="text-black text-sm" />
                         <span className="mt-2">Đăng ký</span>
                       </a>
                     </li>
@@ -599,7 +610,7 @@ const Header = () => {
                               </li>
                             ))
                           ) : (
-                            <li className="text-gray-400 text-sm py-1">Chưa có sản phẩm</li>
+                            <li className="text-gray-400 text-sm py-1"></li>
                           )}
                         </ul>
                       </div>
