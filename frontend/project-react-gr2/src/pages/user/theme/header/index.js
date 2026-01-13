@@ -393,7 +393,7 @@ const Header = () => {
           {isMobileMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
         </button>
 
-          <div className="flex flex-col">
+          <div className="flex flex-col hidden lg:block">
             {/* Search Input */}
             <div className="relative hihi search-container">
               <form onSubmit={handleSearchSubmit} className="flex">
@@ -569,7 +569,7 @@ const Header = () => {
         </div>
       </div>
 
-      <nav className="h_menu hidden md:block">
+      <nav className="h_menu hidden lg:block">
         <ul>
           {menus.map((menu, menuKey) => (
             <li
