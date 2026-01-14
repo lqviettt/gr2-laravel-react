@@ -13,7 +13,6 @@ Dự án này bao gồm API backend Laravel và ứng dụng frontend React, đ�
 
 ```bash
 git clone https://github.com/lqviettt/gr2-laravel-react.git
-cd gr2-laravel-react
 ```
 
 ### 2. Thiết Lập Backend (Laravel API)
@@ -44,6 +43,11 @@ cd gr2-laravel-react
 
    **Lưu ý:** Quyền cho thư mục storage được tự động thiết lập bởi script entrypoint của Docker. Không cần can thiệp thủ công.
 
+6. Nếu không muốn dùng docker thì sau khi tạo file .env chạy lệnh
+```
+php artisan serve
+```
+
 ### 3. Thiết Lập Database
 
 Database được tự động tạo và migrate khi các container khởi động. Nếu cần import dữ liệu thêm:
@@ -67,11 +71,17 @@ Database được tự động tạo và migrate khi các container khởi độ
    cd frontend/project-react-gr2
    ```
 
-2. Cài đặt dependencies và khởi động server phát triển:
+2. Sao chép và cấu hình file môi trường:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+3. Cài đặt dependencies và khởi động server phát triển:
    ```bash
    npm install
    npm start
    ```
+
 
 3. Frontend sẽ có sẵn tại `http://localhost:3000` (port mặc định của React)
 
@@ -81,7 +91,6 @@ Database được tự động tạo và migrate khi các container khởi độ
 - Dừng containers: `docker-compose down`
 - Xem logs: `docker-compose logs -f`
 - Truy cập container API: `docker exec -it api bash`
-- Truy cập container database: `docker exec -it database mysql -u lqviettt -p gr2`
 
 ## Khắc Phục Sự Cố
 
