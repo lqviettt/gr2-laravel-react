@@ -358,8 +358,9 @@ const ProductDetail = () => {
                   </p>
                 </div>
               </div>
+
               {/* Warranty and Status Info */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+              <div className="grid-cols-1 sm:grid-cols-2 gap-4 mt-6 hidden lg:grid">
                   <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                     <h2 className="flex bg-blue-600 p-4 text-white text-lg font-bold">
                       <IoBookmarksOutline size={24} className="mr-3" />
@@ -455,7 +456,7 @@ const ProductDetail = () => {
                       </ul>
                     </div>
                   </div>
-                </div>
+              </div>
 
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden mt-6">
                   <div>

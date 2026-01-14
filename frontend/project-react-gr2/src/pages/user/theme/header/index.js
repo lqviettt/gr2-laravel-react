@@ -303,7 +303,7 @@ const Header = () => {
     <header className="font-[sans-serif] min-h-[65px] tracking-wide relative z-50">
       <div className="flex justify-between lg:justify-between items-center w-full bg-[#000000] text-white sm:px-8 lg:px-12 py-4 hehe">
         {/* Logo */}
-          <div className="w-32 lg:w-32 flex items-center cursor-pointer ">
+          <div className="w-24 lg:w-32 flex items-center cursor-pointer ">
             <button className="w-full" title="QuocViet Logo" onClick={() => {handleClickLogo()}}>
               <img
                 src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/logo-nobg.png`}
