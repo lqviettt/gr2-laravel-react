@@ -1,37 +1,32 @@
 import { memo, useEffect, useState } from "react";
-import banner from "../../../assets/images/banner.webp";
-import banner2 from "../../../assets/images/banner2.webp";
-import slider1 from "../../../assets/images/slider_1.webp";
-import slider2 from "../../../assets/images/slider_2.webp";
 import product14 from "../../../assets/images/14promax256.webp";
 import phukien from "../../../assets/images/phukien.webp";
 import pindlchuan from "../../../assets/images/pineudlchuan.webp";
 import pindlcao from "../../../assets/images/pineudlcao.webp";
-import ip12 from "../../../assets/images/ip12.webp";
-import ip12Pro from "../../../assets/images/ip12-pro.webp";
-import ip13 from "../../../assets/images/ip13.webp";
-import ip13Pro from "../../../assets/images/ip13-pro.webp";
-import ip14 from "../../../assets/images/ip14.webp";
-import ip14Pro from "../../../assets/images/ip14-pro.webp";
-import ip15 from "../../../assets/images/ip15.webp";
-import ip15Pro from "../../../assets/images/ip15-pro.webp";
-import ip16 from "../../../assets/images/ip16.webp";
-import ip16Pro from "../../../assets/images/ip16-pro.webp";
 import { GrFormNextLink } from "react-icons/gr";
 import { GrNext } from "react-icons/gr";
 import { GrPrevious } from "react-icons/gr";
+import LoadingSpinner from "../../../component/user/LoadingSpinner";
+import ErrorMessage from "../../../component/user/ErrorMessage";
+import ProductGrid from "../../../component/user/ProductGrid";
+import ProductItem from "../../../component/user/ProductItem";
+import Section from "../../../component/user/Section";
+import { api } from "../../../utils/apiClient";
 import "./style1.scss";
 
 const HomePage = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [iphoneCurrentIndex, setIphoneCurrentIndex] = useState(0);
+  const [accessoriesCurrentIndex, setAccessoriesCurrentIndex] = useState(0);
+  const productsPerPage = 4;
+  const iphoneProductsPerSlide = 1; // Dịch chuyển 1 sản phẩm mỗi lần
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(amount);
   };
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const productsPerPage = 4;
 
   const handleNext = () => {
     if (currentIndex < Math.floor(products.length / productsPerPage)) {
@@ -45,208 +40,438 @@ const HomePage = () => {
     }
   };
 
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState("");
-  const productImages = {
-    1: [{ id: 1, src: ip12, alt: "iPhone 12" }],
-    6: [{ id: 1, src: ip12Pro, alt: "iPhone 12 Pro" }],
-    11: [{ id: 1, src: ip12Pro, alt: "iPhone 12 Pro Max" }],
-    2: [{ id: 1, src: ip13, alt: "iPhone 13" }],
-    7: [{ id: 1, src: ip13Pro, alt: "iPhone 13 Pro" }],
-    12: [{ id: 1, src: ip13Pro, alt: "iPhone 13 Pro Max" }],
-    3: [{ id: 1, src: ip14, alt: "iPhone 14" }],
-    8: [{ id: 1, src: ip14Pro, alt: "iPhone 14 Pro" }],
-    13: [{ id: 1, src: ip14Pro, alt: "iPhone 14 Pro Max" }],
-    4: [{ id: 1, src: ip15, alt: "iPhone 15" }],
-    9: [{ id: 1, src: ip15Pro, alt: "iPhone 15 Pro" }],
-    14: [{ id: 1, src: ip15Pro, alt: "iPhone 15 Pro Max" }],
-    5: [{ id: 1, src: ip16, alt: "iPhone 16" }],
-    10: [{ id: 1, src: ip16Pro, alt: "iPhone 16 Pro" }],
-    15: [{ id: 1, src: ip16Pro, alt: "iPhone 16 Pro Max" }],
+  const handleIphoneNext = () => {
+    const iphoneProducts = products.filter(
+      (product) =>
+        product.name.toLowerCase().includes("iphone") ||
+        product.name.toLowerCase().includes("ip ")
+    );
+    if (
+      iphoneCurrentIndex <
+      iphoneProducts.length - sliderConfig.itemsPerView
+    ) {
+      setIphoneCurrentIndex(iphoneCurrentIndex + iphoneProductsPerSlide);
+    }
   };
 
+  const handleIphonePrev = () => {
+    if (iphoneCurrentIndex > 0) {
+      setIphoneCurrentIndex(iphoneCurrentIndex - iphoneProductsPerSlide);
+    }
+  };
+
+  const handleAccessoriesNext = () => {
+    if (
+      accessoriesCurrentIndex <
+      accessoryProducts.length - sliderConfig.itemsPerView
+    ) {
+      setAccessoriesCurrentIndex(accessoriesCurrentIndex + iphoneProductsPerSlide);
+    }
+  };
+
+  const handleAccessoriesPrev = () => {
+    if (accessoriesCurrentIndex > 0) {
+      setAccessoriesCurrentIndex(accessoriesCurrentIndex - iphoneProductsPerSlide);
+    }
+  };
+
+  const [products, setProducts] = useState([]);
+  const [accessoryProducts, setAccessoryProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Fetch accessory products - lấy categories có parent_id=105, rồi lấy products của các categories đó
+  useEffect(() => {
+    const fetchAccessoryProducts = async () => {
       try {
-        const response = await fetch(
-          `http://127.0.0.1:9000/api/product?page=1&perPage=48`
-        );
-        const result = await response.json();
-        if (result?.data?.data) {
-          setProducts(result.data.data);
-          const categoryId = result.data.category_id || "";
-          const images = productImages[categoryId] || [];
-          if (images.length > 0) {
-            setSelectedImage(images[0].src);
+        // Step 1: Lấy tất cả categories
+        const categoriesResponse = await api.get('/category');
+        if (categoriesResponse.data?.data?.data && Array.isArray(categoriesResponse.data.data.data)) {
+          // Step 2: Lọc categories có parent_id = 105 (phụ kiện)
+          const childCategories = categoriesResponse.data.data.data.filter(cat => cat.parent_id === 105);
+          console.log('Child categories of 105:', childCategories);
+          
+          // Step 3: Lấy IDs của các categories đó
+          const categoryIds = childCategories.map(cat => cat.id);
+          
+          if (categoryIds.length > 0) {
+            // Step 4: Query products với các category IDs này
+            const categoryQuery = categoryIds.join(',');
+            const productsResponse = await api.get(`/product?category_id=${categoryQuery}&perPage=48`);
+            
+            if (productsResponse.data?.data?.data) {
+              setAccessoryProducts(productsResponse.data.data.data);
+              console.log('Accessory products fetched:', productsResponse.data.data.data);
+            }
           }
-        } else {
-          console.error("Dữ liệu không hợp lệ:", result);
         }
       } catch (error) {
+        console.error('Error fetching accessory products:', error);
+      }
+    };
+    
+    fetchAccessoryProducts();
+  }, []);
+
+  // Tính toán số items hiển thị và width dựa trên screen size
+  const getSliderConfig = (width) => {
+    if (width >= 1024) {
+      // lg: 4 items
+      return { itemsPerView: 4, gap: "1.5rem", totalGaps: "4.5rem" }; // 3 * 1.5rem
+    } else if (width >= 768) {
+      // md: 3 items
+      return { itemsPerView: 3, gap: "1rem", totalGaps: "2rem" }; // 2 * 1rem
+    } else {
+      // mobile: 2 items
+      return { itemsPerView: 2, gap: "1rem", totalGaps: "1rem" }; // 1 * 1rem
+    }
+  };
+
+  const sliderConfig = getSliderConfig(windowWidth);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await api.get('/product?page=1&perPage=48');
+
+        console.log('API Response:', response); // Debug toàn bộ phản hồi từ API
+        
+        if (!isMounted) return;
+        
+        const result = response.data;
+        if (result?.data?.data) {
+          setProducts(result.data.data);
+        } else {
+          throw new Error("Dữ liệu không hợp lệ");
+        }
+      } catch (error) {
+        if (!isMounted) return;
         console.error("Lỗi khi lấy dữ liệu:", error);
+        setError(error.message);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProducts();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const displayedProducts = products.slice(
-    currentIndex * productsPerPage,
-    (currentIndex + 1) * productsPerPage
-  );
+  if (loading) {
+    return <LoadingSpinner message="Đang tải sản phẩm..." />;
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} />;
+  }
 
   return (
-    <content className="">
-      <div className="banner">
+    <div className="min-h-screen">
+      {/* Hero Banner */}
+      <div className="relative">
         <img
           className="w-full h-auto shadow-lg"
-          src={banner}
-          alt="My React Image"
+          src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/bannerr.png`}
+          alt="QuocViet Banner"
         />
       </div>
-      <div className="slider flex justify-center gap-8 z-1 -top-[128px] relative">
-        <div className="w-full max-w-[780px]">
-          <img src={slider1} alt="Slider 1" className="rounded-lg w-full" />
-        </div>
-        <div className="w-full max-w-[780px]">
-          <img src={slider2} alt="Slider 2" className="rounded-lg w-full" />
-        </div>
-      </div>
-      <div className="content -top-[90px] relative">
-        <div className="featured-categories">
-          <h1 className="title-pageee">
-            <span>DANH MỤC NỔI BẬT</span>
-          </h1>
-          <div className="categories-list">
-            <div>
-              <a
-                href={`/product?search=GB&perPage=16`}
-                className="category-item"
-              >
-                <img src={product14} alt="iPhone" className="mx-auto" />
-                <span className="text-left w-4/5">iPhone</span>
-              </a>
-            </div>
-
-            <div>
-              <a
-                href={`/product?search=cap%20sac&search=tai%20nghe&perPage=15`}
-                className="category-item"
-              >
-                <img src={phukien} alt="Phụ kiện" className="mx-auto" />
-                <span className="text-left w-4/5">Phụ kiện</span>
-              </a>
-            </div>
-            <div>
-              <a href={`/product-detail/26`} className="category-item">
-                <img
-                  src={pindlchuan}
-                  alt="Pin EU dung lượng chuẩn"
-                  className="mx-auto"
-                />
-                <span className="text-left w-4/5 font-semibold">
-                  Pin EU DL chuẩn
-                </span>
-              </a>
-            </div>
-            <div>
-              <a
-                href={`/category?search=iphone&perPage=15`}
-                className="category-item"
-              >
-                <img
-                  src={pindlcao}
-                  alt="Pin EU dung lượng cao"
-                  className="mx-auto"
-                />
-                <span className="text-left w-4/5">Pin EU DL cao</span>
-              </a>
-            </div>
+      
+      {/* Slider Section */}
+      <Section className="relative -mt-20 lg:-mt-40 z-30 py-8 lg:py-12">
+        <div className="max-w-7xl mx-auto p-4 lg:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
+          <div className="w-full">
+            <img
+              src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/banners_1762866265_6913345928561.webp`}
+              alt="Slider 1"
+              className="rounded-lg w-full h-auto shadow-lg"
+            />
+          </div>
+          <div className="w-full">
+            <img
+              src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/banners_1762866273_691334615ff55.webp`}
+              alt="Slider 2"
+              className="rounded-lg w-full h-auto shadow-lg"
+            />
           </div>
         </div>
-      </div>
-
-      <div className="slider flex justify-center gap-8 z-1 -top-[80px] relative">
-        <div className="w-full max-w-[1600px]">
-          <img src={banner2} alt="Slider 2" className="rounded-lg w-full" />
         </div>
-      </div>
+      </Section>
 
-      <div className="content -top-[40px] relative">
-        <div className="featured-categories relative">
-          <h1 className="title-pageee">
-            <span>iPhone</span>
-          </h1>
+      {/* Featured Categories */}
+      <Section className="relative -mt-8 lg:-mt-12 py-8 lg:py-12 max-w-7xl mx-auto">
+        <div className="flex items-start gap-4 mb-8 lg:mb-12">
+          <div className="w-1 bg-blue-600 h-10"></div>
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+            DANH MỤC NỔI BẬT
+          </h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+          <div className="group">
+            <a
+              href={`/product?category_id=103`}
+              className="category-item block transition-transform duration-200 hover:scale-105"
+            >
+              <img
+                src={product14}
+                alt="iPhone"
+                className="mx-auto w-full h-auto rounded-lg shadow-sm group-hover:shadow-md"
+              />
+              <span className="text-center block mt-3 text-sm sm:text-base font-medium text-gray-800 group-hover:text-blue-600">
+                iPhone
+              </span>
+            </a>
+          </div>
 
-          <div className=" flex items-center">
-            {currentIndex === 0 ? null : (
-              <button
-                onClick={handlePrev}
-                disabled={currentIndex === 0}
-                className="absolute -left-[35px] top-1/2 rounded-r-full transform -translate-y-1/2 bg-gray-200 text-white h-16 w-16 flex items-center justify-end shadow-lg z-10 hover:bg-[#007bff] group"
-                style={{
-                  clipPath: "polygon(50% 0, 100% 0, 100% 100%, 50% 100%)",
-                }}
-              >
-                <GrPrevious className="text-2xl mr-2 group-hover:text-white" />
-              </button>
-            )}
-            <div className="categories-list">
-              {displayedProducts.map((product) => (
-                <div key={product.id}>
-                  <a
-                    href={`/product-detail/${product.id}`}
-                    className="category-item"
+          <div className="group">
+            <a
+              href={`/product?category_id=105`}
+              className="category-item block transition-transform duration-200 hover:scale-105"
+            >
+              <img
+                src={phukien}
+                alt="Phụ kiện"
+                className="mx-auto w-full h-auto rounded-lg shadow-sm group-hover:shadow-md"
+              />
+              <span className="text-center block mt-3 text-sm sm:text-base font-medium text-gray-800 group-hover:text-blue-600">
+                Phụ kiện
+              </span>
+            </a>
+          </div>
+
+          <div className="group">
+            <a
+              href={`/product-detail/26`}
+              className="category-item block transition-transform duration-200 hover:scale-105"
+            >
+              <img
+                src={pindlchuan}
+                alt="Pin EU dung lượng chuẩn"
+                className="mx-auto w-full h-auto rounded-lg shadow-sm group-hover:shadow-md"
+              />
+              <span className="text-center block mt-3 text-sm sm:text-base font-medium text-gray-800 group-hover:text-blue-600">
+                Pin EU DL chuẩn
+              </span>
+            </a>
+          </div>
+
+          <div className="group">
+            <a
+              href={`/category?search=iphone&perPage=15`}
+              className="category-item block transition-transform duration-200 hover:scale-105"
+            >
+              <img
+                src={pindlcao}
+                alt="Pin EU dung lượng cao"
+                className="mx-auto w-full h-auto rounded-lg shadow-sm group-hover:shadow-md"
+              />
+              <span className="text-center block mt-3 text-sm sm:text-base font-medium text-gray-800 group-hover:text-blue-600">
+                Pin EU DL cao
+              </span>
+            </a>
+          </div>
+        </div>
+      </Section>
+
+      {/* Second Banner */}
+      <Section className="relative -mt-8 lg:-mt-12 py-8 lg:py-12 max-w-7xl mx-auto">
+        <div className="w-full max-w-7xl mx-auto">
+          <img
+          src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/banners_1762866252_6913344cd5885.webp`}
+            alt="Banner 2"
+            className="rounded-lg w-full h-auto shadow-lg"
+          />
+        </div>
+      </Section>
+
+      {/* iPhone Products Section */}
+      <Section className="relative -mt-8 lg:-mt-12 py-8 lg:py-12" containerClassName="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-start gap-4 mb-8 lg:mb-12">
+          <div className="w-1 bg-blue-600 h-10"></div>
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+            iPhone
+          </h2>
+        </div>
+        <div className="relative overflow-hidden">
+          {/* Navigation Buttons */}
+          {iphoneCurrentIndex > 0 && (
+            <button
+              onClick={handleIphonePrev}
+              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white hover:bg-blue-50 text-blue-600 rounded-full h-10 w-10 lg:h-12 lg:w-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 z-10 border border-blue-200"
+              style={{ marginLeft: "-20px" }} // Đẩy nửa nút ra ngoài
+            >
+              <GrPrevious className="text-lg lg:text-xl" />
+            </button>
+          )}
+          {/* Products Slider Container */}
+          <div className="overflow-hidden px-2 lg:px-8">
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{
+                transform: `translateX(-${
+                  iphoneCurrentIndex * (100 / sliderConfig.itemsPerView)
+                }%)`,
+                width: "100%",
+                justifyContent: "flex-start",
+                gap: sliderConfig.gap,
+              }}
+            >
+              {products
+                .filter(
+                  (product) =>
+                    product.name.toLowerCase().includes("iphone") ||
+                    product.name.toLowerCase().includes("ip ")
+                )
+                .map((product) => (
+                  <div
+                    key={product.id}
+                    className="flex-shrink-0"
+                    style={{
+                      width: `calc((100% - ${sliderConfig.totalGaps}) / ${sliderConfig.itemsPerView})`,
+                      minWidth: `calc((100% - ${sliderConfig.totalGaps}) / ${sliderConfig.itemsPerView})`,
+                    }}
                   >
-                    {(productImages[product.category_id] || []).map((image) => (
-                      <img
-                        key={image.id}
-                        src={image.src}
-                        alt={image.alt}
-                        onClick={() => setSelectedImage(image.src)}
-                        className={selectedImage === image.src ? "active" : ""}
-                      />
-                    ))}
-                    <div className="text-left text-xl font-semibold w-4/5">
-                      <p>{product.name}</p>
-                      <p className="mt-5 text-red-500">
-                        {formatCurrency(product.price * 1000)}
-                      </p>
-                    </div>
-                  </a>
-                </div>
-              ))}
+                    <ProductItem
+                      product={product}
+                      formatCurrency={formatCurrency}
+                    />
+                  </div>
+                ))}
             </div>
-            <button
-              onClick={handleNext}
-              disabled={
-                currentIndex >= Math.floor(products.length / productsPerPage)
-              }
-              className="pl-2 absolute -right-[35px] top-1/2 transform -translate-y-1/2 bg-gray-200 h-16 w-16 flex items-center rounded-l-full overflow-hidden shadow-lg z-10 hover:bg-[#007bff] group"
-              style={{ clipPath: "polygon(0 0, 50% 0, 50% 100%, 0 100%)" }}
-            >
-              <GrNext className="text-2xl group-hover:text-white" />
-            </button>
-          </div>
-
-          <div className="mt-8 flex justify-center">
-            <button
-              onClick={() =>
-                (window.location.href = "/product?search=iphone&perPage=16")
-              }
-              className="flex items-center text-lg gap-1 p-3 text-[#007bff] border border-[#007bff] rounded-lg hover:bg-[#007bff] hover:text-blue-50 group"
-            >
-              Xem toàn bộ sản phẩm{" "}
-              <GrFormNextLink className="text-3xl group-hover:text-white" />
-            </button>
-          </div>
+          </div>{" "}
+          <button
+            onClick={handleIphoneNext}
+            disabled={
+              iphoneCurrentIndex >=
+              products.filter(
+                (product) =>
+                  product.name.toLowerCase().includes("iphone") ||
+                  product.name.toLowerCase().includes("ip ")
+              ).length -
+                sliderConfig.itemsPerView
+            }
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white hover:bg-blue-50 text-blue-600 rounded-full h-10 w-10 lg:h-12 lg:w-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 z-10 border border-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ marginRight: "-10px" }} // Đẩy nửa nút ra ngoài
+          >
+            <GrNext className="text-lg lg:text-xl" />
+          </button>
         </div>
-      </div>
-    </content>
+
+        {/* View All Button */}
+        <div className="text-center mt-8 lg:mt-12">
+          <button
+            onClick={() => (window.location.href = "/product-list")}
+            className="inline-flex items-center gap-2 px-6 lg:px-8 py-3 lg:py-4 text-sm lg:text-base font-medium text-blue-600 border-2 border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm hover:shadow-md"
+          >
+            Xem toàn bộ sản phẩm iPhone
+            <GrFormNextLink className="text-lg lg:text-xl" />
+          </button>
+        </div>
+      </Section>
+
+      {/* Second Banner */}
+      <Section className="relative -mt-8 lg:-mt-12 py-8 lg:py-12 max-w-7xl mx-auto">
+        <div className="w-full max-w-7xl mx-auto">
+          <img
+          src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/banners_1767319113_69572649a095f.webp`}
+            alt="Banner 2"
+            className="rounded-lg w-full h-auto shadow-lg"
+          />
+        </div>
+      </Section>
+
+      {/* Accessories Section */}
+      <Section className="relative -mt-8 lg:-mt-12 py-8 lg:py-12" containerClassName="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-start gap-4 mb-8 lg:mb-12">
+          <div className="w-1 bg-blue-600 h-10"></div>
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+            Phụ kiện
+          </h2>
+        </div>
+        <div className="relative overflow-hidden">
+          {/* Navigation Buttons */}
+          {accessoriesCurrentIndex > 0 && (
+            <button
+              onClick={handleAccessoriesPrev}
+              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white hover:bg-blue-50 text-blue-600 rounded-full h-10 w-10 lg:h-12 lg:w-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 z-10 border border-blue-200"
+              style={{ marginLeft: "-20px" }} // Đẩy nửa nút ra ngoài
+            >
+              <GrPrevious className="text-lg lg:text-xl" />
+            </button>
+          )}
+          {/* Products Slider Container */}
+          <div className="overflow-hidden px-2 lg:px-8">
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{
+                transform: `translateX(-${
+                  accessoriesCurrentIndex * (100 / sliderConfig.itemsPerView)
+                }%)`,
+                width: "100%",
+                justifyContent: "flex-start",
+                gap: sliderConfig.gap,
+              }}
+            >
+              {accessoryProducts
+                .map((product) => (
+                  <div
+                    key={product.id}
+                    className="flex-shrink-0"
+                    style={{
+                      width: `calc((100% - ${sliderConfig.totalGaps}) / ${sliderConfig.itemsPerView})`,
+                      minWidth: `calc((100% - ${sliderConfig.totalGaps}) / ${sliderConfig.itemsPerView})`,
+                    }}
+                  >
+                    <ProductItem
+                      product={product}
+                      formatCurrency={formatCurrency}
+                    />
+                  </div>
+                ))}
+            </div>
+          </div>{" "}
+          <button
+            onClick={handleAccessoriesNext}
+            disabled={
+              accessoriesCurrentIndex >=
+              accessoryProducts.length -
+                sliderConfig.itemsPerView
+            }
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white hover:bg-blue-50 text-blue-600 rounded-full h-10 w-10 lg:h-12 lg:w-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 z-10 border border-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ marginRight: "-10px" }} // Đẩy nửa nút ra ngoài
+          >
+            <GrNext className="text-lg lg:text-xl" />
+          </button>
+        </div>
+
+        {/* View All Button */}
+        <div className="text-center mt-8 lg:mt-12">
+          <button
+            onClick={() => (window.location.href = "/product-list")}
+            className="inline-flex items-center gap-2 px-6 lg:px-8 py-3 lg:py-4 text-sm lg:text-base font-medium text-blue-600 border-2 border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm hover:shadow-md"
+          >
+            Xem toàn bộ sản phẩm
+            <GrFormNextLink className="text-lg lg:text-xl" />
+          </button>
+        </div>
+      </Section>
+    </div>
   );
 };
 

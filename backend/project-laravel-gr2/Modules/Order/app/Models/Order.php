@@ -5,8 +5,11 @@ namespace Modules\Order\Models;
 use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Modules\Payment\Models\Payment;
 use Modules\Product\Models\Product;
 use Modules\Product\Models\ProductVariant;
+
 
 class Order extends BaseModel
 {
@@ -28,21 +31,17 @@ class Order extends BaseModel
         'shipping_fee',
         'total_price',
         'payment_method',
+        'payment_status',
     ];
 
     protected $appends = ['fullname'];
 
     protected static function booted()
     {
-        static::creating(function ($order) {
-            // $order->created_by = Auth::user()->user_name;
-            $order->created_by = "admin";
-        });
-
         static::updating(function ($order) {
             // $order->created_by = Auth::user()->user_name;
-            $order->created_by = "admin";
-
+            $order->created_by = auth()->user() ? auth()->user()->user_name : "admin";
+        
             if ($order->status === 'canceled') {
                 $order->logs()->create([
                     'status' => 'canceled',
@@ -57,10 +56,6 @@ class Order extends BaseModel
         return $this->lastname . ' ' . $this->firstname;
     }
 
-    public function getCodeAttribute($value)
-    {
-        return 'DH-' . $value;
-    }
 
     public function orderItem()
     {
@@ -83,6 +78,16 @@ class Order extends BaseModel
         return $this->hasMany(OrderHistory::class);
     }
 
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'order_id');
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class, 'order_id');
+    }
+
     public function scopeSearchByNameCode($query, $search)
     {
         return $query->when(
@@ -103,5 +108,35 @@ class Order extends BaseModel
                 $query->where('customer_phone', 'like', '%' . $phone . '%');
             })
         );
+    }
+
+    public function scopeSearchByDate($query, $startDate, $endDate)
+    {
+        return $query->when(
+            !is_null($startDate) || !is_null($endDate),
+            function ($query) use ($startDate, $endDate) {
+                if (!is_null($startDate) && !is_null($endDate)) {
+                    $query->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                } elseif (!is_null($startDate)) {
+                    $query->where('created_at', '>=', $startDate . ' 00:00:00');
+                } elseif (!is_null($endDate)) {
+                    $query->where('created_at', '<=', $endDate . ' 23:59:59');
+                }
+            }
+        );
+    }
+
+    public function scopeSearchByStatusOrder($query, $status)
+    {
+        if (!is_null($status) && $status !== '') {
+            $query->where('status', $status);
+        }
+    }
+
+    public function scopeSearchByCode($query, $code)
+    {
+        if (!is_null($code) && $code !== '') {
+            $query->where('code', $code);
+        }
     }
 }

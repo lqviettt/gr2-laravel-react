@@ -4,81 +4,22 @@ import "./style.scss";
 import { GiCheckMark } from "react-icons/gi";
 import { IoBookmarksOutline } from "react-icons/io5";
 import { TiFlashOutline } from "react-icons/ti";
-
-import ip12 from "../../../assets/images/ip12.webp";
-import ip12Black from "../../../assets/images/ip12-black.webp";
-import ip12White from "../../../assets/images/ip12-white.webp";
-import ip12Blue from "../../../assets/images/ip12-blue.webp";
-import ip12Green from "../../../assets/images/ip12-green.webp";
-import ip12Red from "../../../assets/images/ip12do.webp";
-import ip12Tim from "../../../assets/images/ip12tim.webp";
-
-import ip12Pro from "../../../assets/images/ip12-pro.webp";
-import ip12prden from "../../../assets/images/ip12prden.webp";
-import ip12prtrang from "../../../assets/images/ip12prtrang.webp";
-import ip1vang from "../../../assets/images/ip12prvang.webp";
-import ip12prxanh from "../../../assets/images/ip12prxanh.webp";
-
-import ip13 from "../../../assets/images/ip13.webp";
-import ip13do from "../../../assets/images/ip13do.webp";
-import ip13den from "../../../assets/images/ip13den.webp";
-import ip13hong from "../../../assets/images/ip13hong.webp";
-import ip13trang from "../../../assets/images/ip13trang.webp";
-import ip13xanhd from "../../../assets/images/ip13xanhd.webp";
-import ip13xanhl from "../../../assets/images/ip13xanhl.webp";
-
-import ip13Pro from "../../../assets/images/ip13-pro.webp";
-import ip13Proden from "../../../assets/images/ip13prden.webp";
-import ip13Provang from "../../../assets/images/ip13prvang.webp";
-import ip13Protrang from "../../../assets/images/ip13prtrang.webp";
-import ip13Proxanh from "../../../assets/images/ip13prxanh.webp";
-import ip13Progreen from "../../../assets/images/ip13prgreen.webp";
-
-import ip14 from "../../../assets/images/ip14.webp";
-import ip14den from "../../../assets/images/ip14den.webp";
-import ip14trang from "../../../assets/images/ip14trang.webp";
-import ip14do from "../../../assets/images/ip14do.webp";
-import ip14xanhd from "../../../assets/images/ip14xanhd.webp";
-import ip14tim from "../../../assets/images/ip14tim.webp";
-import ip14vang from "../../../assets/images/ip14vang.webp";
-
-import ip14Pro from "../../../assets/images/ip14-pro.webp";
-import ip14Proden from "../../../assets/images/ip14prden.webp";
-import ip14Protrang from "../../../assets/images/ip14prtrang.webp";
-import ip14Provang from "../../../assets/images/ip14prvang.webp";
-import ip14Protim from "../../../assets/images/ip14prtim.webp";
-
-import ip15 from "../../../assets/images/ip15.webp";
-import ip15den from "../../../assets/images/ip15den.webp";
-import ip15hong from "../../../assets/images/ip15hong.webp";
-import ip15vang from "../../../assets/images/ip15vang.webp";
-import ip15xanhd from "../../../assets/images/ip15xanhd.webp";
-import ip15xanhl from "../../../assets/images/ip15xanhl.webp";
-
-import ip15Pro from "../../../assets/images/ip15-pro.webp";
-import ip15prttd from "../../../assets/images/ip15prttd.webp";
-import ip15prttt from "../../../assets/images/ip15prttt.webp";
-import ip15prtttn from "../../../assets/images/ip15prtttn.webp";
-import ip15prttx from "../../../assets/images/ip15prttx.webp";
-
-import ip16 from "../../../assets/images/ip16.webp";
-import ip16den from "../../../assets/images/ip16den.webp";
-import ip16trang from "../../../assets/images/ip16trang.webp";
-import ip16hong from "../../../assets/images/ip16hong.webp";
-import ip16xanh from "../../../assets/images/ip16xanh.webp";
-import ip16luuly from "../../../assets/images/ip16luuly.webp";
-
-import ip16Pro from "../../../assets/images/ip16-pro.webp";
-import ip16prttd from "../../../assets/images/ip16prttd.webp";
-import ip16prttt from "../../../assets/images/ip16prttt.webp";
-import ip16prtttn from "../../../assets/images/ip16prtttn.webp";
-import ip16prttsm from "../../../assets/images/ip16prttsm.webp";
-
+import { MdLocalShipping, MdAssignment } from "react-icons/md";
+import { FaCreditCard } from "react-icons/fa";
+import { FiShoppingCart } from "react-icons/fi";
+import { FaStar } from "react-icons/fa";
+import { toast } from "react-toastify";
 import { useCart } from "../../../component/CartContext";
+import { useBreadcrumb } from "../../../component/BreadcrumbContext";
+import { getProductImage, formatCurrency } from "../../../utils/common";
+import { LoadingSpinner, ErrorMessage, Section } from "../../../component/user";
+import { api } from "../../../utils/apiClient";
+import ReviewsFeed from "./ReviewsFeed";
 
 const ProductDetail = () => {
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, setBuyNowItem } = useCart();
+  const { setBreadcrumbTrail } = useBreadcrumb();
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -88,6 +29,12 @@ const ProductDetail = () => {
   const [productByCategory, setProductByCategory] = useState(null);
   const [categoryId, setCategoryId] = useState(null);
   const [selectedProductId, setSelectedProductId] = useState(null);
+  const [reviewsData, setReviewsData] = useState(null);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [userRating, setUserRating] = useState(0);
+  const [userComment, setUserComment] = useState("");
+  const [refreshFeed, setRefreshFeed] = useState(0);
 
   const handleClick = (productId) => {
     setSelectedProductId(productId);
@@ -101,125 +48,29 @@ const ProductDetail = () => {
       quantity,
     };
     addToCart(cartItem);
-    alert("Cập nhật giỏ hàng thành công!");
+    toast.success("Cập nhật giỏ hàng thành công!");
   };
 
-  const productImages = {
-    "iPhone 12": [
-      { id: 1, src: ip12, alt: "iPhone 12" },
-      { id: 2, src: ip12Black, alt: "Đen" },
-      { id: 3, src: ip12White, alt: "Trắng" },
-      { id: 4, src: ip12Red, alt: "Đỏ" },
-      { id: 5, src: ip12Tim, alt: "Tím" },
-      { id: 6, src: ip12Blue, alt: "Xanh Dương" },
-      { id: 7, src: ip12Green, alt: "Xanh Lá" },
-    ],
-    "iPhone 12 Pro": [
-      { id: 1, src: ip12Pro, alt: "iPhone 12 Pro" },
-      { id: 2, src: ip12prden, alt: "Đen" },
-      { id: 3, src: ip12prtrang, alt: "Trắng" },
-      { id: 4, src: ip1vang, alt: "Vàng" },
-      { id: 5, src: ip12prxanh, alt: "Xanh" },
-    ],
-    "iPhone 12 Pro Max": [
-      { id: 1, src: ip12Pro, alt: "iPhone 12 Pro Max" },
-      { id: 2, src: ip12prden, alt: "Đen" },
-      { id: 3, src: ip12prtrang, alt: "Trắng" },
-      { id: 4, src: ip1vang, alt: "Vàng" },
-      { id: 5, src: ip12prxanh, alt: "Xanh" },
-    ],
-    "iPhone 13": [
-      { id: 1, src: ip13, alt: "iPhone 13" },
-      { id: 2, src: ip13do, alt: "Đỏ" },
-      { id: 3, src: ip13den, alt: "Đen" },
-      { id: 4, src: ip13hong, alt: "Hồng" },
-      { id: 5, src: ip13trang, alt: "Trắng" },
-      { id: 6, src: ip13xanhd, alt: "Xanh Dương" },
-      { id: 7, src: ip13xanhl, alt: "Xanh Lá" },
-    ],
-    "iPhone 13 Pro": [
-      { id: 1, src: ip13Pro, alt: "iPhone 13 Pro" },
-      { id: 2, src: ip13Proden, alt: "Đen" },
-      { id: 3, src: ip13Protrang, alt: "Trắng" },
-      { id: 4, src: ip13Provang, alt: "Vàng" },
-      { id: 5, src: ip13Progreen, alt: "Xanh Green" },
-      { id: 6, src: ip13Proxanh, alt: "Xanh" },
-    ],
-    "iPhone 13 Pro Max": [
-      { id: 1, src: ip13Pro, alt: "iPhone 13 Pro Max" },
-      { id: 2, src: ip13Proden, alt: "Đen" },
-      { id: 3, src: ip13Protrang, alt: "Trắng" },
-      { id: 4, src: ip13Provang, alt: "Vàng" },
-      { id: 5, src: ip13Progreen, alt: "Xanh Green" },
-      { id: 6, src: ip13Proxanh, alt: "Xanh" },
-    ],
-    "iPhone 14": [
-      { id: 1, src: ip14, alt: "iPhone 14" },
-      { id: 2, src: ip14den, alt: "Đen" },
-      { id: 3, src: ip14trang, alt: "Trắng" },
-      { id: 4, src: ip14do, alt: "Đỏ" },
-      { id: 5, src: ip14xanhd, alt: "Xanh Dương" },
-      { id: 6, src: ip14tim, alt: "Tím" },
-      { id: 7, src: ip14vang, alt: "Vàng" },
-    ],
-    "iPhone 14 Pro": [
-      { id: 1, src: ip14Pro, alt: "iPhone 14 Pro" },
-      { id: 2, src: ip14Proden, alt: "Đen" },
-      { id: 3, src: ip14Protrang, alt: "Trắng" },
-      { id: 4, src: ip14Provang, alt: "Vàng" },
-      { id: 5, src: ip14Protim, alt: "Tím" },
-    ],
-    "iPhone 14 Pro Max": [
-      { id: 1, src: ip14Pro, alt: "iPhone 14 Pro Max" },
-      { id: 2, src: ip14Proden, alt: "Đen" },
-      { id: 3, src: ip14Protrang, alt: "Trắng" },
-      { id: 4, src: ip14Provang, alt: "Vàng" },
-      { id: 5, src: ip14Protim, alt: "Tím" },
-    ],
-    "iPhone 15": [
-      { id: 1, src: ip15, alt: "iPhone 15" },
-      { id: 2, src: ip15den, alt: "Đen" },
-      { id: 3, src: ip15hong, alt: "Hồng" },
-      { id: 4, src: ip15vang, alt: "Vàng" },
-      { id: 5, src: ip15xanhd, alt: "Xanh Dương" },
-      { id: 6, src: ip15xanhl, alt: "Xanh Lá" },
-    ],
-    "iPhone 15 Pro": [
-      { id: 1, src: ip15Pro, alt: "iPhone 15 Pro" },
-      { id: 2, src: ip15prttd, alt: "Titan Đen" },
-      { id: 3, src: ip15prttt, alt: "Titan Trắng" },
-      { id: 4, src: ip15prtttn, alt: "Titan Tự Nhiên" },
-      { id: 5, src: ip15prttx, alt: "Titan Xanh" },
-    ],
-    "iPhone 15 Pro Max": [
-      { id: 1, src: ip15Pro, alt: "iPhone 15 Pro Max" },
-      { id: 2, src: ip15prttd, alt: "Titan Đen" },
-      { id: 3, src: ip15prttt, alt: "Titan Trắng" },
-      { id: 4, src: ip15prtttn, alt: "Titan Tự Nhiên" },
-      { id: 5, src: ip15prttx, alt: "Titan Xanh" },
-    ],
-    "iPhone 16": [
-      { id: 1, src: ip16, alt: "iPhone 16" },
-      { id: 2, src: ip16den, alt: "Đen" },
-      { id: 3, src: ip16trang, alt: "Trắng" },
-      { id: 4, src: ip16hong, alt: "Hồng" },
-      { id: 5, src: ip16xanh, alt: "Xanh Mòng Két" },
-      { id: 6, src: ip16luuly, alt: "Xanh Lưu Ly" },
-    ],
-    "iPhone 16 Pro": [
-      { id: 1, src: ip16Pro, alt: "iPhone 16 Pro" },
-      { id: 2, src: ip16prttd, alt: "Titan Đen" },
-      { id: 3, src: ip16prttt, alt: "Titan Trắng" },
-      { id: 4, src: ip16prtttn, alt: "Titan Tự Nhiên" },
-      { id: 5, src: ip16prttsm, alt: "Titan Sa Mạc" },
-    ],
-    "iPhone 16 Pro Max": [
-      { id: 1, src: ip16Pro, alt: "iPhone 16 Pro Max" },
-      { id: 2, src: ip16prttd, alt: "Titan Đen" },
-      { id: 3, src: ip16prttt, alt: "Titan Trắng" },
-      { id: 4, src: ip16prtttn, alt: "Titan Tự Nhiên" },
-      { id: 5, src: ip16prttsm, alt: "Titan Sa Mạc" },
-    ],
+  const handleBuyNow = () => {
+    const cartItem = {
+      ...product,
+      selectedVariant,
+      quantity,
+    };
+    
+    setBuyNowItem(cartItem);
+    addToCart(cartItem);
+    navigate("/checkout");
+  };
+
+  const getProductPrice = () => {
+    if (selectedVariant?.price) {
+      return formatCurrency(selectedVariant.price * 1000);
+    }
+    if (product?.price) {
+      return formatCurrency(product.price * 1000);
+    }
+    return "Liên hệ";
   };
 
   const handleQuantityChange = (newQuantity) => {
@@ -231,252 +82,660 @@ const ProductDetail = () => {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchProductDetail = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:9000/api/product/${id}`);
-        if (!response.ok) {
-          throw new Error("Không thể tải dữ liệu từ API");
-        }
-        const result = await response.json();
+        const response = await api.get(`/product/${id}`);
+        
+        if (!isMounted) return;
+        
+        const result = response.data;
         if (result?.data) {
           setProduct(result.data);
-          setSelectedVariant(result.data.variants[0]);
+          setSelectedProductId(result.data.id);
+          setSelectedVariant(result.data.variants && result.data.variants.length > 0 ? result.data.variants[0] : null);
           setCategoryId(result.data.category_id);
-          const categoryName = result.data.category?.name || "";
-          const images = productImages[categoryName] || [];
-          if (images.length > 0) {
+          
+          if (result.data.category_id) {
+            try {
+              let trail = [];
+              let currentCatId = result.data.category_id;
+              let depth = 0;
+              
+              while (currentCatId && depth < 10) {
+                try {
+                  const catResponse = await api.get(`/category/${currentCatId}`);
+                  const category = catResponse.data?.data;
+                  if (!category) break;
+                  
+                  let path = `/product?category_id=${category.id}`;
+                  trail.unshift({ name: category.name, path, clickable: true });
+                  currentCatId = category.parent_id;
+                  depth++;
+                } catch (err) {
+                  break;
+                }
+              }
+              
+              // Add product name at the end (not clickable)
+              trail.push({ name: result.data.name, path: `/product-detail/${id}`, clickable: false });
+              
+              if (trail.length > 0) {
+                setBreadcrumbTrail(trail);
+              }
+            } catch (error) {
+            }
+          }
+          
+          const categoryNameForImage = result.data.category?.name || "";
+          const images = getProductImage(categoryNameForImage) || [];
+          if (result.data.image) {
+            setSelectedImage(
+              `${process.env.REACT_APP_LARAVEL_APP}/storage/${result.data.image}`
+            );
+          } else if (result.data.variants && result.data.variants.length > 0 && result.data.variants[0].image) {
+            setSelectedImage(
+              `${process.env.REACT_APP_LARAVEL_APP}/storage/${result.data.variants[0].image}`
+            );
+          } else if (images.length > 0) {
             setSelectedImage(images[0].src);
           }
         } else {
           throw new Error("Dữ liệu trả về không hợp lệ");
         }
       } catch (err) {
+        if (!isMounted) return;
         setError(err.message);
-        console.error("Lỗi khi gọi API:", err);
       }
     };
 
     if (id) {
       fetchProductDetail();
     }
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  const submitReview = async () => {
+    if (!userRating) {
+      toast.error("Vui lòng chọn số sao cho đánh giá");
+      return;
+    }
+    try {
+      const resp = await api.post(`/product/${id}/reviews`, {
+        rating: userRating,
+        comment: userComment || null,
+      });
+      
+      if(resp.data?.status !== 200) {
+        toast.error(resp.data?.error || "Gửi đánh giá thất bại");
+        return;
+      }
+      toast.success(resp.data?.message || "Gửi đánh giá thành công");
+      setUserRating(0);
+      setUserComment("");
+      // refresh reviews
+      const r = await api.get(`/product/${id}/reviews`, { skipCache: true });
+      const p = r.data?.data;
+      if (p) {
+        setReviewsData(p.reviews);
+        setAverageRating(p.meta?.average_rating || 0);
+        setTotalReviews(p.meta?.total_reviews || 0);
+      }
+      // Trigger feed refresh
+      setRefreshFeed((prev) => prev + 1);
+    } catch (err) {
+      toast.error(err.response?.data?.error || err.message || "Gửi đánh giá thất bại");
+    }
+  };
+
+  // Fetch reviews for product
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchReviews = async () => {
+      try {
+        const resp = await api.get(`/product/${id}/reviews`, { skipCache: true });
+        const payload = resp.data?.data;
+        if (!isMounted) return;
+        if (payload) {
+          setReviewsData(payload.reviews);
+          setAverageRating(payload.meta?.average_rating || 0);
+          setTotalReviews(payload.meta?.total_reviews || 0);
+        }
+      } catch (err) {
+        // ignore for now
+      }
+    };
+
+    if (id) {
+      fetchReviews();
+    }
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchProductByCategory = async () => {
       if (!categoryId) return;
       try {
-        const response = await fetch(
-          `http://127.0.0.1:9000/api/product?category_id=${categoryId}`
-        );
-        const result = await response.json();
-        setProductByCategory(result.data.data);
-        console.log("product", result.data.data);
-        // console.log(result.data.data);
+        const response = await api.get(`/product?category_id=${categoryId}&perPage=6`);
+        
+        if (!isMounted) return;
+        
+        const result = response.data;
+        // API trả về dạng pagination {data: [...], current_page, ...}
+        const products = result.data?.data || result.data || [];
+        setProductByCategory(products);
       } catch (error) {
-        console.error(
-          "Error fetching product by category:",
-          error.response?.data || error.message
-        );
+        if (!isMounted) return;
+        setProductByCategory([]);
       }
     };
 
     fetchProductByCategory();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [categoryId]);
 
   if (error) {
-    return <div className="error">Đã xảy ra lỗi: {error}</div>;
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <ErrorMessage message={error} />
+      </div>
+    );
   }
 
   if (!product) {
-    return <p>Đang tải thông tin sản phẩm...</p>;
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <LoadingSpinner message="Đang tải thông tin sản phẩm..." />
+      </div>
+    );
   }
 
   return (
-    <div className="content-wrapper">
-      <div className="product-detail">
-        <h1 className="product-title">{product.name}</h1>
-        <div className="product-info-wrapper flex justify-between">
-          <div className="product-image">
-            <img src={selectedImage} alt="Ảnh sản phẩm lớn" />
-            <div className="product-thumbnails">
-              {(productImages[product.category?.name] || []).map((image) => (
-                <img
-                  key={image.id}
-                  src={image.src}
-                  alt={image.alt}
-                  onClick={() => setSelectedImage(image.src)}
-                  className={selectedImage === image.src ? "active" : ""}
-                />
-              ))}
+    <div className="min-h-screen bg-gray-50 pb-28 sm:pb-32 lg:pb-0">
+      {/* Mobile Sticky Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-white border-t border-gray-200 shadow-lg z-50">
+        <div className="flex items-center justify-between gap-2 py-4 px-3 sm:p-4">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="text-left flex-1 min-w-0">
+              <p className="text-xs text-gray-600 truncate">{product.name}</p>
+              <p className="text-lg sm:text-xl font-bold text-red-600">
+                {getProductPrice()}
+              </p>
             </div>
           </div>
-          <div className="product-details">
-            <div className="text-2xl font-semibold mb-6">
-              Loại:{" "}
-              <span className="text-blue-400">
-                {product.category?.name || "Không có"}
-              </span>
-            </div>
-            <p className="price text-xl font-semibold">
-              Giá bán:
-              <br />
-              <span>
-                {selectedVariant?.price.toLocaleString("vi-VN") || "Liên hệ"}
-                .000đ
-              </span>
-            </p>
+          
+          <button
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-bold text-sm sm:text-base transition-colors shadow-md"
+            onClick={handleBuyNow}
+          >
+            🛍️ Mua ngay
+          </button>
 
-            {Array.isArray(productByCategory) &&
-            productByCategory.length > 0 ? (
-              <div className="">
-                {productByCategory.map((product) => {
-                  const storage = product.name.split(" ").pop();
-                  const isSelected = product.id === selectedProductId;
+          <button
+            className="flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-bold text-sm sm:text-base transition-colors shadow-md"
+            onClick={handleAddToCart}
+            title="Giỏ hàng"
+          >
+            <FiShoppingCart size={20} />
+          </button>
+        </div>
+      </div>
 
-                  return (
+      <Section className="py-2 lg:py-6 max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-6 lg:mb-8">
+            {product.name}
+          </h1>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
+            {/* Product Image Section */}
+            <div className="col-span-1 lg:col-span-3">
+              <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+                <img
+                  src={
+                    selectedImage ||
+                    (product.image
+                      ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${product.image}`
+                      : (getProductImage(product.category?.name) || [])[0]?.src || "")
+                  }
+                  alt="Ảnh sản phẩm lớn"
+                  className="w-full max-w-xs mx-auto rounded-lg shadow-lg bg-gray-100 object-contain"
+                />
+
+                <div className="product-thumbnails flex gap-4 mt-12 overflow-x-auto pb-2">
+                  {/* Render thumbnails from product.image and product variants */}
+                  {([
+                    ...(product.image
+                      ? [{ id: 'main', src: `${process.env.REACT_APP_LARAVEL_APP}/storage/${product.image}`, alt: product.name }]
+                      : []),
+                    ...product.variants
+                      .filter((variant) => variant.image)
+                      .map((variant) => ({
+                        id: variant.id,
+                        src: `${process.env.REACT_APP_LARAVEL_APP}/storage/${variant.image}`,
+                        alt: variant.value,
+                      })),
+                  ]).map((image) => (
                     <button
-                      key={product.id}
-                      onClick={() => handleClick(product.id)}
-                      className={`px-6 mr-4 mt-3 py-2 rounded-md border ${
-                        isSelected ? "border-[#007bff]" : ""
+                      key={image.id}
+                      onClick={() => {
+                        setSelectedImage(image.src);
+                        const matchingVariant = product.variants.find(v => v.value === image.alt);
+                        if (matchingVariant) {
+                          setSelectedVariant(matchingVariant);
+                        }
+                      }}
+                      className={`w-16 h-16 rounded-md border-2 flex-shrink-0 p-1 ${
+                        selectedImage === image.src ? "border-blue-500" : "border-gray-300"
                       }`}
                     >
-                      <h3>{storage}</h3>
-                      <p className="price text-m font-semibold text-red-600">
-                        {product.price * 1000
-                          ? (product.price * 1000).toLocaleString("vi-VN")
-                          : "Liên hệ"}
-                        đ
-                      </p>
+                      <img
+                        src={image.src}
+                        alt={image.alt || product.name}
+                        className="w-full h-full object-contain rounded"
+                      />
                     </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <p>Không có sản phẩm cùng loại.</p>
-            )}
+                  ))}
+                </div>
 
-            <div className="variants mb-5">
-              <p className="variant-label text-xl font-semibold">Màu sắc:</p>
-              {product.variants.map((variant) => (
-                <button
-                  key={variant.id}
-                  className={
-                    selectedVariant?.id === variant.id
-                      ? "active"
-                      : "" + "border"
-                  }
-                  onClick={() => {
-                    setSelectedVariant(variant);
-                    {
-                      productImages[product.category.name]?.forEach((image) => {
-                        if (image.alt.includes(variant.value)) {
-                          setSelectedImage(image.src);
-                        }
-                      });
-                    }
-                  }}
-                >
-                  {variant.value}
-                </button>
-              ))}
-            </div>
-
-            <div className="text-xl font-semibold">Số lượng:</div>
-            <div className="rounded-md border border-[#007bff] flex gap-2 items-center bg-white p-1 w-max">
-              <button
-                onClick={() => handleQuantityChange(quantity - 1)}
-                className="border bg-[#007bff] hover:bg-red-700 text-white rounded-md p-3"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-3 h-3"
-                  viewBox="0 0 121.805 121.804"
-                >
-                  <path d="M7.308 68.211h107.188a7.309 7.309 0 0 0 7.309-7.31 7.308 7.308 0 0 0-7.309-7.309H7.308a7.31 7.31 0 0 0 0 14.619z" />
-                </svg>
-              </button>
-
-              <span className="text-gray-800 text-lg font-semibold px-2">
-                {quantity}
-              </span>
-
-              <button
-                onClick={() => handleQuantityChange(quantity + 1)}
-                className="border bg-[#007bff] hover:bg-red-700 text-white rounded-md p-3"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-3 h-3"
-                  viewBox="0 0 512 512"
-                >
-                  <path d="M256 509.892c-19.058 0-34.5-15.442-34.5-34.5V36.608c0-19.058 15.442-34.5 34.5-34.5s34.5 15.442 34.5 34.5v438.784c0 19.058-15.442 34.5-34.5 34.5z" />
-                  <path d="M475.392 290.5H36.608c-19.058 0-34.5-15.442-34.5-34.5s15.442-34.5 34.5-34.5h438.784c19.058 0 34.5 15.442 34.5 34.5s-15.442 34.5-34.5 34.5z" />
-                </svg>
-              </button>
-            </div>
-            <div className="text-xl font-semibold mt-6">
-              Tình trạng: <span className="text-blue-400">Máy LikeNew 99%</span>
-            </div>
-            <button className="add-to-cart" onClick={handleAddToCart}>
-              Thêm vào giỏ hàng
-            </button>
-          </div>
-          <div className="status">
-            <div className="">
-              <div className="status_iphone mb-10">
-                <h1 className="flex bg-[#007bff] p-5 text-white text-2xl font-semibold rounded-tl-[7px] rounded-tr-[7px]">
-                  <IoBookmarksOutline size={30} className="mr-3" />
-                  Cam kết bán hàng
-                </h1>
-                <div className="status_iphone_content">
-                  <ul>
-                    <li className="flex items-center mb-5">
-                      <GiCheckMark size={20} className="mr-3" />
-                      Bảo hành 12 tháng lỗi 1 đổi 1
-                    </li>
-                    <li className="flex items-center mb-5">
-                      <GiCheckMark size={20} className="mr-3" />
-                      Lên đời thu 100% giá web
-                    </li>
-                    <li className="flex items-center mb-5">
-                      <GiCheckMark size={40} className="mr-3" />
-                      Bảo hành rơi vỡ vào nước sửa chữa miễn phí không giới hạn
-                    </li>
-                    <li className="flex items-center">
-                      <GiCheckMark size={30} className="mr-3" />
-                      Tặng kèm cáp sạc nhanh zin + Cường lực full màn
-                    </li>
-                  </ul>
+                {/* Product Description */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <h3 className="text-lg font-semibold mb-3">Mô tả sản phẩm</h3>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    {product.description || "Không có mô tả sản phẩm"}
+                  </p>
                 </div>
               </div>
 
-              <div className="status_iphone">
-                <h1 className="flex bg-[#007bff] p-5 text-white text-2xl font-semibold rounded-tl-[8px] rounded-tr-[8px]">
-                  <TiFlashOutline size={30} className="mr-2" />
-                  Tình trạng máy
-                </h1>
-                <div className="status_iphone_content">
-                  <ul>
-                    <li className="flex items-center mb-5">
-                      <GiCheckMark size={30} className="mr-3" />
-                      Máy 98% là các máy cấn móp, xước sâu nhiều
-                    </li>
-                    <li className="flex items-center mb-5">
-                      <GiCheckMark size={30} className="mr-3" />
-                      Máy 99% là các máy gần như mới, có vài vết xước nhẹ nhỏ
-                    </li>
-                    <li className="flex items-center">
-                      <GiCheckMark size={30} className="mr-3" />
-                      Máy New 100% là các máy mới chưa Active ( không box )
-                    </li>
-                  </ul>
+              {/* Warranty and Status Info */}
+              <div className="grid-cols-1 sm:grid-cols-2 gap-4 mt-6 hidden lg:grid">
+                  <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <h2 className="flex bg-blue-600 p-4 text-white text-lg font-bold">
+                      <IoBookmarksOutline size={24} className="mr-3" />
+                      Cam kết bán hàng
+                    </h2>
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Bảo hành 12 tháng lỗi 1 đổi 1</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Lên đời thu 100% giá web</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Bảo hành rơi vỡ vào nước sửa chữa miễn phí không giới hạn</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Tặng kèm cáp sạc nhanh zin + Cường lực full màn</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <h2 className="flex bg-blue-600 p-4 text-white text-lg font-bold">
+                      <TiFlashOutline size={24} className="mr-2" />
+                      Tình trạng máy
+                    </h2>
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Máy 98% là các máy cấn móp, xước sâu nhiều</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Máy 99% là các máy gần như mới, có vài vết xước nhẹ nhỏ</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Máy New 100% là các máy mới chưa Active (không box)</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <h2 className="flex bg-blue-600 p-4 text-white text-lg font-bold">
+                      <MdLocalShipping size={24} className="mr-2" />
+                      Hình thức giao hàng
+                    </h2>
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Giao hàng toàn quốc nhanh chóng</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Đóng gói an toàn, bảo vệ sản phẩm tối đa</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">Hỗ trợ 24/7 trong quá trình vận chuyển</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <h2 className="flex bg-blue-600 p-4 text-white text-lg font-semibold">
+                      <MdAssignment size={24} className="mr-2" />
+                      Chính sách đổi trả
+                    </h2>
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm">Đổi trả miễn phí trong 3 ngày</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm">Sản phẩm phải còn nguyên vẹn, không có vết xước</span>
+                        </li>
+                        <li className="flex items-start">
+                          <GiCheckMark size={16} className="mr-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm">Không bao gồm các phụ kiện tặng kèm</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+              </div>
+
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden mt-6">
+                  <div>
+                    <div className="p-4 bg-blue-600 rounded-lg">
+                      <h2 className="flex text-white text-xl font-bold">
+                        <MdAssignment size={24} className="mr-3" />
+                        Thông số kỹ thuật
+                      </h2>
+                    </div>
+                    <div className="p-4 bg-white rounded-lg shadow-sm overflow-hidden">
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm text-gray-600">Kích thước màn hình</p>
+                            <p className="font-semibold">6.5 inches</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Công nghệ màn hình</p>
+                            <p className="font-semibold">Super Retina XDR</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Camera sau</p>
+                            <p className="font-semibold">48MP Fusion Main f/1.6</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Camera trước</p>
+                            <p className="font-semibold">18MP Center Stage f/1.6</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Chipset</p>
+                            <p className="font-semibold">Chip A19 Pro</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Công nghệ NFC</p>
+                            <p className="font-semibold">Có</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Bộ nhớ trong</p>
+                            <p className="font-semibold">256 GB</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Pin</p>
+                            <p className="font-semibold text-xs">Xem video: 27h | Trực tuyến: 22h</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Thẻ SIM</p>
+                            <p className="font-semibold text-xs">Sim kép (nano-Sim & e-Sim)</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Hệ điều hành</p>
+                            <p className="font-semibold">iOS 26</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Độ phân giải</p>
+                            <p className="font-semibold">2736 x 1260 pixels</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Loại CPU</p>
+                            <p className="font-semibold text-xs">6 lõi (2 hiệu năng + 4 tiết kiệm)</p>
+                          </div>
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <p className="text-sm text-gray-600 mb-2">Tính năng màn hình</p>
+                          <p className="text-sm text-gray-700">Dynamic Island • Màn hình luôn bật • HDR • 460 ppi • True Tone • Dải màu rộng (P3) • Haptic Touch • Tỷ lệ tương phản 2.000.000:1 • Độ sáng 1000 nit (typ) • Đỉnh 1600 nit (HDR) • Đỉnh 3000 nit (ngoài trời) • Lớp phủ chống vân tay</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+
+            {/* Product Details Section */}
+            <div className="col-span-1 lg:col-span-2 space-y-4 lg:space-y-6">
+              <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+                <div className="text-lg sm:text-xl lg:text-2xl font-semibold mb-4">
+                  Loại: <span className="text-blue-600">{product.category?.name || "Không có"}</span>
+                </div>
+
+                <div className="text-lg sm:text-xl font-bold mb-2">
+                  Giá bán:
+                </div>
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6">
+                  <span className="text-red-500">
+                    {getProductPrice()}
+                  </span>
+                </div>
+
+                {/* Product Variants by Category */}
+                {productByCategory && Array.isArray(productByCategory) && productByCategory.length > 0 && (
+                  <div className="mb-6 pb-6 border-b border-gray-200">
+                    <h3 className="text-lg font-semibold mb-3">Phiên bản khác</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {productByCategory.map((productItem) => {
+                        const storage = productItem.name.split(" ").pop();
+                        const isSelected = productItem.id === selectedProductId;
+
+                        return (
+                          <button
+                            key={productItem.id}
+                            onClick={() => handleClick(productItem.id)}
+                            className={`p-3 rounded-lg border text-left transition-colors ${
+                              isSelected
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-300 hover:border-blue-300"
+                            }`}
+                          >
+                            <h4 className="font-semibold text-sm sm:text-base">{storage}</h4>
+                            <p className="text-xs sm:text-sm font-semibold text-red-600 mt-1">
+                              {productItem.price
+                                ? formatCurrency(productItem.price * 1000)
+                                : productItem.variants && productItem.variants.length > 0
+                                ? formatCurrency(productItem.variants[0].price * 1000)
+                                : "Liên hệ"}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Color Variants */}
+                {product.variants && product.variants.length > 0 && (
+                  <div className="mb-6 pb-6 border-b border-gray-200">
+                    <h3 className="text-lg font-semibold mb-3">Màu sắc:</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {product.variants.map((variant) => (
+                        <button
+                          key={variant.id}
+                          className={`px-3 py-2 rounded-lg border text-sm sm:text-base transition-colors ${
+                            selectedVariant?.id === variant.id
+                              ? "border-blue-500 bg-blue-50 text-blue-700"
+                              : "border-gray-300 hover:border-blue-300"
+                          }`}
+                          onClick={() => {
+                            setSelectedVariant(variant);
+                            const imageSrc = variant.image
+                              ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${variant.image}`
+                              : product.image
+                              ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${product.image}`
+                              : selectedImage;
+                            setSelectedImage(imageSrc);
+                          }}
+                        >
+                          {variant.value}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quantity Selector */}
+                <div className="mb-6 pb-6">
+                  <h3 className="text-lg font-semibold mb-3">Số lượng</h3>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => handleQuantityChange(quantity - 1)}
+                      className="w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-lg flex items-center justify-center transition-colors"
+                    >
+                      <span className="text-gray-600 font-bold">-</span>
+                    </button>
+                    <span className="w-16 text-center font-semibold text-lg border border-gray-300 rounded-lg py-2">
+                      {quantity}
+                    </span>
+                    <button
+                      onClick={() => handleQuantityChange(quantity + 1)}
+                      className="w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-lg flex items-center justify-center transition-colors"
+                    >
+                      <span className="text-gray-600 font-bold">+</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Add to Cart Button */}
+                <div className="space-y-3 mb-4">
+                  <button
+                    className="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold text-lg sm:text-xl transition-colors shadow-md hover:shadow-lg"
+                    onClick={handleBuyNow}
+                  >
+                    🛍️ Mua ngay
+                  </button>
+                  <button
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold text-base sm:text-lg transition-colors shadow-sm hover:shadow-md"
+                    onClick={handleAddToCart}
+                  >
+                    Thêm vào giỏ hàng
+                  </button>
                 </div>
               </div>
+              {/* Payment Offers */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden mt-6">
+                  <h2 className="flex bg-green-600 p-4 text-white text-xl font-bold">
+                    <FaCreditCard size={24} className="mr-3" />
+                    Ưu đãi thanh toán
+                  </h2>
+                  <div className="p-4">
+                    <div className="mb-4 pb-4 border-b border-gray-200">
+                      <p className="text-sm font-semibold text-gray-700">
+                        Xem chính sách ưu đãi dành cho thành viên Smember
+                      </p>
+                    </div>
+                    <ul className="space-y-3">
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span><strong>Kredivo</strong> - Giảm đến 5.000.000đ khi thanh toán qua Kredivo</span>
+                      </li>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Hoàn tiền đến 2 triệu khi mở thẻ tín dụng <strong>HSBC</strong></span>
+                      </li>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Mở thẻ <strong>VIB</strong> nhận E-Voucher đến 600K</span>
+                      </li>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Giảm 500K khi thanh toán bằng thẻ tín dụng <strong>HDBank</strong></span>
+                      </li>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Trả góp 0 lãi, phí + tặng 500k khi mở thẻ <strong>TPBANK EVO</strong></span>
+                      </li>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Giảm 400K khi thanh toán bằng thẻ tín dụng <strong>Home Credit</strong></span>
+                      </li>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Giảm đến 300K khi thanh toán qua <strong>VNPAY-QR</strong></span>
+                      </li>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Giảm 2% tối đa 200K khi thanh toán qua <strong>MOMO</strong></span>
+                      </li>
+                      <li className="flex items-start text-sm sm:text-base">
+                        <span className="text-green-600 font-bold mr-3">•</span>
+                        <span>Liên hệ <strong>B2B</strong> để được tư vấn giá tốt nhất cho khách hàng doanh nghiệp khi mua số lượng nhiều</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
             </div>
           </div>
         </div>
-      </div>
+        {/* Reviews & Comments Section */}
+        <div className="max-w-7xl mx-auto mt-8">
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h2 className="text-xl font-bold">Đánh giá {product.name} | Chính hãng</h2>
+
+            <div className="mt-4 flex items-center gap-6">
+              <div className="flex items-center">
+                {[1,2,3,4,5].map((i) => (
+                  <FaStar key={i} className={`mr-1 ${i <= Math.round(averageRating) ? 'text-yellow-400' : 'text-gray-300'}`} />
+                ))}
+                <span className="ml-3 text-sm text-gray-600">{averageRating.toFixed(1)} / 5 • {totalReviews} đánh giá</span>
+              </div>
+            </div>
+
+            <div className="mt-6 border-t pt-4">
+              <h3 className="font-semibold mb-2">Viết đánh giá</h3>
+              <div className="flex items-center gap-2 mb-3">
+                {[1,2,3,4,5].map((i) => (
+                  <button key={i} onClick={() => setUserRating(i)} className="focus:outline-none">
+                    <FaStar className={`mr-1 ${i <= userRating ? 'text-yellow-400' : 'text-gray-300'}`} />
+                  </button>
+                ))}
+                <span className="text-sm text-gray-600 ml-2">{userRating ? `${userRating} sao` : ''}</span>
+              </div>
+              <textarea value={userComment} onChange={(e) => setUserComment(e.target.value)} placeholder="Viết nhận xét của bạn (tuỳ chọn)" className="w-full border rounded p-2 mb-3" rows={3} />
+              <div>
+                <button onClick={submitReview} className="bg-blue-600 text-white px-4 py-2 rounded">Gửi đánh giá</button>
+              </div>
+            </div>
+
+            {/* Reviews Feed Component */}
+            <ReviewsFeed productId={id} reviewsData={reviewsData} onReviewsChange={() => setRefreshFeed((prev) => prev + 1)} />
+          </div>
+        </div>
+      </Section>
     </div>
   );
 };

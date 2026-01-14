@@ -13,6 +13,8 @@ export const CartProvider = ({ children }) => {
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
+  const [buyNowItems, setBuyNowItems] = useState(null);
+
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
   }, [cartItems]);
@@ -52,6 +54,15 @@ export const CartProvider = ({ children }) => {
     setCartItems([]);
   };
 
+  const setBuyNowItem = (product) => {
+    // Lưu chỉ sản phẩm hiện tại để checkout
+    setBuyNowItems([product]);
+  };
+
+  const clearBuyNowItems = () => {
+    setBuyNowItems(null);
+  };
+
   // Cập nhật số lượng sản phẩm trong giỏ hàng
   const updateCartItem = (productId, variantId, newQuantity) => {
     setCartItems((prevItems) =>
@@ -80,6 +91,17 @@ export const CartProvider = ({ children }) => {
     }, 0);
   };
 
+  const getTotalPriceForItems = (items) => {
+    if (!items) return 0;
+    return items.reduce((total, item) => {
+      return (
+        total +
+        (item.selectedVariant ? item.selectedVariant.price : item.price) *
+          item.quantity
+      );
+    }, 0);
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -88,7 +110,11 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         updateCartItem,
         getTotalPrice,
+        getTotalPriceForItems,
         removeAllFromCart,
+        setBuyNowItem,
+        buyNowItems,
+        clearBuyNowItems,
       }}
     >
       {children}

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ShippingFeeRequest;
 use App\Services\GHNService;
 use App\Services\GHTKService;
+use Illuminate\Support\Facades\Log;
 use Modules\Shipping\Models\Location;
 
 class ShippingController extends Controller
@@ -60,6 +61,9 @@ class ShippingController extends Controller
             $ghnFee = $this->calculateWithErrorHandling(function () use ($location, $validateData) {
                 return $this->ghnService->calculateShippingFee($location['district'], $location['ward'], $validateData);
             });
+
+            Log::info('GHTK Fee: ' . json_encode($ghtkFee));
+            Log::info('GHN Fee: ' . json_encode($ghnFee));
 
             return response()->json([
                 'success' => true,

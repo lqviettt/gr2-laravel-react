@@ -16,18 +16,20 @@ const VerifyPage = () => {
 
   const verifyCode = async () => {
     try {
-        const response = await axiosClient.post("/auth/verify", 
-          {email, code: verificationCode }
-        );
+      const response = await axiosClient.post("/auth/verify", {
+        email,
+        code: verificationCode,
+      });
 
-      if (response.ok) {
-        toast.success("Xác minh thành công! Chuyển hướng đến trang đăng nhập...");
-        setTimeout(() => {
-          navigate("/login");
-        }, 2000);        
-      } else {
+      console.log(response);
+
+      if (!response.ok) {
         toast.error("Mã xác minh không hợp lệ. Vui lòng thử lại.");
       }
+      toast.success("Xác minh thành công! Chuyển hướng đến trang đăng nhập...");
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
     } catch (error) {
       setMessage("An error occurred. Please try again.");
     }

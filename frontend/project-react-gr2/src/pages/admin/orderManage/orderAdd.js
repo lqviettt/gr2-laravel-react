@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { api } from "../../../utils/apiClient";
+import { toast } from "react-toastify";
 
 const OrderAdd = () => {
   const [order, setOrder] = useState({
@@ -41,15 +42,14 @@ const OrderAdd = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
         try {
-          const response = await axios.post(
-            "http://127.0.0.1:9000/api/order",
-            order
-          );
+          const response = await api.post('/order', order);
           setOrder([...order, response.data.data]);
+          toast.success("Order added successfully!");
         } catch (error) {
+          toast.error("Failed to add order. Please try again.");
           console.error("Error adding order:", error);
         }
-    alert("Submitted");
+    toast.success("Order submitted successfully!");
     console.log(order);
   };
 

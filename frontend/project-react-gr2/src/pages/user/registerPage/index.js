@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import register from "../../../assets/images/register.png";
 import axiosClient from "../../../utils/axiosClient";
 import { toast } from "react-toastify";
+import { Section, ErrorMessage } from "../../../component/user";
+import { InputField, Button, AuthForm } from "../../../components";
 
 const initialFormData = {
   name: "",
@@ -24,13 +26,14 @@ const Register = () => {
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState(initialErrors);
   const [agreed, setAgreed] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = useCallback(() => {
     navigate("/login");
   }, [navigate]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, checked } = e.target;
     if (name === "terms") {
       setAgreed(checked);
     } else {
@@ -62,16 +65,38 @@ const Register = () => {
         return;
       }
 
+      setLoading(true);
       try {
-        const response = await axiosClient.post("/auth/register", 
+        const response = await axiosClient.post("/auth/register",
           { name, user_name, email, password }
         );
         const msg = response.data.message || "Đăng ký thành công!";
-        localStorage.setItem("email", response.data.data.email);
         toast.success(msg);
-        setTimeout(() => {
-            navigate("/verify-account"); 
-        }, 2000);
+
+        // Tự động đăng nhập sau khi đăng ký
+        try {
+          const loginResp = await axiosClient.post('/auth/login', { user_name, password });
+          const token = loginResp.data?.access_token || loginResp.data?.token || null;
+          if (token) {
+            localStorage.setItem('token', token);
+            localStorage.setItem('isLoggedIn', 'true');
+            // redirect to admin if admin user
+            setTimeout(() => {
+              if (user_name === 'admin') {
+                navigate('/admin');
+              } else {
+                navigate('/');
+              }
+            }, 1000);
+          } else {
+            // nếu server không trả token, chuyển tới trang login
+            setTimeout(() => navigate('/login'), 800);
+          }
+        } catch (loginErr) {
+          // Nếu login tự động thất bại, chuyển tới trang login để user đăng nhập thủ công
+          console.error('Auto-login failed', loginErr);
+          setTimeout(() => navigate('/login'), 800);
+        }
       } catch (err) {
         const apiErrors = err.response?.data?.error;
         if (apiErrors) {
@@ -81,131 +106,137 @@ const Register = () => {
         } else {
           toast.error(err.response?.data?.message || "Đăng ký thất bại, vui lòng thử lại.");
         }
+      } finally {
+        setLoading(false);
       }
     },
-    [formData, agreed]
+    [formData, agreed, navigate]
   );
 
   return (
-    <div className="font-[sans-serif] bg-gray-50 flex items-center p-4">
-      <div className="w-full max-w-4xl max-md:max-w-xl mx-auto">
-        <div className="bg-white grid md:grid-cols-2 gap-16 w-full sm:p-8 p-6 shadow-md rounded-md overflow-hidden">
-          <div className="max-md:order-1 space-y-6">
-            <img src={register} alt="Register" />
-          </div>
-          <form className="w-full" onSubmit={handleCreateAccount} autoComplete="off">
-            <div className="mb-8">
-              <h3 className="text-gray-800 text-2xl font-bold">Đăng ký tài khoản</h3>
-            </div>
-            <div className="space-y-6">
-              <InputField
-                label="Họ và tên"
-                name="name"
-                type="text"
-                placeholder="Nhập tên của bạn"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-              <InputField
-                label="Tên đăng nhập"
-                name="user_name"
-                type="text"
-                placeholder="Nhập tên đăng nhập"
-                value={formData.user_name}
-                onChange={handleChange}
-                required
-                error={errors.errorUsername}
-              />
-              <InputField
-                label="Email"
-                name="email"
-                type="text"
-                placeholder="Nhập email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                error={errors.errorEmail}
-              />
-              <InputField
-                label="Mật khẩu"
-                name="password"
-                type="password"
-                placeholder="Nhập mật khẩu - ít nhất 6 ký tự"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-              <div className="flex items-center">
-                <input
-                  id="terms"
-                  name="terms"
-                  type="checkbox"
-                  className="h-4 w-4 shrink-0 text-blue-600 focus:ring-blue-500 border-gray-300 rounded-md"
-                  checked={agreed}
-                  onChange={handleChange}
+    <div className="bg-gray-50 flex items-center justify-center py-4 sm:py-6 lg:py-8">
+      <Section>
+        <div className="w-full max-w-6xl">
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="grid lg:grid-cols-2 gap-0">
+              {/* Image Section */}
+              <div className="hidden lg:flex items-center justify-center p-8 bg-gradient-to-br from-blue-50 to-indigo-100">
+                <img
+                  src={register}
+                  alt="Đăng ký tài khoản"
+                  className="w-full max-w-md h-auto object-contain"
                 />
-                <label htmlFor="terms" className="text-gray-800 ml-3 block text-sm">
-                  Tôi đồng ý{" "}
-                  <span
-                    onClick={() => alert("Điều khoản sử dụng")}
-                    className="text-blue-600 font-semibold hover:underline ml-1 cursor-pointer"
+              </div>
+
+              {/* Form Section */}
+              <div className="p-6 sm:p-8">
+                <AuthForm
+                  title="Đăng ký tài khoản"
+                  subtitle="Tạo tài khoản để trải nghiệm tốt hơn"
+                  onSubmit={handleCreateAccount}
+                  submitButtonText="Đăng ký"
+                  submitButtonLoading={loading}
+                  className="max-w-none"
+                  formClassName="space-y-6"
+                  bodyClassName="p-0"
+                >
+                  <InputField
+                    label="Họ và tên"
+                    name="name"
+                    type="text"
+                    placeholder="Nhập tên của bạn"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                  />
+                  <InputField
+                    label="Tên đăng nhập"
+                    name="user_name"
+                    type="text"
+                    placeholder="Nhập tên đăng nhập"
+                    value={formData.user_name}
+                    onChange={handleChange}
+                    required
+                    error={errors.errorUsername}
+                  />
+                  <InputField
+                    label="Email"
+                    name="email"
+                    type="email"
+                    placeholder="Nhập email của bạn"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    error={errors.errorEmail}
+                  />
+                  <InputField
+                    label="Mật khẩu"
+                    name="password"
+                    type="password"
+                    placeholder="Ít nhất 6 ký tự"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    showPasswordToggle
+                  />
+
+                  <div className="flex items-start">
+                    <input
+                      id="terms"
+                      name="terms"
+                      type="checkbox"
+                      className="h-4 w-4 mt-0.5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      checked={agreed}
+                      onChange={handleChange}
+                    />
+                    <label htmlFor="terms" className="text-gray-800 ml-3 block text-sm leading-relaxed">
+                      Tôi đồng ý với{" "}
+                      <button
+                        type="button"
+                        onClick={() => alert("Điều khoản sử dụng")}
+                        className="text-blue-600 font-semibold hover:underline bg-transparent border-none p-0"
+                      >
+                        Điều khoản sử dụng
+                      </button>{" "}
+                      và{" "}
+                      <button
+                        type="button"
+                        onClick={() => alert("Chính sách bảo mật")}
+                        className="text-blue-600 font-semibold hover:underline bg-transparent border-none p-0"
+                      >
+                        Chính sách bảo mật
+                      </button>
+                    </label>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    className="w-full"
+                    loading={loading}
+                    loadingText="Đang đăng ký..."
                   >
-                    Điều khoản sử dụng
-                  </span>
-                </label>
+                    Đăng ký
+                  </Button>
+
+                  <p className="text-gray-800 text-sm text-center">
+                    Bạn đã có tài khoản?{" "}
+                    <button
+                      type="button"
+                      onClick={handleLogin}
+                      className="text-blue-600 font-semibold hover:underline bg-transparent border-none p-0"
+                    >
+                      Đăng nhập ngay
+                    </button>
+                  </p>
+                </AuthForm>
               </div>
             </div>
-            <div className="!mt-8">
-              <button
-                type="submit"
-                className="w-full py-2.5 px-4 text-sm tracking-wider font-semibold rounded-md bg-blue-600 hover:bg-blue-700 text-white focus:outline-none"
-              >
-                Đăng ký
-              </button>
-            </div>
-            <p className="text-gray-800 text-sm mt-6 text-center">
-              Bạn đã có tài khoản?{" "}
-              <span
-                onClick={handleLogin}
-                className="text-blue-600 font-semibold hover:underline ml-1 cursor-pointer"
-              >
-                Quay lại đăng nhập
-              </span>
-            </p>
-          </form>
+          </div>
         </div>
-      </div>
+      </Section>
     </div>
   );
 };
-
-const InputField = ({
-  label,
-  name,
-  type,
-  placeholder,
-  value,
-  onChange,
-  required,
-  error,
-}) => (
-  <div>
-    <label className="text-gray-800 text-sm mb-2 block">{label}</label>
-    <div className="relative flex items-center">
-      <input
-        name={name}
-        type={type}
-        required={required}
-        className="bg-white border border-gray-300 w-full text-sm text-gray-800 pl-4 pr-10 py-2.5 rounded-md outline-blue-500"
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        autoComplete="off"
-      />
-    </div>
-    {error && <p className="text-red-500 text-sm">{error}</p>}
-  </div>
-);
 
 export default Register;

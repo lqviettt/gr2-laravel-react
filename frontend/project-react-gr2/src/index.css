@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Mobile responsive padding for fixed bottom nav */
+@media (max-width: 1024px) {
+  html, body {
+    overflow-x: hidden;
+  }
+  
+  body {
+    position: relative;
+  }
+  
+  /* Ensure toast doesn't overlap bottom nav */
+  .Toastify__toast-container {
+    position: fixed;
+    z-index: 40;
+  }
+}
+
+/* Desktop - hide mobile nav */
+@media (min-width: 1025px) {
+  .fixed.bottom-0.left-0.right-0.lg\\:hidden {
+    display: none !important;
+  }
+}

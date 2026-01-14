@@ -1,111 +1,164 @@
-import React, { useState, useEffect } from "react";
-import { memo } from "react";
-import "./style.scss";
-import axios from "axios";
+import React, { useState, memo } from "react";
+import { api } from "../../../utils/apiClient";
+import { toast } from "react-toastify";
+import { useFetchData } from "../../../hooks/useFetchData";
+import CommonTable from "../../../components/CommonTable";
+import ConfirmDialog from "../../../components/ConfirmDialog";
+import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import SearchInput from "../../../components/SearchInput";
+import Pagination from "../../../components/Pagination";
 
 const CategoryManageList = () => {
-  const [categories, setCategories] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchFilters, setSearchFilters] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    const fetchCategories = async (page = 1) => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          `http://127.0.0.1:9000/api/category?page=${page}`
-        );
-        const result = await response.json();
-        if (result?.data?.data) {
-          setCategories(result.data.data);
-        } else {
-          console.error("Invalid data:", result);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCategories(currentPage);
-  }, [currentPage]);
+  const { data: categories, loading, error, pagination, refetch } = useFetchData(
+    '/category',
+    searchFilters,
+    currentPage
+  );
 
   const [newCategory, setNewCategory] = useState({
     name: "",
-    status: "",
+    parent_id: null,
+    status: "1",
   });
 
   const [editingCategoryId, setEditingCategoryId] = useState(null);
-
-  useEffect(() => {
-    const fetchCategory = async () => {
-      try {
-        const response = await axios.get("http://127.0.0.1:9000/api/category");
-        setNewCategory(response.data.data.data);
-        // console.log("Products:", response.data.data.data);
-      } catch (error) {
-        console.error(
-          "Error fetching products:",
-          error.response?.data || error.message
-        );
-      }
-    };
-
-    fetchCategory();
-  }, []);
-
-  //   useEffect(() => {
-  //     console.log("Products after fetch:", products);
-  //   }, [products]);
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    categoryId: null,
+    title: '',
+    message: ''
+  });
 
   const handleEditCategory = (categoryId) => {
+    if (!Array.isArray(categories)) return;
     const categoryToEdit = categories.find(
-      (product) => product.id === categoryId
+      (category) => category.id === categoryId
     );
-    setNewCategory(categoryToEdit);
+    setNewCategory({
+      ...categoryToEdit,
+      status: categoryToEdit.status?.toString() || "1"
+    });
     setEditingCategoryId(categoryId);
     setIsModalOpen(true);
   };
 
-  const handleSaveCategory = async () => {
+  const handleSaveCategory = async (e) => {
+    e.preventDefault();
+    if (!newCategory.name || newCategory.name.trim() === "") {
+      toast.error("Tên danh mục không được rỗng");
+      return;
+    }
+    
+    const categoryData = {
+      name: newCategory.name,
+      parent_id: newCategory.parent_id ? parseInt(newCategory.parent_id) : null,
+      status: newCategory.status
+    };
+    
+    console.log('Saving category:', categoryData);
     try {
-      const response = await axios.put(
-        `http://127.0.0.1:9000/api/category/${editingCategoryId}`,
-        newCategory
-      );
-      setNewCategory(
-        categories.map((category) =>
-          category.id === editingCategoryId ? response.data.data.data : category
-        )
-      );
+      if (editingCategoryId) {
+        const response = await api.put(`/category/${editingCategoryId}`, categoryData);
+        if(response?.data?.status === 200) {
+          const successMessage = response?.data?.message || "Cập nhật danh mục thành công!";
+          toast.success(successMessage);
+        }else {
+          toast.success("Cập nhật danh mục thất bại!");
+        }
+      } else {
+        const response = await api.post('/category', categoryData);
+        if(response?.data?.status === 201) {
+          const successMessage = response?.data?.message || "Thêm danh mục thành công!";
+          toast.success(successMessage);
+        }else {
+          toast.success("Thêm danh mục thất bại!");
+        }
+      }
+
+      await refetch(true);
+      setIsModalOpen(false);
+      setNewCategory({ name: "", parent_id: null, status: "1" });
       setEditingCategoryId(null);
-      alert("Product saved successfully!");
-      window.location.reload();
     } catch (error) {
       console.error(
-        "Error saving product:",
+        "Error saving category:",
         error.response?.data || error.message
       );
+      const resp = error.response?.data;
+      let errMsg = "Có lỗi xảy ra khi lưu danh mục: ";
+
+      if (resp) {
+        if (resp.message) {
+          errMsg += resp.message;
+        } else if (typeof resp.error === "string") {
+          errMsg += resp.error;
+        } else if (resp.error && typeof resp.error === "object") {
+          const flattened = [].concat(...Object.values(resp.error)).join(", ");
+          errMsg += flattened || JSON.stringify(resp.error);
+        } else if (resp.errors && typeof resp.errors === "object") {
+          const flattened = [].concat(...Object.values(resp.errors)).join(", ");
+          errMsg += flattened;
+        } else {
+          errMsg += JSON.stringify(resp);
+        }
+      } else {
+        errMsg += error.message || JSON.stringify(error);
+      }
+
+      toast.error(errMsg);
     }
   };
 
-  const handleDeleteCategory = async (categoryId) => {
+  const handleDeleteCategory = (categoryId) => {
+    const category = categories.find(c => c.id === categoryId);
+    setConfirmDialog({
+      isOpen: true,
+      categoryId,
+      title: 'Xác nhận xóa danh mục',
+      message: `Bạn có chắc chắn muốn xóa danh mục "${category?.name || 'này'}"? Hành động này không thể hoàn tác.`
+    });
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      if (!window.confirm("Are you sure you want to delete this product?")) {
-        return;
-      }
-      await axios.delete(`http://127.0.0.1:9000/api/category/${categoryId}`);
-      setNewCategory(
-        categories.filter((category) => category.id !== categoryId)
-      );
+      await api.delete(`/category/${confirmDialog.categoryId}`);
+      toast.success("Xóa danh mục thành công!");
+      setConfirmDialog({ isOpen: false, categoryId: null, title: '', message: '' });
+  
+      await refetch(true);
     } catch (error) {
-      console.error(
-        "Error deleting product:",
-        error.response?.data || error.message
-      );
+      console.error("Error deleting category:", error.response?.data || error.message);
+      const resp = error.response?.data;
+      let errMsg = "Có lỗi xảy ra khi xóa: ";
+
+      if (resp) {
+        if (resp.message) {
+          errMsg += resp.message;
+        } else if (typeof resp.error === "string") {
+          errMsg += resp.error;
+        } else if (resp.error && typeof resp.error === "object") {
+          const flattened = [].concat(...Object.values(resp.error)).join(", ");
+          errMsg += flattened || JSON.stringify(resp.error);
+        } else if (resp.errors && typeof resp.errors === "object") {
+          const flattened = [].concat(...Object.values(resp.errors)).join(", ");
+          errMsg += flattened;
+        } else {
+          errMsg += JSON.stringify(resp);
+        }
+      } else {
+        errMsg += error.message || JSON.stringify(error);
+      }
+
+      toast.error(errMsg);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDialog({ isOpen: false, categoryId: null, title: '', message: '' });
   };
 
   const handleInputChange = (e) => {
@@ -113,133 +166,286 @@ const CategoryManageList = () => {
     setNewCategory({ ...newCategory, [name]: value });
   };
 
+  const getParentCategoryName = (parentId) => {
+    if (!parentId) return '-';
+    const parentCategory = categories.find(cat => cat.id === parentId);
+    return parentCategory ? parentCategory.name : '-';
+  };
+
+  const fields = {
+    name: 'name',
+    parent_id: 'parent_id',
+    status: 'status',
+    actions: 'pattern.modified',
+  };
+
+  const listTitle = {
+    name: 'Tên danh mục',
+    parent_id: 'Danh mục cha',
+    status: 'Trạng thái',
+    actions: 'Tùy biến',
+  };
+
   return (
-    <div className="container p-4 w-full">
-      <h1 className="text-2xl font-bold mb-4">Danh sách các danh mục</h1>
-      <table className="bg-white border border-gray-200">
-        <thead>
-          <tr>
-            <th className="py-2 px-4 border-b">STT</th>
-            <th className="py-2 px-4 border-b">Tên sản phẩm</th>
-            <th className="py-2 px-4 border-b">Trạng thái</th>
-            <th className="py-2 px-4 border-b">Tùy biến</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Array.isArray(categories) &&
-            categories.map((category) => (
-              <tr key={category.id} className="hover:bg-gray-100">
-                <td className="py-2 px-4 border-b">
-                  {categories.indexOf(category) + 1}
-                </td>
-                <td className="py-2 px-4 border-b">{category.name}</td>
-                <td className="py-2 px-4 border-b">{category.status}</td>
-                <td className="py-2 px-4 pb-4 border-b flex justify-center items-center">
-                  <button
-                    onClick={() => handleEditCategory(category.id)}
-                    className="px-2 py-2 bg-yellow-500 text-white rounded mr-2"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteCategory(category.id)}
-                    className="px-2 py-2 bg-red-500 text-white rounded"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-        </tbody>
-      </table>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Quản lý danh mục</h1>
+            <p className="text-gray-600">Quản lý các danh mục sản phẩm của cửa hàng</p>
+          </div>
+          <button
+            onClick={() => {
+              setNewCategory({ name: "", parent_id: null, status: "1" });
+              setEditingCategoryId(null);
+              setIsModalOpen(true);
+            }}
+            className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <FaPlus className="mr-2 h-4 w-4" />
+            Thêm danh mục
+          </button>
+        </div>
 
-      {/* Modal for editing product */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                Edit category
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                data-modal-toggle="crud-modal"
-              >
-                <svg
-                  class="w-3 h-3"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 14 14"
-                >
-                  <path
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                  />
-                </svg>
-                <span class="sr-only">Close modal</span>
-              </button>
-            </div>
+        <div className="mb-6">
+          <SearchInput
+            searchFields={[
+              {
+                key: 'search',
+                label: 'Tên sản phẩm',
+                type: 'text',
+                placeholder: 'Nhập tên sản phẩm...'
+              },
+              {
+                key: 'status',
+                label: 'Trạng thái',
+                type: 'select',
+                placeholder: 'Chọn trạng thái...',
+                options: [
+                  { value: '1', label: 'Đang hoạt động' },
+                  { value: '0', label: 'Không hoạt động' }
+                ]
+              }
+            ]}
+            onSearch={(filters) => {
+              const updatedFilters = { ...filters };
+              if (!updatedFilters.status) {
+                updatedFilters.status = 'all';
+              }
+              setCurrentPage(1);
+              setSearchFilters(updatedFilters);
+            }}
+            size="medium"
+            useSearchButton={true}
+            showClearButton={false}
+          />
+        </div>
 
-            <form className="p-4 md:p-5" onSubmit={handleSaveCategory}>
-              <div class="grid gap-4 mb-4 grid-cols-2">
-                <div class="col-span-2 sm:col-span-1">
-                  <label
-                    for="name"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="flex">
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">Lỗi tải dữ liệu</h3>
+                <div className="mt-2 text-sm text-red-700">{error}</div>
+                <div className="mt-4">
+                  <button
+                    onClick={refetch}
+                    className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded text-sm"
                   >
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={newCategory.name}
-                    onChange={handleInputChange}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                    placeholder="Type product name"
-                    required=""
-                  />
-                </div>
-                <div class="col-span-2 sm:col-span-1">
-                  <label
-                    for="price"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >
-                    Status
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={newCategory.status}
-                    onChange={handleInputChange}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                    placeholder="Type product name"
-                    required=""
-                  />
+                    Thử lại
+                  </button>
                 </div>
               </div>
-              <button
-                type="submit"
-                className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 bg-gray-500 text-white rounded ml-2"
-              >
-                Cancel
-              </button>
-            </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-gray-600">Đang tải...</span>
+          </div>
+        ) : (
+          <>
+            {/* Stats */}
+            {!loading && !error && (
+              <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <div className="flex items-center">
+                    <div className="p-3 rounded-full bg-blue-100 text-blue-600">
+                      <FaEdit className="h-6 w-6" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Tổng danh mục</p>
+                      <p className="text-2xl font-bold text-gray-900">{Array.isArray(categories) ? categories.length : 0}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <div className="flex items-center">
+                    <div className="p-3 rounded-full bg-green-100 text-green-600">
+                      <FaCheckCircle className="h-6 w-6" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Đang hoạt động</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {Array.isArray(categories) ? categories.filter(cat => cat.status === 1).length : 0}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <div className="flex items-center">
+                    <div className="p-3 rounded-full bg-gray-100 text-gray-600">
+                      <FaTimesCircle className="h-6 w-6" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Không hoạt động</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {Array.isArray(categories) ? categories.filter(cat => cat.status !== 1).length : 0}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Table */}
+            <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+              <CommonTable
+                fields={fields}
+                items={categories.map(cat => ({
+                  ...cat,
+                  parent_id: getParentCategoryName(cat.parent_id)
+                }))}
+                showIndex={true}
+                indexByOrder={true}
+                onEdit={handleEditCategory}
+                onDelete={handleDeleteCategory}
+                listTitle={listTitle}
+              />
+            </div>
+
+            {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={pagination.last_page || 1}
+              onPageChange={setCurrentPage}
+            />
+          </>
+        )}
+
+        {/* Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+              </div>
+
+              <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      {editingCategoryId ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}
+                    </h3>
+                    <button
+                      onClick={() => setIsModalOpen(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSaveCategory} className="space-y-4">
+                    <div>
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                        Tên danh mục
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={newCategory.name || ""}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Nhập tên danh mục"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="parent_id" className="block text-sm font-medium text-gray-700 mb-1">
+                        Danh mục cha
+                      </label>
+                      <select
+                        name="parent_id"
+                        value={newCategory.parent_id || ""}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">-- Không chọn danh mục cha --</option>
+                        {categories
+                          .filter(cat => {
+                            return !cat.parent_id && cat.id !== editingCategoryId;
+                          })
+                          .map(cat => (
+                            <option key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                        Trạng thái
+                      </label>
+                      <select
+                        name="status"
+                        value={newCategory.status}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="1">Hoạt động</option>
+                        <option value="0">Không hoạt động</option>
+                      </select>
+                    </div>
+
+                    <div className="flex justify-end space-x-3 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => setIsModalOpen(false)}
+                        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        Hủy
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        {editingCategoryId ? 'Cập nhật' : 'Thêm mới'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };

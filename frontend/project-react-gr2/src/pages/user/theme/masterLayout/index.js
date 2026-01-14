@@ -1,12 +1,16 @@
 import { memo } from "react";
 import Header from "../header";
 import Footer from "../footer";
+import { Breadcrumb } from "../../../../component/user";
 
 const MasterLayout = ({ children, ...props }) => {
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <Header />
-      {children}
+      <Breadcrumb />
+      <div className="flex-1">
+        {children}
+      </div>
       <Footer />
     </div>
   );

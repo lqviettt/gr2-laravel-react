@@ -39,6 +39,8 @@ class GHNService
         $response = Http::withHeaders([
             'Token' => $this->token,
             'shop_id' => config('app.shop_id'),
+        ])->withOptions([
+            'verify' => false,
         ])->post("{$this->baseUrl}/v2/shipping-order/fee", [
             'from_district_id' => (int) config('app.from_district_id'),
             'to_district_id' => (int) $district->code,

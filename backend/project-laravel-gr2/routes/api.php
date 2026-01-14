@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,10 +26,23 @@ Route::group([
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
+
 Route::group([
     'middleware' => 'auth:api'
 ], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
+    Route::put('/profile', [AuthController::class, 'updateProfile']);
+});
+
+Route::post('/upload/image', [UploadController::class, 'uploadImage']);
+Route::post('/upload/images', [UploadController::class, 'uploadImages']);
+Route::delete('/upload/image', [UploadController::class, 'deleteImage']);
+
+Route::group([
+    'middleware' => ['auth:api', 'admin.check'],
+    'prefix' => 'admin'
+], function () {
+    Route::resource('account', AccountController::class);
 });

@@ -5,11 +5,13 @@ import { ROUTERS } from "./utils/router";
 import MasterLayout from "./pages/user/theme/masterLayout";
 import AdminLayout from "./pages/admin/theme/adminLayout/index.js";
 import ProfilePage from "./pages/user/profilePage";
+import AdminProfile from "./pages/admin/profileAdmin/index.js";
 import ProductPage from "./pages/user/productPage";
 import ProductDetail from "./pages/user/productDetail";
 import ProductList from "./pages/user/productList/index.js";
 import Login from "./pages/user/loginPage/index.js";
 import Register from "./pages/user/registerPage/index.js";
+import ResetPassword from "./pages/user/resetpwPage/index.js";
 import CategoryManageAdd from "./pages/admin/categoryManage/categoryAdd.js";
 import CategoryManageList from "./pages/admin/categoryManage/categoryList.js";
 import Cart from "./pages/user/cartPage/index.js";
@@ -20,7 +22,13 @@ import ProtectedRoute from "./utils/protectedRoute";
 import PaymentInfo from "./pages/user/paymentInfo/index.js";
 import ProductManageAdd from "./pages/admin/productManage/productAdd.js";
 import ProductManageList from "./pages/admin/productManage/productList.js";
+import AccountManageAdd from "./pages/admin/accountManage/accountAdd.js";
+import AccountManageList from "./pages/admin/accountManage/accountList.js";
 import VerifyAccount from "./pages/user/registerPage/verify.js";
+import AdminDashboard from "./pages/admin/dashboard/index.js";
+import UploadDemo from "./pages/UploadDemo";
+import OrderHistoryPage from "./pages/user/orderHistoryPage/index.js";
+import OrderDetailPaymentPage from "./pages/user/orderDetailPaymentPage/index.js";
 
 const renderUserRouter = () => {
   const userRouters = [
@@ -65,6 +73,11 @@ const renderUserRouter = () => {
       layout: MasterLayout,
     },
     {
+      path: ROUTERS.USER.RESETPASSWORD,
+      component: <ResetPassword />,
+      layout: MasterLayout,
+    },
+    {
       path: ROUTERS.USER.MY_ACCOUNT,
       component: <ProfilePage />,
       layout: MasterLayout,
@@ -86,15 +99,43 @@ const renderUserRouter = () => {
       layout: MasterLayout,
     },
     {
+      path: ROUTERS.USER.ORDER_HISTORY,
+      component: <OrderHistoryPage />,
+      layout: MasterLayout,
+    },
+    {
+      path: ROUTERS.USER.ORDER_DETAIL_PAYMENT,
+      component: <OrderDetailPaymentPage />,
+      layout: MasterLayout,
+    },
+    {
       path: ROUTERS.USER.VERIFY_ACCOUNT,
       component: <VerifyAccount />,
       layout: MasterLayout,
     },
     {
-      path: ROUTERS.ADMIN.HOME,
-      component: <CategoryManageList />,
+      path: ROUTERS.USER.UPLOAD_DEMO,
+      component: <UploadDemo />,
       layout: AdminLayout,
-      protected: false,
+      protected: true,
+    },
+    {
+      path: ROUTERS.ADMIN.HOME,
+      component: <AdminDashboard />,
+      layout: AdminLayout,
+      protected: true,
+    },
+    {
+      path: ROUTERS.ADMIN.DASHBOARD,
+      component: <AdminDashboard />,
+      layout: AdminLayout,
+      protected: true,
+    },
+    {
+      path: ROUTERS.ADMIN.PROFILE,
+      component: <AdminProfile />,
+      layout: AdminLayout,
+      protected: true,
     },
     {
       path: ROUTERS.ADMIN.CATEGORY_MANAGE_ADD,
@@ -129,6 +170,18 @@ const renderUserRouter = () => {
     {
       path: ROUTERS.ADMIN.PRODUCT_MANAGE_LIST,
       component: <ProductManageList />,
+      layout: AdminLayout,
+      protected: true,
+    },
+    {
+      path: ROUTERS.ADMIN.ACCOUNT_MANAGE_ADD,
+      component: <AccountManageAdd />,
+      layout: AdminLayout,
+      protected: true,
+    },
+    {
+      path: ROUTERS.ADMIN.ACCOUNT_MANAGE_LIST,
+      component: <AccountManageList />,
       layout: AdminLayout,
       protected: true,
     },

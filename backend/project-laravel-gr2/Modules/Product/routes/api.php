@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Product\Http\Controllers\CategoryController;
 use Modules\Product\Http\Controllers\ProductController;
 use Modules\Product\Http\Controllers\ProductVariantController;
+use Modules\Product\Http\Controllers\ReviewCommentController;
 use Modules\Product\Http\Controllers\VariantOptionController;
 
 /*
@@ -24,13 +25,28 @@ use Modules\Product\Http\Controllers\VariantOptionController;
 Route::group([
     'middleware' => 'auth:api'
 ], function () {
-    Route::post('/product/{productId}/variant', [ProductVariantController::class, 'store']);
-    Route::put('/product-variant/{pvariantId}', [ProductVariantController::class, 'update']);
-    Route::get('/product-variant/{pvariantId}', [ProductVariantController::class, 'show']);
-    Route::delete('/product-variant/{pvariantId}', [ProductVariantController::class, 'delete']);
+    // Product variant routes that need authentication can be added here later
+    Route::post('comments/{commentId}/like', [ReviewCommentController::class, 'toggleCommentLike']);
 });
+
+Route::post('/product/{productId}/variant', [ProductVariantController::class, 'store']);
+Route::put('/product-variant/{pvariantId}', [ProductVariantController::class, 'update']);
+Route::get('/product-variant/{pvariantId}', [ProductVariantController::class, 'show']);
+Route::delete('/product-variant/{pvariantId}', [ProductVariantController::class, 'delete']);
 
 Route::resource('/product', ProductController::class);
 Route::resource('/category', CategoryController::class);
+Route::get('/categories-with-children', [CategoryController::class, 'getCategoriesWithChildren']);
+Route::get('/categories-child', [CategoryController::class, 'getChildCategories']);
 Route::resource('/variant', VariantOptionController::class);
 Route::get('/product-variant', [ProductVariantController::class, 'index']);
+
+Route::prefix('product/{productId}')->group(function () {
+    Route::get('reviews', [ReviewCommentController::class, 'indexReviews']);
+    Route::get('comments', [ReviewCommentController::class, 'indexComments']);
+    Route::post('reviews', [ReviewCommentController::class, 'storeOrUpdateReview']);
+    Route::post('comments', [ReviewCommentController::class, 'storeComment']);
+});
+
+Route::delete('comments/{commentId}', [ReviewCommentController::class, 'deleteComment']);
+

@@ -19,6 +19,20 @@ class VariantOptionService
     }
 
     /**
+     * findOrCreate
+     *
+     * @param  array $data
+     * @return VariantOption
+     */
+    public function findOrCreate(array $data): VariantOption
+    {
+        return VariantOption::firstOrCreate(
+            ['type' => $data['type'], 'name' => $data['name']],
+            $data
+        );
+    }
+
+    /**
      * validate
      *
      * @param  mixed $data
@@ -27,8 +41,6 @@ class VariantOptionService
      */
     public function validate(array $data, VariantOption $variantOption): void
     {
-        if ($variantOption->type === 'color' && $data['value'] !== $variantOption->name) {
-            throw new InvalidArgumentException("Invalid color value. Expected: {$variantOption->name}");
-        }
+        // Implement validation logic here
     }
 }

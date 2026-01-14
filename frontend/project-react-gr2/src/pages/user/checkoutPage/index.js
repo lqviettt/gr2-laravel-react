@@ -1,84 +1,42 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../../component/CartContext";
+import { useBreadcrumb } from "../../../component/BreadcrumbContext";
 import { BsMinecartLoaded } from "react-icons/bs";
 import { GiCheckMark } from "react-icons/gi";
 import axios from "axios";
 import ghn from "../../../assets/images/ghn.png";
 import ghtk from "../../../assets/images/ghtk.png";
-import ordersuccess from "../../../assets/images/ordersuccess.png";
-import ip12 from "../../../assets/images/ip12.webp";
-import ip12Black from "../../../assets/images/ip12-black.webp";
-import ip12White from "../../../assets/images/ip12-white.webp";
-import ip12Blue from "../../../assets/images/ip12-blue.webp";
-import ip12Green from "../../../assets/images/ip12-green.webp";
-import ip12Red from "../../../assets/images/ip12do.webp";
-import ip12Tim from "../../../assets/images/ip12tim.webp";
-
-import ip12Pro from "../../../assets/images/ip12-pro.webp";
-import ip12prden from "../../../assets/images/ip12prden.webp";
-import ip12prtrang from "../../../assets/images/ip12prtrang.webp";
-import ip1vang from "../../../assets/images/ip12prvang.webp";
-import ip12prxanh from "../../../assets/images/ip12prxanh.webp";
-
-import ip13 from "../../../assets/images/ip13.webp";
-import ip13do from "../../../assets/images/ip13do.webp";
-import ip13den from "../../../assets/images/ip13den.webp";
-import ip13hong from "../../../assets/images/ip13hong.webp";
-import ip13trang from "../../../assets/images/ip13trang.webp";
-import ip13xanhd from "../../../assets/images/ip13xanhd.webp";
-import ip13xanhl from "../../../assets/images/ip13xanhl.webp";
-
-import ip13Pro from "../../../assets/images/ip13-pro.webp";
-import ip13Proden from "../../../assets/images/ip13prden.webp";
-import ip13Provang from "../../../assets/images/ip13prvang.webp";
-import ip13Protrang from "../../../assets/images/ip13prtrang.webp";
-import ip13Proxanh from "../../../assets/images/ip13prxanh.webp";
-import ip13Progreen from "../../../assets/images/ip13prgreen.webp";
-
-import ip14 from "../../../assets/images/ip14.webp";
-import ip14den from "../../../assets/images/ip14den.webp";
-import ip14trang from "../../../assets/images/ip14trang.webp";
-import ip14do from "../../../assets/images/ip14do.webp";
-import ip14xanhd from "../../../assets/images/ip14xanhd.webp";
-import ip14tim from "../../../assets/images/ip14tim.webp";
-import ip14vang from "../../../assets/images/ip14vang.webp";
-
-import ip14Pro from "../../../assets/images/ip14-pro.webp";
-import ip14Proden from "../../../assets/images/ip14prden.webp";
-import ip14Protrang from "../../../assets/images/ip14prtrang.webp";
-import ip14Provang from "../../../assets/images/ip14prvang.webp";
-import ip14Protim from "../../../assets/images/ip14prtim.webp";
-
-import ip15 from "../../../assets/images/ip15.webp";
-import ip15den from "../../../assets/images/ip15den.webp";
-import ip15hong from "../../../assets/images/ip15hong.webp";
-import ip15vang from "../../../assets/images/ip15vang.webp";
-import ip15xanhd from "../../../assets/images/ip15xanhd.webp";
-import ip15xanhl from "../../../assets/images/ip15xanhl.webp";
-
-import ip15Pro from "../../../assets/images/ip15-pro.webp";
-import ip15prttd from "../../../assets/images/ip15prttd.webp";
-import ip15prttt from "../../../assets/images/ip15prttt.webp";
-import ip15prtttn from "../../../assets/images/ip15prtttn.webp";
-import ip15prttx from "../../../assets/images/ip15prttx.webp";
-
-import ip16 from "../../../assets/images/ip16.webp";
-import ip16den from "../../../assets/images/ip16den.webp";
-import ip16trang from "../../../assets/images/ip16trang.webp";
-import ip16hong from "../../../assets/images/ip16hong.webp";
-import ip16xanh from "../../../assets/images/ip16xanh.webp";
-import ip16luuly from "../../../assets/images/ip16luuly.webp";
-
-import ip16Pro from "../../../assets/images/ip16-pro.webp";
-import ip16prttd from "../../../assets/images/ip16prttd.webp";
-import ip16prttt from "../../../assets/images/ip16prttt.webp";
-import ip16prtttn from "../../../assets/images/ip16prtttn.webp";
-import ip16prttsm from "../../../assets/images/ip16prttsm.webp";
+import { toast } from "react-toastify";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { cartItems, getTotalPrice, removeAllFromCart } = useCart();
+  const { setBreadcrumbTrail } = useBreadcrumb();
+  const { cartItems, getTotalPrice, removeAllFromCart, buyNowItems, clearBuyNowItems, getTotalPriceForItems } = useCart();
+  
+  // Sử dụng buyNowItems nếu có (khi bấm Mua ngay), nếu không dùng cartItems
+  const itemsToCheckout = buyNowItems || cartItems;
+  
+  // Tính tổng giá cho items được checkout
+  const getTotalCheckoutPrice = () => {
+    return getTotalPriceForItems(itemsToCheckout);
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (isMounted) {
+      setBreadcrumbTrail([
+        { name: "Giỏ hàng", path: "/cart" },
+        { name: "Thanh toán", path: "/checkout" },
+      ]);
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+  
   const [selectedFee, setSelectedFee] = useState(0);
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -100,7 +58,7 @@ const CheckoutPage = () => {
     setOrder({
       ...order,
       shipping_fee: fee,
-      total_price: getTotalPrice() * 1000 + fee,
+      total_price: getTotalCheckoutPrice() * 1000 + fee,
     });
     document.getElementById(key).click();
   };
@@ -124,6 +82,8 @@ const CheckoutPage = () => {
   const handleConfirm = () => {
     setOrderSuccess(false);
     removeAllFromCart();
+    clearBuyNowItems();
+    setBreadcrumbTrail([]);
     navigate("/");
   };
 
@@ -132,124 +92,6 @@ const CheckoutPage = () => {
       style: "currency",
       currency: "VND",
     }).format(amount);
-  };
-
-  const productImages = {
-    "iPhone 12": [
-      { id: 1, src: ip12, alt: "iPhone 12" },
-      { id: 2, src: ip12Black, alt: "Đen" },
-      { id: 3, src: ip12White, alt: "Trắng" },
-      { id: 4, src: ip12Red, alt: "Đỏ" },
-      { id: 5, src: ip12Tim, alt: "Tím" },
-      { id: 6, src: ip12Blue, alt: "Xanh Dương" },
-      { id: 7, src: ip12Green, alt: "Xanh Lá" },
-    ],
-    "iPhone 12 Pro": [
-      { id: 1, src: ip12Pro, alt: "iPhone 12 Pro" },
-      { id: 2, src: ip12prden, alt: "Đen" },
-      { id: 3, src: ip12prtrang, alt: "Trắng" },
-      { id: 4, src: ip1vang, alt: "Vàng" },
-      { id: 5, src: ip12prxanh, alt: "Xanh" },
-    ],
-    "iPhone 12 Pro Max": [
-      { id: 1, src: ip12Pro, alt: "iPhone 12 Pro Max" },
-      { id: 2, src: ip12prden, alt: "Đen" },
-      { id: 3, src: ip12prtrang, alt: "Trắng" },
-      { id: 4, src: ip1vang, alt: "Vàng" },
-      { id: 5, src: ip12prxanh, alt: "Xanh" },
-    ],
-    "iPhone 13": [
-      { id: 1, src: ip13, alt: "iPhone 13" },
-      { id: 2, src: ip13do, alt: "Đỏ" },
-      { id: 3, src: ip13den, alt: "Đen" },
-      { id: 4, src: ip13hong, alt: "Hồng" },
-      { id: 5, src: ip13trang, alt: "Trắng" },
-      { id: 6, src: ip13xanhd, alt: "Xanh Dương" },
-      { id: 7, src: ip13xanhl, alt: "Xanh Lá" },
-    ],
-    "iPhone 13 Pro": [
-      { id: 1, src: ip13Pro, alt: "iPhone 13 Pro" },
-      { id: 2, src: ip13Proden, alt: "Đen" },
-      { id: 3, src: ip13Protrang, alt: "Trắng" },
-      { id: 4, src: ip13Provang, alt: "Vàng" },
-      { id: 5, src: ip13Proxanh, alt: "Xanh" },
-      { id: 6, src: ip13Progreen, alt: "Xanh Lá" },
-    ],
-    "iPhone 13 Pro Max": [
-      { id: 1, src: ip13Pro, alt: "iPhone 13 Pro Max" },
-      { id: 2, src: ip13Proden, alt: "Đen" },
-      { id: 3, src: ip13Protrang, alt: "Trắng" },
-      { id: 4, src: ip13Provang, alt: "Vàng" },
-      { id: 5, src: ip13Proxanh, alt: "Xanh" },
-      { id: 6, src: ip13Progreen, alt: "Xanh Lá" },
-    ],
-    "iPhone 14": [
-      { id: 1, src: ip14, alt: "iPhone 14" },
-      { id: 2, src: ip14den, alt: "Đen" },
-      { id: 3, src: ip14trang, alt: "Trắng" },
-      { id: 4, src: ip14do, alt: "Đỏ" },
-      { id: 5, src: ip14xanhd, alt: "Xanh Dương" },
-      { id: 6, src: ip14tim, alt: "Tím" },
-      { id: 7, src: ip14vang, alt: "Vàng" },
-    ],
-    "iPhone 14 Pro": [
-      { id: 1, src: ip14Pro, alt: "iPhone 14 Pro" },
-      { id: 2, src: ip14Proden, alt: "Đen" },
-      { id: 3, src: ip14Protrang, alt: "Trắng" },
-      { id: 4, src: ip14Provang, alt: "Vàng" },
-      { id: 5, src: ip14Protim, alt: "Tím" },
-    ],
-    "iPhone 14 Pro Max": [
-      { id: 1, src: ip14Pro, alt: "iPhone 14 Pro Max" },
-      { id: 2, src: ip14Proden, alt: "Đen" },
-      { id: 3, src: ip14Protrang, alt: "Trắng" },
-      { id: 4, src: ip14Provang, alt: "Vàng" },
-      { id: 5, src: ip14Protim, alt: "Tím" },
-    ],
-    "iPhone 15": [
-      { id: 1, src: ip15, alt: "iPhone 15" },
-      { id: 2, src: ip15den, alt: "Đen" },
-      { id: 3, src: ip15hong, alt: "Hồng" },
-      { id: 4, src: ip15vang, alt: "Vàng" },
-      { id: 5, src: ip15xanhd, alt: "Xanh Dương" },
-      { id: 6, src: ip15xanhl, alt: "Xanh Lá" },
-    ],
-    "iPhone 15 Pro": [
-      { id: 1, src: ip15Pro, alt: "iPhone 15 Pro" },
-      { id: 2, src: ip15prttd, alt: "Titan Đen" },
-      { id: 3, src: ip15prttt, alt: "Titan Trắng" },
-      { id: 4, src: ip15prtttn, alt: "Titan Tự Nhiên" },
-      { id: 5, src: ip15prttx, alt: "Titan Xanh" },
-    ],
-    "iPhone 15 Pro Max": [
-      { id: 1, src: ip15Pro, alt: "iPhone 15 Pro Max" },
-      { id: 2, src: ip15prttd, alt: "Titan Đen" },
-      { id: 3, src: ip15prttt, alt: "Titan Trắng" },
-      { id: 4, src: ip15prtttn, alt: "Titan Tự Nhiên" },
-      { id: 5, src: ip15prttx, alt: "Titan Xanh" },
-    ],
-    "iPhone 16": [
-      { id: 1, src: ip16, alt: "iPhone 16" },
-      { id: 2, src: ip16den, alt: "Đen" },
-      { id: 3, src: ip16trang, alt: "Trắng" },
-      { id: 4, src: ip16hong, alt: "Hồng" },
-      { id: 5, src: ip16xanh, alt: "Xanh Mòng Két" },
-      { id: 6, src: ip16luuly, alt: "Xanh Lưu Ly" },
-    ],
-    "iPhone 16 Pro": [
-      { id: 1, src: ip16Pro, alt: "iPhone 16 Pro" },
-      { id: 2, src: ip16prttd, alt: "Titan Đen" },
-      { id: 3, src: ip16prttt, alt: "Titan Trắng" },
-      { id: 4, src: ip16prtttn, alt: "Titan Tự Nhiên" },
-      { id: 5, src: ip16prttsm, alt: "Titan Sa Mạc" },
-    ],
-    "iPhone 16 Pro Max": [
-      { id: 1, src: ip16Pro, alt: "iPhone 16 Pro Max" },
-      { id: 2, src: ip16prttd, alt: "Titan Đen" },
-      { id: 3, src: ip16prttt, alt: "Titan Trắng" },
-      { id: 4, src: ip16prtttn, alt: "Titan Tự Nhiên" },
-      { id: 5, src: ip16prttsm, alt: "Titan Sa Mạc" },
-    ],
   };
 
   const [order, setOrder] = useState({
@@ -264,7 +106,7 @@ const CheckoutPage = () => {
     shipping_fee: "",
     total_price: "",
     payment_method: "",
-    order_item: cartItems.map((item) => ({
+    order_item: itemsToCheckout.map((item) => ({
       product_id: item.id,
       product_variant_id: item.selectedVariant ? item.selectedVariant.id : "",
       quantity: item.quantity,
@@ -294,7 +136,7 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     const fetchDistricts = async () => {
-      if (!order.shipping_province) return;
+      if (!order.shipping_province_id) return;
       try {
         const response = await axios.get(
           `https://online-gateway.ghn.vn/shiip/public-api/master-data/district?province_id=${order.shipping_province_id}`,
@@ -311,11 +153,11 @@ const CheckoutPage = () => {
     };
 
     fetchDistricts();
-  }, [order.shipping_province]);
+  }, [order.shipping_province_id]);
 
   useEffect(() => {
     const fetchWards = async () => {
-      if (!order.shipping_district) return;
+      if (!order.shipping_district_id) return;
       try {
         const response = await axios.get(
           `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=${order.shipping_district_id}`,
@@ -332,12 +174,12 @@ const CheckoutPage = () => {
     };
 
     fetchWards();
-  }, [order.shipping_district]);
+  }, [order.shipping_district_id]);
 
-  const calculateShippingFee = async () => {
+  const calculateShippingFee = useCallback(async () => {
     try {
       const response = await axios.post(
-        "http://127.0.0.1:9000/api/shipping-fee",
+        `${process.env.REACT_APP_API_URL}/shipping-fee`,
         {
           service_type_id: 2,
           province: order.shipping_province,
@@ -345,7 +187,7 @@ const CheckoutPage = () => {
           ward: order.shipping_ward,
           address: order.shipping_address_detail,
           weight: 300,
-          value: getTotalPrice(),
+          value: getTotalCheckoutPrice(),
         }
       );
       setShippingUnits(response.data);
@@ -355,7 +197,7 @@ const CheckoutPage = () => {
         error.response?.data || error.message
       );
     }
-  };
+  }, [order.shipping_province, order.shipping_district, order.shipping_ward, order.shipping_address_detail, getTotalPrice]);
 
   useEffect(() => {
     if (
@@ -365,22 +207,30 @@ const CheckoutPage = () => {
     ) {
       calculateShippingFee();
     }
-  }, [order.shipping_province, order.shipping_district, order.shipping_ward]);
+  }, [order.shipping_province, order.shipping_district, order.shipping_ward, calculateShippingFee]);
 
   const [orderSuccess, setOrderSuccess] = useState(false);
-  const [orderCode, setOrderCode] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
     try {
       console.log("Thông tin đơn hàng gửi đi", order);
 
       const response = await axios.post(
-        "http://127.0.0.1:9000/api/order",
-        order
+        `${process.env.REACT_APP_API_URL}/order`,
+        order,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          }
+        }
       );
       setOrder({ ...order, ...response.data.data });
-      setOrderCode(response.data.data.code);
 
       console.log("Đơn hàng đã được tạo:", response.data.data);
 
@@ -393,385 +243,419 @@ const CheckoutPage = () => {
       } else {
         console.log("Không có payment_url, đơn hàng thành công");
         setOrderSuccess(true);
+        toast.success("Đơn hàng đã được tạo thành công!");
       }
     } catch (error) {
+      const backendMessage = error.response?.data?.message;
       console.error(
         "Error create order:",
         error.response?.data || error.message
       );
+      toast.error(
+        backendMessage ||
+          "Đã xảy ra lỗi khi tạo đơn hàng. Vui lòng thử lại."
+      );
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-6 lg:py-8">
       <form className="" onSubmit={handleSubmit}>
-        <div className="flex flex-col items-center justify-center bg-gray-100 max-h-[1500px]">
-          <div className="font-[sans-serif] bg-white my-6 mb-12 w-4/6 h-full p-5 rounded-xl">
-            <div className="flex flex-row gap-4">
-              <div className="flex-1 h-max rounded-md px-4 py-2">
-                <h2 className="border-l-[5px] pl-1 border-[#00adf0] text-2xl font-bold text-gray-800 mb-7">
-                  Thông tin đặt hàng
-                </h2>
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-gray-800 mb-4">
-                    Thông tin người nhận
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <input
-                        type="text"
-                        name="customer_name"
-                        placeholder="Họ và tên"
-                        value={order.customer_name}
-                        onChange={handleChange}
-                        required
-                        className="px-4 py-3 bg-gray-100 focus:bg-transparent text-gray-800 w-full text-sm rounded-md focus:outline-blue-600"
-                      />
-                    </div>
-                    <div>
-                      <input
-                        type="text"
-                        name="customer_phone"
-                        placeholder="Số điện thoại"
-                        value={order.customer_phone}
-                        onChange={handleChange}
-                        required
-                        className="px-4 py-3 bg-gray-100 focus:bg-transparent text-gray-800 w-full text-sm rounded-md focus:outline-blue-600"
-                      />
-                    </div>
-                    <div>
-                      <input
-                        type="email"
-                        name="customer_email"
-                        placeholder="Email"
-                        value={order.customer_email}
-                        onChange={handleChange}
-                        className="px-4 py-3 bg-gray-100 focus:bg-transparent text-gray-800 w-full text-sm rounded-md focus:outline-blue-600"
-                      />
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="p-4 sm:p-6 lg:p-8">
+              <div className="flex flex-col xl:flex-row gap-6 lg:gap-8">
+                {/* Order Information */}
+                <div className="flex-1 order-1 xl:order-1">
+                  <h2 className="border-l-[5px] pl-3 border-blue-500 text-xl sm:text-2xl font-bold text-gray-800 mb-6 lg:mb-8">
+                    Thông tin đặt hàng
+                  </h2>
+
+                  {/* Customer Information */}
+                  <div className="mb-6 lg:mb-8">
+                    <h3 className="text-base lg:text-lg font-semibold text-gray-800 mb-3 lg:mb-4">
+                      Thông tin người nhận
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                      <div>
+                        <input
+                          type="text"
+                          name="customer_name"
+                          placeholder="Họ và tên"
+                          value={order.customer_name}
+                          onChange={handleChange}
+                          required
+                          className="px-3 lg:px-4 py-3 bg-gray-50 focus:bg-white text-gray-800 w-full text-sm lg:text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          name="customer_phone"
+                          placeholder="Số điện thoại"
+                          value={order.customer_phone}
+                          onChange={handleChange}
+                          required
+                          className="px-3 lg:px-4 py-3 bg-gray-50 focus:bg-white text-gray-800 w-full text-sm lg:text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 transition-colors"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <input
+                          type="email"
+                          name="customer_email"
+                          placeholder="Email"
+                          value={order.customer_email}
+                          onChange={handleChange}
+                          className="px-3 lg:px-4 py-3 bg-gray-50 focus:bg-white text-gray-800 w-full text-sm lg:text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 transition-colors"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="mt-5">
-                  <h3 className="text-sm font-semibold lg:text-base text-gray-800 mb-4">
-                    Địa chỉ nhận hàng
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="relative">
-                      <select
-                        name="shipping_province"
-                        value={`${order.shipping_province},${order.shipping_province_id}`}
-                        required
-                        onChange={(e) => {
-                          const [provinceName, provinceID] =
-                            e.target.value.split(",");
-                          setOrder({
-                            ...order,
-                            shipping_province: provinceName,
-                            shipping_province_id: provinceID,
-                          });
-                        }}
-                        className="px-4 py-3 bg-gray-100 focus:bg-white text-gray-800 w-full text-sm rounded-md focus:outline-none border border-gray-300"
-                      >
-                        <option value="">Chọn tỉnh/thành phố</option>
-                        {sortedProvinces.map((province) => (
-                          <option
-                            key={province.ProvinceID}
-                            value={`${province.ProvinceName},${province.ProvinceID}`}
-                            className="bg-white"
-                          >
-                            {province.ProvinceName}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
 
-                    <div>
-                      <select
-                        name="shipping_district"
-                        value={`${order.shipping_district},${order.shipping_district_id}`}
-                        required
-                        onChange={(e) => {
-                          const [districtName, districtID] =
-                            e.target.value.split(",");
-                          setOrder({
-                            ...order,
-                            shipping_district: districtName,
-                            shipping_district_id: districtID,
-                          });
-                        }}
-                        className="px-4 py-3 bg-gray-100 focus:bg-white text-gray-800 w-full text-sm rounded-md focus:outline-none border border-gray-300"
-                      >
-                        <option value="">Chọn quận/huyện</option>
-                        {districts.map((district) => (
-                          <option
-                            key={district.DistrictID}
-                            value={`${district.DistrictName},${district.DistrictID}`}
-                          >
-                            {district.DistrictName}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <select
-                        name="shipping_ward"
-                        value={order.shipping_ward}
-                        onChange={handleChange}
-                        required
-                        className="px-4 py-3 bg-gray-100 focus:bg-white text-gray-800 w-full text-sm rounded-md focus:outline-none border border-gray-300"
-                      >
-                        <option value="">Chọn phường/xã</option>
-                        {wards.map((ward) => (
-                          <option key={ward.WardID} value={ward.WardID}>
-                            {ward.WardName}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <input
-                        type="text"
-                        name="shipping_address_detail"
-                        placeholder="Địa chỉ cụ thể"
-                        value={order.shipping_address_detail}
-                        onChange={handleChange}
-                        className="px-4 py-3 bg-gray-100 focus:bg-transparent text-gray-800 w-full text-sm rounded-md focus:outline-blue-600"
-                      />
+                  {/* Shipping Address */}
+                  <div className="mb-6 lg:mb-8">
+                    <h3 className="text-base lg:text-lg font-semibold text-gray-800 mb-3 lg:mb-4">
+                      Địa chỉ nhận hàng
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                      <div>
+                        <select
+                          name="shipping_province"
+                          value={`${order.shipping_province},${order.shipping_province_id}`}
+                          required
+                          onChange={(e) => {
+                            const [provinceName, provinceID] =
+                              e.target.value.split(",");
+                            setOrder({
+                              ...order,
+                              shipping_province: provinceName,
+                              shipping_province_id: provinceID,
+                            });
+                          }}
+                          className="px-3 lg:px-4 py-3 bg-gray-50 focus:bg-white text-gray-800 w-full text-sm lg:text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 transition-colors"
+                        >
+                          <option value="">Chọn tỉnh/thành phố</option>
+                          {sortedProvinces.map((province) => (
+                            <option
+                              key={province.ProvinceID}
+                              value={`${province.ProvinceName},${province.ProvinceID}`}
+                              className="bg-white"
+                            >
+                              {province.ProvinceName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <select
+                          name="shipping_district"
+                          value={`${order.shipping_district},${order.shipping_district_id}`}
+                          required
+                          onChange={(e) => {
+                            const [districtName, districtID] =
+                              e.target.value.split(",");
+                            setOrder({
+                              ...order,
+                              shipping_district: districtName,
+                              shipping_district_id: districtID,
+                            });
+                          }}
+                          className="px-3 lg:px-4 py-3 bg-gray-50 focus:bg-white text-gray-800 w-full text-sm lg:text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 transition-colors"
+                        >
+                          <option value="">Chọn quận/huyện</option>
+                          {districts.map((district) => (
+                            <option
+                              key={district.DistrictID}
+                              value={`${district.DistrictName},${district.DistrictID}`}
+                            >
+                              {district.DistrictName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <select
+                          name="shipping_ward"
+                          value={order.shipping_ward}
+                          onChange={handleChange}
+                          required
+                          className="px-3 lg:px-4 py-3 bg-gray-50 focus:bg-white text-gray-800 w-full text-sm lg:text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 transition-colors"
+                        >
+                          <option value="">Chọn phường/xã</option>
+                          {wards.map((ward) => (
+                            <option key={ward.WardID} value={ward.WardID}>
+                              {ward.WardName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          name="shipping_address_detail"
+                          placeholder="Địa chỉ cụ thể"
+                          value={order.shipping_address_detail}
+                          onChange={handleChange}
+                          className="px-3 lg:px-4 py-3 bg-gray-50 focus:bg-white text-gray-800 w-full text-sm lg:text-base rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 transition-colors"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="mt-5">
-                  <h3 className="text-sm font-semibold lg:text-base text-gray-800 mb-4">
-                    Đơn vị vận chuyển
-                  </h3>
-                  {Object.keys(shippingUnits).length === 0 ? null : (
-                    <div className="grid grid-cols-2 gap-4">
-                      {["GHTK", "GHN"].map((key) => {
-                        const value = shippingUnits[key];
-                        let fee = 0;
-                        let imageUrl = key === "GHTK" ? ghtk : ghn;
-                        let imageSize =
-                          key === "GHTK" ? "w-18 h-5" : "w-14 h-8";
+                  {/* Shipping Units */}
+                  <div className="mb-6 lg:mb-8">
+                    <h3 className="text-base lg:text-lg font-semibold text-gray-800 mb-3 lg:mb-4">
+                      Đơn vị vận chuyển
+                    </h3>
+                    {Object.keys(shippingUnits).length === 0 ? null : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                        {["GHTK", "GHN"].map((key) => {
+                          const value = shippingUnits[key];
+                          let fee = 0;
+                          let imageUrl = key === "GHTK" ? ghtk : ghn;
+                          let imageSize =
+                            key === "GHTK" ? "w-16 h-5 sm:w-18 sm:h-5" : "w-12 h-8 sm:w-14 sm:h-8";
 
-                        if (key === "GHTK" && value.success) {
-                          fee = value.fee.options.shipMoney;
-                        } else if (key === "GHN" && value.code === 200) {
-                          fee = value.data.service_fee;
-                        }
+                          if (key === "GHTK" && value.success) {
+                            fee = value.fee.options.shipMoney;
+                          } else if (key === "GHN" && value.code === 200) {
+                            fee = value.data.service_fee;
+                          }
 
-                        return (
-                          <div
-                            key={key}
-                            className="flex items-center p-3 border rounded-md cursor-pointer"
-                            onClick={() => handleShippingUnitChange(key, fee)}
-                          >
-                            <input
-                              id={key}
-                              type="radio"
-                              name="shipping_unit"
-                              required
-                              value={key}
-                              className="mr-2"
-                            />
-                            <img
-                              src={imageUrl}
-                              alt={key}
-                              className={`${imageSize} mr-2`}
-                            />
-                            <label className="text-sm font-semibold text-gray-800 cusor-pointer">
-                              {key === "GHTK"
-                                ? "Giao hàng tiết kiệm"
-                                : "GHN - Nhanh"}{" "}
-                              <span className="text-blue-600 ml-2">
-                                {formatCurrency(fee)}
-                              </span>
-                            </label>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                          return (
+                            <div
+                              key={key}
+                              className="flex items-center p-3 lg:p-4 border rounded-lg cursor-pointer hover:border-blue-500 transition-all duration-200 hover:shadow-md"
+                              onClick={() => handleShippingUnitChange(key, fee)}
+                            >
+                              <input
+                                id={key}
+                                type="radio"
+                                name="shipping_unit"
+                                required
+                                value={key}
+                                className="mr-3"
+                              />
+                              <img
+                                src={imageUrl}
+                                alt={key}
+                                className={`${imageSize} mr-3 flex-shrink-0`}
+                              />
+                              <div className="min-w-0 flex-1">
+                                <label className="text-sm font-semibold text-gray-800 cursor-pointer block">
+                                  {key === "GHTK"
+                                    ? "Giao hàng tiết kiệm"
+                                    : "GHN - Nhanh"}
+                                </label>
+                                <p className="text-blue-600 font-medium text-sm lg:text-base">
+                                  {formatCurrency(fee)}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
 
-                <div className="mt-5">
-                  <h3 className="text-sm font-semibold lg:text-base text-gray-800 mb-4">
-                    Phương thức thanh toán
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {paymentMethods.map((method) => (
-                      <div key={method.id} className="flex items-center">
+                  {/* Payment Methods */}
+                  <div className="mb-6 lg:mb-8">
+                    <h3 className="text-base lg:text-lg font-semibold text-gray-800 mb-3 lg:mb-4">
+                      Phương thức thanh toán
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                      {paymentMethods.map((method) => (
                         <button
+                          key={method.id}
                           type="button"
-                          className={`w-full py-3 border text-gray-800 text-sm font-semibold rounded-lg flex items-center ${
+                          className={`w-full py-3 lg:py-4 px-3 lg:px-4 border text-gray-800 text-sm lg:text-base font-semibold rounded-lg flex items-center transition-all duration-200 ${
                             selectedMethod === method.id
-                              ? "border-[#007bff]"
-                              : "hover:border-[#007bff]"
+                              ? "border-blue-500 bg-blue-50 shadow-md"
+                              : "hover:border-blue-500 hover:shadow-sm"
                           }`}
                           onClick={() => handleSelectMethod(method.id)}
                         >
-                          <span className="w-6 h-6 flex justify-center items-center mr-2 ml-1">
+                          <span className="w-5 h-5 lg:w-6 lg:h-6 flex justify-center items-center mr-3 flex-shrink-0">
                             {selectedMethod === method.id && (
-                              <GiCheckMark className="text-blue-600" />
+                              <GiCheckMark className="text-blue-600 w-4 h-4" />
                             )}
                           </span>
-                          {method.label}
+                          <span className="text-left">{method.label}</span>
                         </button>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex-[0.5] h-max">
-                <div className="rounded-xl px-6 py-4 bg-gray-100">
-                  <div className="h-full p-3 rounded-md">
-                    {cartItems.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center mt-6">
-                        <BsMinecartLoaded size={100} />
-                        <h3 className="text-xl font-semibold">
+                {/* Order Summary */}
+                <div className="xl:w-96 order-2 xl:order-2">
+                  <div className="bg-gray-50 rounded-lg p-4 lg:p-6 xl:sticky xl:top-4">
+                    <h2 className="text-base lg:text-lg border-l-[5px] border-blue-500 pl-3 font-semibold text-gray-800 mb-4 lg:mb-6">
+                      Thông tin sản phẩm
+                    </h2>
+
+                    {itemsToCheckout.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-8 lg:py-12">
+                        <BsMinecartLoaded size={48} className="text-gray-400 mb-4" />
+                        <h3 className="text-base lg:text-lg font-semibold text-gray-600 text-center">
                           Không có sản phẩm nào trong giỏ hàng.
                         </h3>
                       </div>
                     ) : (
-                      cartItems.map((item, index) => (
-                        <div
-                          key={index}
-                          className="w-full h-max mb-4 border-b border-gray-200 pb-4"
-                        >
-                          <h2 className="text-lg border-l-[5px] border-[#00adf0] pl-1 font-semibold text-gray-800 mb-5">
-                            Thông tin sản phẩm
-                          </h2>
-                          <div className="flex items-start gap-4">
-                            <div className="w-28 h-28 flex p-1 shrink-0 rounded-md">
-                              {productImages[item.category.name]?.map(
-                                (image) => {
-                                  if (
-                                    item.selectedVariant &&
-                                    image.alt.includes(
-                                      item.selectedVariant.value
-                                    )
-                                  ) {
-                                    return (
-                                      <img
-                                        key={image.id}
-                                        src={image.src}
-                                        alt={image.alt}
-                                        className="w-full object-contain"
-                                      />
-                                    );
-                                  } else if (
-                                    !item.selectedVariant &&
-                                    image.id === 1
-                                  ) {
-                                    return (
-                                      <img
-                                        key={image.id}
-                                        src={
-                                          productImages[item.category.name][0]
-                                            .src
-                                        }
-                                        alt={
-                                          productImages[item.category.name][0]
-                                            .alt
-                                        }
-                                        className="w-full h-full object-contain"
-                                      />
-                                    );
-                                  }
-                                  return null;
-                                }
+                      <div className="space-y-3 lg:space-y-4 mb-4 lg:mb-6">
+                        {itemsToCheckout.map((item, index) => (
+                          <div
+                            key={index}
+                            className="flex gap-3 lg:gap-4 p-3 lg:p-4 bg-white rounded-lg border shadow-sm"
+                          >
+                            <div className="w-12 h-12 lg:w-16 lg:h-16 flex-shrink-0">
+                              {item.image && !item.selectedVariant?.image ? (
+                                <img
+                                  src={`${process.env.REACT_APP_LARAVEL_APP}/storage/${item.image}`}
+                                  alt={item.name}
+                                  className="w-full h-full object-contain rounded"
+                                />
+                              ) : item.selectedVariant?.image ? (
+                                <img
+                                  src={`${process.env.REACT_APP_LARAVEL_APP}/storage/${item.selectedVariant.image}`}
+                                  alt={item.selectedVariant.value}
+                                  className="w-full h-full object-contain rounded"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gray-200 rounded flex items-center justify-center">
+                                  <span className="text-gray-400">No Image</span>
+                                </div>
                               )}
                             </div>
-                            <div className="w-full">
-                              <h3 className="text-sm font-semibold lg:text-base text-gray-800">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-sm font-semibold text-gray-800 truncate">
                                 {item.name}
                               </h3>
-                              <ul className="text-xs text-gray-800 space-y-1 mt-3">
-                                <li className="flex flex-wrap gap-4">
-                                  Số lượng
-                                  <span className="ml-auto">
-                                    {item.quantity}
-                                  </span>
-                                </li>
-                                <li className="flex flex-wrap gap-4">
-                                  Giá tiền
-                                  <span className="ml-auto">
-                                    {formatCurrency(item.price * 1000)}
-                                  </span>
-                                </li>
-                              </ul>
+                              <div className="text-xs text-gray-600 mt-1 space-y-1">
+                                {item.selectedVariant && (
+                                  <p>Màu sắc: {item.selectedVariant.value}</p>
+                                )}
+                                <p>Số lượng: {item.quantity}</p>
+                                <p>Giá: {formatCurrency(item.price * 1000)}</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))
+                        ))}
+                      </div>
                     )}
-                    <div className="w-full p-1 mt-1 border-b border-gray-200">
-                      <h4 className="flex flex-wrap text-sm mb-1 font-semibold text-gray-800">
-                        Tạm tính:{" "}
-                        <span className="ml-auto">
-                          {formatCurrency(getTotalPrice() * 1000)}
-                        </span>
-                      </h4>
-                      <h4 className="flex flex-wrap mb-2 text-sm font-semibold text-gray-800">
-                        Phí vận chuyển:{" "}
-                        <span className="ml-auto">
-                          {formatCurrency(selectedFee)}
-                        </span>
-                      </h4>
-                    </div>
-                    <h4 className="flex flex-wrap mt-2 ml-1 text-lg font-semibold text-gray-800">
-                      Tổng cộng:{" "}
-                      <span className="ml-auto text-lg font-semibold text-blue-600">
-                        {formatCurrency(getTotalPrice() * 1000 + selectedFee)}
-                      </span>
-                    </h4>
-                  </div>
-                </div>
 
-                <div className="flex gap-4 max-md:flex-col mt-8">
-                  <button
-                    type="button"
-                    onClick={() => window.history.back()}
-                    className="rounded-md px-4 py-2.5 w-full text-sm tracking-wide bg-transparent hover:bg-gray-100 border border-gray-300 text-gray-800 max-md:order-1"
-                  >
-                    Quay lại giỏ hàng
-                  </button>
-                  <button
-                    type="submit"
-                    className="rounded-md px-4 py-2.5 w-full text-sm tracking-wide bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Đặt hàng
-                  </button>
+                    <div className="border-t border-gray-200 pt-4 space-y-2 lg:space-y-3">
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>Tạm tính:</span>
+                        <span>{formatCurrency(getTotalCheckoutPrice() * 1000)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>Phí vận chuyển:</span>
+                        <span>{formatCurrency(selectedFee)}</span>
+                      </div>
+                      <div className="flex justify-between text-base lg:text-lg font-semibold text-gray-800 border-t border-gray-200 pt-2 lg:pt-3">
+                        <span>Tổng cộng:</span>
+                        <span className="text-blue-600">
+                          {formatCurrency(getTotalCheckoutPrice() * 1000 + selectedFee)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                      <button
+                        type="button"
+                        onClick={() => window.location.href = '/cart'}
+                        disabled={isSubmitting}
+                        className="flex-1 py-3 px-4 text-sm lg:text-base font-medium bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-md transition-colors shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Quay lại giỏ hàng
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="flex-1 py-3 px-4 text-sm lg:text-base font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Đang xử lý...
+                          </>
+                        ) : (
+                          'Đặt hàng'
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </form>
-      <div>
-        {orderSuccess && (
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white p-10 rounded-lg shadow-lg text-center">
-              <img
-                src={ordersuccess}
-                alt="iPhone 12"
-                className="w-20 h-20 mx-auto"
-              />
-              <h2 className="text-2xl font-bold mb-4">
-                Đặt hàng thành công! Mã đơn hàng: {order.code}
-              </h2>
 
+      {/* Success Modal */}
+      {orderSuccess && (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-auto overflow-hidden">
+            {/* Success Icon Background */}
+            <div className="bg-gradient-to-br from-green-400 to-green-500 px-6 py-8 flex justify-center">
+              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center animate-bounce">
+                <GiCheckMark className="text-green-500 w-10 h-10" />
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 lg:p-8 text-center">
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
+                Đặt hàng thành công!
+              </h2>
+              <p className="text-gray-600 text-sm lg:text-base mb-6">
+                Cảm ơn bạn đã lựa chọn chúng tôi. Đơn hàng của bạn đã được tiếp nhận.
+              </p>
+
+              {/* Order Info Box */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <p className="text-gray-600 text-sm mb-1">Mã đơn hàng</p>
+                <p className="text-xl lg:text-2xl font-bold text-blue-600">
+                  {order.code}
+                </p>
+              </div>
+
+              {/* Info Items */}
+              <div className="space-y-3 mb-6 text-left">
+                <div className="flex items-start gap-3">
+                  <GiCheckMark className="text-green-500 w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700 text-sm">
+                    Chúng tôi sẽ xác nhận đơn hàng trong 24 giờ
+                  </span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <GiCheckMark className="text-green-500 w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700 text-sm">
+                    Bạn sẽ nhận được email xác nhận tại địa chỉ email đã cung cấp
+                  </span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <GiCheckMark className="text-green-500 w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700 text-sm">
+                    Lưu lại mã đơn hàng và theo dõi đơn hàng của bạn trong "Tra cứu đơn hàng"
+                  </span>
+                </div>
+              </div>
+
+              {/* Button */}
               <button
-                className="bg-green-500 text-white px-6 py-2 rounded-md"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-semibold transition-colors shadow-md hover:shadow-lg"
                 onClick={() => handleConfirm()}
               >
-                Xác nhận
+                Về trang chủ
               </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

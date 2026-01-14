@@ -8,8 +8,10 @@ use App\Http\Requests\OrderRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Jobs\SendOrderEmailJob;
+use App\Services\VNPayService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Modules\Order\Helpers\FormatData;
 use Modules\Order\Models\Order;
 
@@ -21,7 +23,10 @@ class OrderController extends Controller
      * @param  OrderRepositoryInterface $orderRepository
      * @return void
      */
-    public function __construct(protected OrderRepositoryInterface $orderRepository) {}
+    public function __construct(
+        protected OrderRepositoryInterface $orderRepository,
+        protected VNPayService $vnpayService
+        ) {}
 
     /**
      * index
@@ -36,12 +41,19 @@ class OrderController extends Controller
         // $this->authorize('view', Order::class);
         $query = $this->orderRepository
             ->builderQuery()
-            ->searchByStatus($request->status)
+            ->searchByStatusOrder($request->status)
             ->searchByNameCode($request->search)
             ->searchByPhone($request->phone)
-            ->searchByCreated($request->created_by);
+            ->searchByCreated($request->created_by)
+            ->searchByDate($request->start_date, $request->end_date)
+            ->searchByCode($request->code)
+            ->orderBy('created_at', 'desc');
 
-        return $this->sendSuccess($formatData->formatData($query->paginate($perPage)));
+        $paginator = $query->paginate($perPage);
+        $formattedData = $formatData->formatData($paginator->getCollection());
+        $paginator->setCollection($formattedData);
+
+        return $this->sendSuccess($paginator);
     }
 
     /**
@@ -53,108 +65,50 @@ class OrderController extends Controller
     public function store(OrderRequest $request): JsonResponse
     {
         // $this->authorize('create', Order::class);
-        $result = DB::transaction(function () use ($request) {
-            $order = $this->orderRepository
-                ->createOrder($request->storeOrder(), $request->order_item);
+        try {
+            $result = DB::transaction(function () use ($request) {
+                $orderData = $request->storeOrder();
 
-            if ($order->customer_email) {
-                SendOrderEmailJob::dispatch($order);
-            }
+                if (auth()->user()) {
+                    $orderData['created_by'] = auth()->user()->user_name ?? auth()->user()->name;
+                }
 
-            return $order;
-        });
+                $order = $this->orderRepository
+                    ->createOrder($orderData, $request->order_item);
 
-        if ($result->payment_method == 'COD') {
-            return $this->created($result);
-        } else {
-            $config = $this->fetchVNPay();
-            $vnpUrl = $this->generateUrlPayment(
-                $result->payment_method,
-                $result,
-                $config
-            );
-            $result->payment = $vnpUrl;
+                if ($order->customer_email) {
+                    SendOrderEmailJob::dispatch($order);
+                }
 
-            return $this->created($result);
-        }
-    }
+                return $order;
+            });
 
-    //Doan nay tam thoi de day, sau nay se chuyen vao service
-    private function fetchVNPay(): array
-    {
-        return [
-            'return_url' => config('payment-method.vnpay.return_url'),
-            'refund_url' => config('payment-method.vnpay.refund_url'),
-            'refund_email' => config('payment-method.vnpay.refund_email'),
-            'tmn_code' => config('payment-method.vnpay.tmn_code'),
-            'url' => config('payment-method.vnpay.url'),
-            'secret_key' => config('payment-method.vnpay.secret_key'),
-        ];
-    }
-
-    //Doan nay tam thoi de day, sau nay se chuyen vao service
-    private function generateUrlPayment(string $vnpBankCode, Order $order, array $config): array
-    {
-        $vnpHashSecret = $config['secret_key'];
-        $vnpUrl = $config['url'];
-        $vnpIpAddr = request()->ip();
-        $vnpCreateDate = Carbon::now('Asia/Ho_Chi_Minh')->format('YmdHis');
-        $vnpExpireDate = Carbon::now('Asia/Ho_Chi_Minh')->addMinutes(15)->format('YmdHis');
-        $totalPayment = $order->total_price;
-        $txnRef = $order->code;
-
-        $inputData = [
-            "vnp_Version" => "2.1.0",
-            "vnp_TmnCode" => $config['tmn_code'],
-            "vnp_Amount" => $totalPayment * 100,
-            "vnp_Command" => "pay",
-            "vnp_CreateDate" => $vnpCreateDate,
-            "vnp_ExpireDate" => $vnpExpireDate,
-            "vnp_CurrCode" => "VND",
-            "vnp_IpAddr" => $vnpIpAddr,
-            "vnp_Locale" => "vn",
-            "vnp_OrderInfo" => "Thanh toan GD: " . $txnRef,
-            "vnp_OrderType" => "other",
-            "vnp_ReturnUrl" => $config['return_url'],
-            "vnp_TxnRef" => $txnRef,
-        ];
-
-        $filteredData = array_filter(
-            $inputData,
-            function ($key) {
-                return !in_array($key, ['vnp_Version', 'vnp_TmnCode', 'vnp_ReturnUrl', 'vnp_TxnRef']);
-            },
-            ARRAY_FILTER_USE_KEY
-        );
-
-        if (!empty($vnpBankCode)) {
-            $inputData['vnp_BankCode'] = $vnpBankCode;
-        }
-
-        ksort($inputData);
-        $query = "";
-        $index = 0;
-        $hashData = "";
-        foreach ($inputData as $key => $value) {
-            if ($index == 1) {
-                $hashData .= '&' . urlencode($key) . "=" . urlencode($value);
+            if ($result->payment_method == 'COD' || $result->payment_method == null) {
+                return $this->created($result);
             } else {
-                $hashData .= urlencode($key) . "=" . urlencode($value);
-                $index = 1;
-            }
-            $query .= urlencode($key) . "=" . urlencode($value) . '&';
-        }
+                $config = $this->vnpayService->fetchVNPay();
+                $vnpUrl = $this->vnpayService->generateUrlPayment(
+                    $result->payment_method,
+                    $result,
+                    $config
+                );
+                $result->payment = $vnpUrl;
 
-        $vnpUrl = $vnpUrl . "?" . $query;
-        if (isset($vnpHashSecret)) {
-            $vnpSecureHash = hash_hmac('sha512', $hashData, $vnpHashSecret);
-            $vnpUrl .= 'vnp_SecureHash=' . $vnpSecureHash;
-            return array_merge(
-                ['payment_url' => $vnpUrl],
-                $filteredData
-            );
+                return $this->created($result);
+            }
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Exception $e) {
+            Log::error('Error creating order', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Đã xảy ra lỗi khi tạo đơn hàng.',
+            ], 500);
         }
-        return false;
     }
 
     /**
@@ -167,8 +121,10 @@ class OrderController extends Controller
     {
         // $this->authorize('view', $order);
         $order = $this->orderRepository->find($order);
+        $order->load('orderItem.product', 'orderItem.product_variant.product');
+        $formattedOrder = (new FormatData())->formatData(collect([$order]))->first();
 
-        return $this->sendSuccess($order);
+        return $this->sendSuccess($formattedOrder);
     }
 
     /**
@@ -178,7 +134,7 @@ class OrderController extends Controller
      * @param  mixed $order
      * @return JsonResponse
      */
-    public function update(OrderRequest $request, Order $order): JsonResponse
+    public function update(OrderRequest $request, Order $order, FormatData $formatData): JsonResponse
     {
         // $this->authorize('update', $order);
         if ($order->status === 'canceled') {
@@ -189,10 +145,14 @@ class OrderController extends Controller
 
         try {
             DB::transaction(function () use ($request, $order) {
-                $this->orderRepository->updateOrder($order, $request->updateOrder());
+                $orderData = $request->updateOrder();                
+                $this->orderRepository->updateOrder($order, $orderData);
             });
 
-            return $this->updated($order->load('orderItem'));
+            $order->load('orderItem.product', 'orderItem.product_variant.product');
+            $formattedOrder = $formatData->formatData(collect([$order]))->first();
+
+            return $this->updated($formattedOrder);
         } catch (\Exception $e) {
 
             return $this->sendError($e->getMessage());

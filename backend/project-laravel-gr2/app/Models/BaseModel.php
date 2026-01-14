@@ -13,9 +13,9 @@ class BaseModel extends Model
     {
         return $query->when(
             !is_null($status),
-            fn($query) => $query->where(function ($query) use ($status) {
-                $query->where('status', $status);
-            })
+            fn($query) => $status === 'all'
+                ? $query->whereIn('status', [0, 1])
+                : $query->where('status', $status)
         );
     }
 

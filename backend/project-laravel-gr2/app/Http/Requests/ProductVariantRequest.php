@@ -14,10 +14,11 @@ class ProductVariantRequest extends FormRequest
     public function rules()
     {
         return [
-            'variant_option_id' => 'required|exists:variant_options,id',
+            'variant_option_id' => 'sometimes|exists:variant_options,id',
             'value' => 'required|string|max:50',
             'quantity' => 'required|integer',
             'price' => 'required|numeric|min:0',
+            'image' => 'nullable|string',
         ];
     }
 }

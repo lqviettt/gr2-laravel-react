@@ -21,10 +21,32 @@ class Product extends BaseModel
         'description',
         'category_id',
         'status',
+        'image',
+        'parent_id',
     ];
     protected $hidden = ['created_at', 'updated_at'];
     public $timestamps = false;
 
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(ProductComment::class);
+    }
+
+    public function averageRating()
+    {
+        return $this->reviews()->avg('rating');
+    }
+
+    public function reviewsCount()
+    {
+        return $this->reviews()->count();
+    }
+    
     public function category()
     {
         return $this->belongsTo(Category::class);
@@ -46,12 +68,31 @@ class Product extends BaseModel
         return $this->hasMany(ProductVariant::class);
     }
 
+    public function scopeWhereCategoryActive($query)
+    {
+        return $query->whereHas('category', function ($q) {
+            $q->where('status', 1);
+        });
+    }
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
+    }
+
     public function scopeSearchByCategory($query, $categoryId)
     {
         return $query->when(
             !is_null($categoryId),
             fn($query) => $query->where(function ($query) use ($categoryId) {
-                $query->where('category_id', $categoryId);
+                if (is_string($categoryId) && str_contains($categoryId, ',')) {
+                    $categoryIds = array_map('intval', explode(',', $categoryId));
+                    $query->whereIn('category_id', $categoryIds);
+                } elseif (is_array($categoryId)) {
+                    $query->whereIn('category_id', $categoryId);
+                } else {
+                    $query->where('category_id', $categoryId);
+                }
             })
         );
     }
