@@ -147,7 +147,7 @@ const SwapPolicyPage = () => {
             </p>
             <div className="mt-4 space-y-2">
               <a
-                href="tel:0981218999"
+                href="tel:0981218907"
                 className="block rounded-xl bg-gray-900 px-4 py-3 text-sm font-medium text-white hover:bg-gray-800 text-center"
               >
                 Gọi hotline: 0981 218 907

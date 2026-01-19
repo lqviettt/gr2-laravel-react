@@ -74,15 +74,15 @@ const ContactPage = () => {
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="rounded-2xl border border-gray-200 bg-white p-5">
           <p className="text-sm text-gray-500">Hotline</p>
-          <a className="mt-1 block text-lg font-semibold text-gray-900" href="tel:0981218999">
-            0981 218 999
+          <a className="mt-1 block text-lg font-semibold text-gray-900" href="tel:0981218907">
+            0981 218 907
           </a>
           <p className="mt-2 text-sm text-gray-700">Hỗ trợ nhanh: đơn hàng, bảo hành.</p>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5">
           <p className="text-sm text-gray-500">Email</p>
-          <a className="mt-1 block text-lg font-semibold text-gray-900" href="mailto:support@example.com">
-            support@example.com
+          <a className="mt-1 block text-lg font-semibold text-gray-900" href="mailto:lqviettt3403@gmail.com">
+            lqviettt3403@gmail.com
           </a>
           <p className="mt-2 text-sm text-gray-700">Tiếp nhận yêu cầu & phản hồi theo ticket.</p>
         </div>
