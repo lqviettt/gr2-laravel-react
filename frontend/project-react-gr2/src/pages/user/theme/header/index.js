@@ -211,6 +211,14 @@ const Header = () => {
   }, [categories, categoryProducts]);
 
   const buildMenus = useCallback(() => {
+    // These categories exist in DB but should NOT behave like product categories.
+    // We'll render them as static pages instead (see finalMenus below).
+    const EXCLUDED_DYNAMIC_MENU_NAMES = new Set([
+      "Chính sách đổi trả, lên đời",
+      "Chính sách bảo hành",
+      "Liên hệ",
+    ]);
+    const normalized = (s) => (s || "").toString().trim().toLowerCase();
     
     const buildNestedCategories = (parentId = null) => {
       return categories
@@ -221,7 +229,10 @@ const Header = () => {
         }));
     };
     
-    const nestedCategories = buildNestedCategories();
+    const nestedCategories = buildNestedCategories().filter((cat) => {
+      const name = normalized(cat?.name);
+      return ![...EXCLUDED_DYNAMIC_MENU_NAMES].some((n) => normalized(n) === name);
+    });
     
     const dynamicMenus = nestedCategories.map(cat => {
       if (cat.id === 103) {
@@ -275,6 +286,18 @@ const Header = () => {
         path: ROUTERS.USER.HOME,
       },
       ...dynamicMenus,
+      {
+        name: "Chính sách đổi trả, lên đời",
+        path: `/${ROUTERS.USER.SWAP}`,
+      },
+      {
+        name: "Chính sách bảo hành",
+        path: `/${ROUTERS.USER.WARRANTY_POLICY}`,
+      },
+      {
+        name: "Liên hệ",
+        path: `/${ROUTERS.USER.CONTACT}`,
+      },
     ];
     
     return finalMenus;

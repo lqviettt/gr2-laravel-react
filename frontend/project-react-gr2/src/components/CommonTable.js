@@ -85,7 +85,7 @@ const CommonTable = ({
       );
     } else if (value === "pattern.image") {
       const imageSrc = item.image && typeof item.image === 'string'
-        ? (item.image.startsWith('http') ? item.image : `${process.env.REACT_APP_API_URL.replace('/api', '')}/${item.image}`)
+        ? (item.image.startsWith('http') ? item.image : `${process.env.REACT_APP_LARAVEL_APP}/${item.image}`)
         : null;
 
       return imageSrc ? (
@@ -221,6 +221,32 @@ const CommonTable = ({
             className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${badgeClass}`}
           >
             {statusText}
+          </span>
+        );
+      } else if (key === "payment") {
+        const paymentValue = item[value] || item[key];
+        let paymentText = paymentValue;
+        let badgeClass = "bg-gray-100 text-gray-800";
+
+        switch (paymentValue) {
+          case "paid":
+            paymentText = "Paid";
+            badgeClass = "bg-green-900 text-green-100";
+            break;
+          case "pending":
+            paymentText = "Unpaid";
+            badgeClass = "bg-red-100 text-red-800";
+            break;
+          default:
+            paymentText = paymentValue;
+            break;
+        }
+
+        return (
+          <span
+            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${badgeClass}`}
+          >
+            {paymentText}
           </span>
         );
       }
