@@ -140,17 +140,20 @@ class AuthController extends Controller
     public function forgotPassword(Request $request): JsonResponse
     {
         $request->validate([
-            'email' => 'required|email|exists:users,email',
+            'email' => 'required|email',
         ]);
 
         $user = User::where('email', $request->input('email'))->first();
+        if( !$user ) {
+            return $this->sendError('Người dùng không tồn tại', 404);
+        }
         $resetCode = Str::random(6);
         $user->remember_token = $resetCode;
         $user->save();
 
-        SendPasswordResetEmail::dispatch($user);
+        SendPasswordResetEmail::dispatch($user, $resetCode);
 
-        return response()->json(['message' => 'Đã gửi email đặt lại mật khẩu.']);
+        return $this->sendSuccess([], 'Đã gửi email đặt lại mật khẩu.');
     }
 
     /**

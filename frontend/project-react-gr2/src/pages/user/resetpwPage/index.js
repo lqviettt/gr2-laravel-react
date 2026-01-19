@@ -36,12 +36,17 @@ const ResetPassword = () => {
     setLoading(true);
     try {
       const response = await axiosClient.post("/auth/forgot-password", { email });
-      toast.success(response.data.message || "Mã xác minh đã được gửi đến email của bạn");
-      setStep(2);
+      console.log("Response:", response);
+      if(response.data.status === 200) {
+        toast.success(response.data.message || "Đã gửi mã xác minh đến email của bạn.");
+        localStorage.setItem("resetEmail", response.data.status);
+        setStep(2);
+      }
+      else {
+        toast.error(response.data.message || "Có lỗi xảy ra. Vui lòng thử lại.");
+      }
     } catch (err) {
-      const errorMsg = err.response?.data?.message || err.response?.data?.error || "Có lỗi xảy ra. Vui lòng kiểm tra email.";
-      setError(errorMsg);
-      toast.error(errorMsg);
+      toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
