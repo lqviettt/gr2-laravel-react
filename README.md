@@ -27,26 +27,39 @@ git clone https://github.com/lqviettt/gr2-laravel-react.git
    cp .env.example .env
    ```
    Chỉnh sửa `.env` với cấu hình của bạn:
-   - Database: `DB_DATABASE=gr2`, `DB_USERNAME=lqviettt`, `DB_PASSWORD=secret`
+   - Database: 
+   `DB_CONNECTION=mysql`
+   `DB_HOST=database`
+   `DB_PORT=3306`
+   `DB_DATABASE=gr2`
+   `DB_USERNAME=lqviettt`
+   `DB_PASSWORD=secret`
+
    - Cài đặt mail, thông tin VNPay, v.v. nếu cần
 
-3. Sửa lỗi tương thích trong package modules:
-   - Mở `vendor/nwidart/laravel-modules/src/Commands/BaseCommand.php`
-   - Comment hoặc xóa dòng: `use Prohibitable;`
-
-4. Khởi động các container Docker:
+3. Khởi động các container Docker:
    ```bash
    docker-compose up -d --build
    ```
 
-5. Ứng dụng sẽ có sẵn tại `http://localhost:9000`
+4. Sửa lỗi tương thích trong package modules:
 
-   **Lưu ý:** Quyền cho thư mục storage được tự động thiết lập bởi script entrypoint của Docker. Không cần can thiệp thủ công.
+   - Truy cập vào bên trong container api bằng lệnh `docker exec -it api bash`
+   - Cài nano nều chưa có `apt-get install -y nano`
+   - Sau đó mở file bằng lệnh `nano vendor/nwidart/laravel-modules/src/Commands/BaseCommand.php`
+   - Comment hoặc xóa dòng: `use Prohibitable;`
+   - Sau đó Ctrl + X để lưu lại
 
-6. Nếu không muốn dùng docker thì sau khi tạo file .env chạy lệnh
+5. Sau đó tắt container và chạy lại bằng 2 lệnh lần lượt:
+```bash
+docker compose down
+docker compose up -d
 ```
-php artisan serve
-```
+
+6. Thành công sẽ truy cập được ở `localhost:9000`
+
+**Lưu ý:** Quyền cho thư mục storage được tự động thiết lập bởi script entrypoint của Docker. Không cần can thiệp thủ công.
+
 
 ### 3. Thiết Lập Database
 
@@ -61,7 +74,7 @@ Database được tự động tạo và migrate khi các container khởi độ
 
 2. Import file SQL dump nếu cần:
    ```sql
-   -- Import DB_GR2.sql vào database gr2
+   -- Import oke.sql vào database gr2
    ```
 
 ### 4. Thiết Lập Frontend (React App)
@@ -82,10 +95,13 @@ Database được tự động tạo và migrate khi các container khởi độ
    npm start
    ```
 
+4. Frontend sẽ có sẵn tại `http://localhost:3000` (port mặc định của React)
 
-3. Frontend sẽ có sẵn tại `http://localhost:3000` (port mặc định của React)
+## Lấy file ảnh sản phẩm
+- Coppy thư mục Image/public vào storage/app (public là con của app)
+- Nếu không làm bước này thì sẽ không hiện được ảnh sản phẩm
 
-## Lệnh Docker
+## Các Lệnh Docker cần dùng
 
 - Khởi động containers: `docker-compose up -d`
 - Dừng containers: `docker-compose down`
