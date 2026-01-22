@@ -57,8 +57,8 @@ const ProductList = () => {
             color: variant.value || 'N/A',
             price: variant.price || product.price,
             quantity: variant.quantity || product.quantity,
-            image: variant.image ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${variant.image}` :
-              product.image ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}` : null,
+            image: variant.image ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${variant.image}` :
+              product.image ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${product.image}` : null,
             status: product.status,
             weight: product.weight,
             category_id: product.category_id,
@@ -76,7 +76,7 @@ const ProductList = () => {
           color: '',
           price: product.price,
           quantity: product.quantity,
-          image: product.image ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}` : null,
+          image: product.image ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${product.image}` : null,
           status: product.status,
           weight: product.weight,
           category_id: product.category_id,
@@ -211,7 +211,7 @@ const ProductList = () => {
         weight: product.weight || "",
         category_id: product.category_id || "",
         description: product.description || "",
-        image: product.image ? `${process.env.REACT_APP_API_URL.replace('/api', '')}/storage/${product.image}` : null,
+        image: product.image ? `${process.env.REACT_APP_LARAVEL_APP}/storage/${product.image}` : null,
       });
       setEditingProductId(productId);
       setIsModalOpen(true);

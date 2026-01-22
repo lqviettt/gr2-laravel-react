@@ -15,15 +15,17 @@ class SendPasswordResetEmail implements ShouldQueue
     use Dispatchable, Queueable, SerializesModels;
 
     protected $user;
+    protected $resetCode;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(User $user)
+    public function __construct(User $user, $resetCode)
     {
         $this->user = $user;
+        $this->resetCode = $resetCode;
     }
 
     /**
@@ -33,6 +35,6 @@ class SendPasswordResetEmail implements ShouldQueue
      */
     public function handle()
     {
-        Mail::to('quocviettt45@gmail.com')->send(new \App\Mail\PasswordResetMail($this->user));
+        Mail::to('quocviettt45@gmail.com')->send(new \App\Mail\PasswordResetMail($this->user, $this->resetCode));
     }
 }

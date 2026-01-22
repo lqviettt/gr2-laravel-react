@@ -336,30 +336,30 @@ const ProductDetail = () => {
                         if (matchingVariant) {
                           setSelectedVariant(matchingVariant);
                         }
-                      }}
-                      className={`w-16 h-16 rounded-md border-2 flex-shrink-0 p-1 ${
+                        }}
+                        className={`w-16 h-16 rounded-md border-2 flex-shrink-0 p-1 ${
                         selectedImage === image.src ? "border-blue-500" : "border-gray-300"
-                      }`}
-                    >
-                      <img
+                        }`}
+                      >
+                        <img
                         src={image.src}
                         alt={image.alt || product.name}
                         className="w-full h-full object-contain rounded"
-                      />
-                    </button>
-                  ))}
-                </div>
+                        />
+                      </button>
+                      ))}
+                    </div>
 
-                {/* Product Description */}
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <h3 className="text-lg font-semibold mb-3">Mô tả sản phẩm</h3>
-                  <p className="text-gray-700 text-sm leading-relaxed">
-                    {product.description || "Không có mô tả sản phẩm"}
-                  </p>
-                </div>
-              </div>
+                    {/* Product Description */}
+                    <div className="mt-6 pt-6 border-t border-gray-200">
+                      <h3 className="text-lg font-semibold mb-3">Mô tả sản phẩm</h3>
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                      {product.description || "iPhone thế hệ cao từ Series 16, 17 - Công nghệ tiên tiến nhất của Apple. Trang bị chip xử lý mạnh mẽ, màn hình OLED sắc nét, camera chất lượng cao với AI enhancement, pin khoẻ nguyên cả ngày. Hỗ trợ 5G, thiết kế premium với khả năng chống nước IP68. Lý tưởng cho những ai muốn trải nghiệm công nghệ mobile hàng đầu."}
+                      </p>
+                    </div>
+                    </div>
 
-              {/* Warranty and Status Info */}
+                    {/* Warranty and Status Info */}
               <div className="grid-cols-1 sm:grid-cols-2 gap-4 mt-6 hidden lg:grid">
                   <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                     <h2 className="flex bg-blue-600 p-4 text-white text-lg font-bold">

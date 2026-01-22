@@ -189,6 +189,7 @@ const OrderList = () => {
     total_price: 'total_price',
     created_at: 'created_at_formatted',
     status: 'status',
+    payment: 'payment_status',
     actions: 'pattern.modified',
   };
 
@@ -202,6 +203,7 @@ const OrderList = () => {
     total_price: 'Tổng tiền',
     created_at: 'Ngày tạo',
     status: 'Trạng thái',
+    payment: 'Thanh toán',
     actions: 'Thao tác',
   };
 

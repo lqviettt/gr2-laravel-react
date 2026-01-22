@@ -29,6 +29,9 @@ import AdminDashboard from "./pages/admin/dashboard/index.js";
 import UploadDemo from "./pages/UploadDemo";
 import OrderHistoryPage from "./pages/user/orderHistoryPage/index.js";
 import OrderDetailPaymentPage from "./pages/user/orderDetailPaymentPage/index.js";
+import WarrantyPolicyPage from "./pages/user/warrantyPolicyPage/index.js";
+import ContactPage from "./pages/user/contactPage/index.js";
+import SwapPolicyPage from "./pages/user/swapPolicyPage/index.js";
 
 const renderUserRouter = () => {
   const userRouters = [
@@ -50,6 +53,21 @@ const renderUserRouter = () => {
     {
       path: ROUTERS.USER.PRODUCT_DETAIL,
       component: <ProductDetail />,
+      layout: MasterLayout,
+    },
+    {
+      path: ROUTERS.USER.WARRANTY_POLICY,
+      component: <WarrantyPolicyPage />,
+      layout: MasterLayout,
+    },
+    {
+      path: ROUTERS.USER.SWAP,
+      component: <SwapPolicyPage />,
+      layout: MasterLayout,
+    },
+    {
+      path: ROUTERS.USER.CONTACT,
+      component: <ContactPage />,
       layout: MasterLayout,
     },
     {
@@ -124,66 +142,77 @@ const renderUserRouter = () => {
       component: <AdminDashboard />,
       layout: AdminLayout,
       protected: true,
+      adminOnly: true,
     },
     {
       path: ROUTERS.ADMIN.DASHBOARD,
       component: <AdminDashboard />,
       layout: AdminLayout,
       protected: true,
+      adminOnly: true,
     },
     {
       path: ROUTERS.ADMIN.PROFILE,
       component: <AdminProfile />,
       layout: AdminLayout,
       protected: true,
+      adminOnly: true,
     },
     {
       path: ROUTERS.ADMIN.CATEGORY_MANAGE_ADD,
       component: <CategoryManageAdd />,
       layout: AdminLayout,
       protected: true,
+      adminOnly: true,
     },
     {
       path: ROUTERS.ADMIN.CATEGORY_MANAGE_LIST,
       component: <CategoryManageList />,
       layout: AdminLayout,
       protected: true,
+      adminOnly: true,
     },
     {
       path: ROUTERS.ADMIN.ORDER_MANAGE_LIST,
       component: <OrderManageList />,
       layout: AdminLayout,
       protected: true,
+      adminOnly: true,
     },
     {
       path: ROUTERS.ADMIN.ORDER_MANAGE_ADD,
       component: <OrderManageAdd />,
       layout: AdminLayout,
       protected: true,
+      adminOnly: true,
     },
     {
       path: ROUTERS.ADMIN.PRODUCT_MANAGE_ADD,
       component: <ProductManageAdd />,
       layout: AdminLayout,
       protected: true,
+      adminOnly: true,
     },
     {
       path: ROUTERS.ADMIN.PRODUCT_MANAGE_LIST,
       component: <ProductManageList />,
       layout: AdminLayout,
       protected: true,
+      adminOnly: true,
     },
     {
       path: ROUTERS.ADMIN.ACCOUNT_MANAGE_ADD,
       component: <AccountManageAdd />,
       layout: AdminLayout,
       protected: true,
+      adminOnly: true,
     },
     {
       path: ROUTERS.ADMIN.ACCOUNT_MANAGE_LIST,
       component: <AccountManageList />,
       layout: AdminLayout,
       protected: true,
+      adminOnly: true,
     },
 
   ];
@@ -193,7 +222,9 @@ const renderUserRouter = () => {
       {userRouters.map((item, key) => {
         const Layout = item.layout || React.Fragment;
         const Element = item.protected ? (
-          <ProtectedRoute>{item.component}</ProtectedRoute>
+          <ProtectedRoute requireAdmin={item.adminOnly === true}>
+            {item.component}
+          </ProtectedRoute>
         ) : (
           item.component
         );
