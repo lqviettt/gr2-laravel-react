@@ -187,8 +187,8 @@ const HomePage = () => {
       <div className="relative">
         <img
           className="w-full h-auto shadow-lg"
-          // src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/bannerr.png`}
-          src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/banners_1762866247_6913344726f45.webp`}
+          src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/bannerr.png`}
+          // src={`${process.env.REACT_APP_LARAVEL_APP}/storage/banners/banners_1762866247_6913344726f45.webp`}
           alt="QuocViet Banner"
         />
       </div>

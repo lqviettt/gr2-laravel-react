@@ -1,6 +1,22 @@
 import React, { useMemo, useState } from "react";
+import { useEffect } from "react";
+import { useBreadcrumb } from "../../../component/BreadcrumbContext";
 
 const ContactPage = () => {
+    const { setBreadcrumbTrail } = useBreadcrumb();
+
+    useEffect(() => {
+    let isMounted = true;
+
+    if (isMounted) {
+      setBreadcrumbTrail([{ name: "Liên hệ", path: "/contact" }]);
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+  
   const subjectOptions = useMemo(
     () => [
       { value: "order", label: "Hỗ trợ đơn hàng" },

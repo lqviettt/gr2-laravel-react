@@ -1,6 +1,10 @@
 import React, { useMemo, useState } from "react";
+import { useEffect } from "react";
+import { useBreadcrumb } from "../../../component/BreadcrumbContext";
 
 const SwapPolicyPage = () => {
+    const { setBreadcrumbTrail } = useBreadcrumb();
+  
   const faqs = useMemo(
     () => [
       {
@@ -22,6 +26,20 @@ const SwapPolicyPage = () => {
     ],
     []
   );
+
+    useEffect(() => {
+    let isMounted = true;
+
+    if (isMounted) {
+      setBreadcrumbTrail([
+        { name: "Chính sách đổi trả, lên đời", path: "/swap-policy" },
+      ]);
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const [openIndex, setOpenIndex] = useState(0);
 

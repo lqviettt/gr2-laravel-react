@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { FiCheckCircle, FiX, FiAlertCircle, FiLoader } from "react-icons/fi";
 import { api } from "../../../utils/apiClient";
-import { formatCurrency } from "../../../utils/common";
 
 const VnpayResponse = () => {
   const [vnpayData, setVnpayData] = useState(null);
@@ -14,6 +13,14 @@ const VnpayResponse = () => {
   const { removeAllFromCart } = useCart();
   const navigate = useNavigate();
   const hasProcessed = useRef(false);
+
+  const extractOrderCodeFromOrderInfo = (orderInfo) => {
+    if (!orderInfo || typeof orderInfo !== "string") return null;
+    const parts = orderInfo.split(":");
+    if (parts.length < 2) return null;
+    const code = parts[parts.length - 1].trim();
+    return code || null;
+  };
 
   // Map mã lỗi VNPay
   const ERROR_MESSAGES = {
@@ -131,7 +138,7 @@ const VnpayResponse = () => {
     };
 
     processPaymentResponse();
-  }, []);
+  }, [removeAllFromCart]);
 
   const getStatusIcon = () => {
     if (loading) {
@@ -248,11 +255,19 @@ const VnpayResponse = () => {
                   <p className="text-gray-800">{vnpayData?.vnp_BankCode || "N/A"}</p>
                 </div>
 
-                {/* Order Info */}
+                {/* Order Info
                 <div>
                   <p className="text-sm text-gray-500 font-medium">Nội dung thanh toán</p>
                   <p className="text-gray-800 break-words">
                     {vnpayData?.vnp_OrderInfo || "N/A"}
+                  </p>
+                </div> */}
+                
+                {/* Order Code */}
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Mã đơn hàng</p>
+                  <p className="text-gray-800 font-semibold">
+                    {extractOrderCodeFromOrderInfo(vnpayData?.vnp_OrderInfo) || "N/A"}
                   </p>
                 </div>
               </div>

@@ -117,16 +117,16 @@ const Register = () => {
     <div className="bg-gray-50 flex items-center justify-center py-4 sm:py-6 lg:py-8">
       <Section>
         <div className="w-full max-w-6xl">
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className="grid lg:grid-cols-2 gap-0">
+          {/* <div className="bg-white rounded-lg shadow-lg overflow-hidden"> */}
+            {/* <div className="grid lg:grid-cols-2 gap-0"> */}
               {/* Image Section */}
-              <div className="hidden lg:flex items-center justify-center p-8 bg-gradient-to-br from-blue-50 to-indigo-100">
+              {/* <div className="hidden lg:flex items-center justify-center p-8 bg-gradient-to-br from-blue-50 to-indigo-100">
                 <img
                   src={register}
                   alt="Đăng ký tài khoản"
                   className="w-full max-w-md h-auto object-contain"
                 />
-              </div>
+              </div> */}
 
               {/* Form Section */}
               <div className="p-6 sm:p-8">
@@ -231,8 +231,8 @@ const Register = () => {
                   </p>
                 </AuthForm>
               </div>
-            </div>
-          </div>
+            {/* </div> */}
+          {/* </div> */}
         </div>
       </Section>
     </div>
