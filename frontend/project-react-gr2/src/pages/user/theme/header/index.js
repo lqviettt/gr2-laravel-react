@@ -84,7 +84,7 @@ const Header = () => {
       const performSearch = async () => {
         try {
           const response = await api.get(
-            `/product?search=${encodeURIComponent(debouncedSearchQuery)}&perPage=10`,
+            `/product?search=${encodeURIComponent(debouncedSearchQuery)}&perPage=10&status=1`,
             { cacheDuration: 10 * 60 * 1000 } // Cache for 10 min
           );
           
@@ -206,7 +206,7 @@ const Header = () => {
       name: childCat.name,
       id: childCat.id,
       items: categoryProducts[childCat.id] || [],
-      link: `/product?category_id=${childCat.id}`
+      link: `/product?category_id=${childCat.id}&status=1`
     }));
   }, [categories, categoryProducts]);
 
@@ -243,14 +243,14 @@ const Header = () => {
               child.children.forEach(subChild => {
                 allItems.push({
                   name: subChild.name,
-                  path: `/product?category_id=${subChild.id}&parent_id=${child.id}`,
+                  path: `/product?category_id=${subChild.id}&parent_id=${child.id}&status=1`,
                   group: child.name
                 });
               });
             } else {
               allItems.push({
                 name: child.name,
-                path: `/product?category_id=${child.id}&parent_id=${cat.id}`,
+                path: `/product?category_id=${child.id}&parent_id=${cat.id}&status=1`,
                 group: cat.name
               });
             }
@@ -263,7 +263,7 @@ const Header = () => {
         
         return {
           name: cat.name,
-          path: `/product?category_id=${cat.id}`,
+          path: `/product?category_id=${cat.id}&status=1`,
           columns: groupedColumns,
           type: 'series' // Mark as series type
         };
@@ -273,7 +273,7 @@ const Header = () => {
         
         return {
           name: cat.name,
-          path: `/product?category_id=${cat.id}`,
+          path: `/product?category_id=${cat.id}&status=1`,
           columns: childColumnsWithProducts,
           type: 'category' // Mark as category type
         };

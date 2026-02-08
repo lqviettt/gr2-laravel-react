@@ -35,7 +35,7 @@ const ProductList = () => {
 
     const fetchProducts = async () => {
       try {
-        let apiUrl = `${process.env.REACT_APP_API_URL}/product`;
+        let apiUrl = `${process.env.REACT_APP_API_URL}/product?status=1`;
 
         // Build query parameters
         const params = new URLSearchParams();
@@ -50,10 +50,10 @@ const ProductList = () => {
         params.append('perPage', '15');
         params.append('page', currentPage.toString());
 
-        apiUrl += `?${params.toString()}`;
+        apiUrl += `&${params.toString()}`;
 
         console.log('Fetching products from:', apiUrl);
-        const response = await api.get(`/product?${params.toString()}`);
+        const response = await api.get(`/product?${params.toString()}&status=1`);
         
         if (!isMounted) return;
         

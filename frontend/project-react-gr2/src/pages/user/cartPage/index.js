@@ -54,6 +54,11 @@ const Cart = () => {
     };
   };
 
+  const onclick = () => {
+    setBreadcrumbTrail([]);
+    navigate("/product-list");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-6 lg:py-8">
       <Section>
@@ -69,7 +74,7 @@ const Cart = () => {
                   Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm
                 </p>
                 <button
-                onClick={() => navigate("/")}
+                onClick={onclick}
                   className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   Tiếp tục mua sắm

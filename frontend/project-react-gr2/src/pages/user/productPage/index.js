@@ -117,15 +117,15 @@ const ProductsPage = () => {
         setLoading(true);
         setError(null);
 
-        let apiUrl = `${process.env.REACT_APP_API_URL}/product?perPage=15&page=${page}`;
+        let apiUrl = `${process.env.REACT_APP_API_URL}/product?perPage=15&page=${page}&status=1`;
 
         // Priority: selectedSeries > selectedChildCategory > categoryId
         if (selectedSeries) {
           // Series filter (for Điện thoại category)
-          apiUrl = `${process.env.REACT_APP_API_URL}/product?search=${encodeURIComponent(selectedSeries)}&perPage=15&page=${page}`;
+          apiUrl = `${process.env.REACT_APP_API_URL}/product?search=${encodeURIComponent(selectedSeries)}&perPage=15&page=${page}&status=1`;
         } else if (selectedChildCategory) {
           // Child category filter (for parent categories like Phụ kiện)
-          apiUrl = `${process.env.REACT_APP_API_URL}/product?category_id=${selectedChildCategory}&perPage=15&page=${page}`;
+          apiUrl = `${process.env.REACT_APP_API_URL}/product?category_id=${selectedChildCategory}&perPage=15&page=${page}&status=1`;
         } else if (categoryId) {
           // Main category filter
           let categoryIds = categoryId;
@@ -148,7 +148,7 @@ const ProductsPage = () => {
             ? `category_id=${categoryIds.join(',')}`
             : `category_id=${categoryIds}`;
 
-          apiUrl = `${process.env.REACT_APP_API_URL}/product?${categoryQuery}&perPage=15&page=${page}`;
+          apiUrl = `${process.env.REACT_APP_API_URL}/product?${categoryQuery}&perPage=15&page=${page}&status=1`;
         }
 
         const response = await api.get(apiUrl.replace(process.env.REACT_APP_API_URL, ''));

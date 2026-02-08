@@ -258,7 +258,7 @@ const HomePage = () => {
 
           <div className="group">
             <a
-              href={`/product-detail/26`}
+              href={`/product?category_id=118`}
               className="category-item block transition-transform duration-200 hover:scale-105"
             >
               <img
@@ -274,7 +274,7 @@ const HomePage = () => {
 
           <div className="group">
             <a
-              href={`/category?search=iphone&perPage=15`}
+              href={`/product?category_id=119`}
               className="category-item block transition-transform duration-200 hover:scale-105"
             >
               <img
