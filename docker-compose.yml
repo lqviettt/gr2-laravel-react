@@ -1,0 +1,76 @@
+services:
+  api:
+    build: ./backend
+    ports:
+      - "9000:8080"
+    volumes:
+      - ./backend:/var/www
+      - ./Image/public:/var/www/storage/app/public
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - network-app
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_API_URL: http://localhost:9000/api
+        REACT_APP_LARAVEL_APP: http://localhost:9000
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    networks:
+      - network-app
+
+  database:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: gr2
+      MYSQL_USER: lqviettt
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    ports:
+      - "3307:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./backend/docker/mysql/conf.d:/etc/mysql/conf.d
+      - ./backend/docker/mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - network-app
+
+  redis:
+    image: redis:alpine
+    command: redis-server --appendonly yes --requirepass "secret"
+    ports:
+      - "6380:6379"
+    networks:
+      - network-app
+
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - "91:80"
+    environment:
+      PMA_HOST: database
+      PMA_PORT: 3306
+    depends_on:
+      - database
+    networks:
+      - network-app
+
+networks:
+  network-app:
+    driver: bridge
+
+volumes:
+  db-data:
