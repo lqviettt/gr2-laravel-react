@@ -27,6 +27,9 @@
         "spatie/laravel-ignition": "^2.0"
     },
     "autoload": {
+        "files": [
+            "app/Compat/Prohibitable.php"
+        ],
         "psr-4": {
             "App\\": "app/",
             "Modules\\": "Modules/",
@@ -80,6 +83,9 @@
             "pestphp/pest-plugin": true,
             "php-http/discovery": true,
             "wikimedia/composer-merge-plugin": true
+        },
+        "platform": {
+            "php": "8.2"
         }
     },
     "minimum-stability": "stable",
